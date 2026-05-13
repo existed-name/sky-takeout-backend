@@ -2,6 +2,8 @@ package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
+import com.sky.context.BaseContext;
+import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
@@ -12,6 +14,8 @@ import com.sky.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+
+import java.time.LocalDateTime;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -52,6 +56,26 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         //3、返回实体对象
         return employee;
+    }
+
+    @Override
+    public void save( EmployeeDTO dto ){
+        // 按照 Tlias 的叫法是 CurrentHolder, 苍穹外卖里是 BaseContext
+        Long createUserId = BaseContext.getCurrentId();
+        Employee employee = Employee.builder()
+                .id( null )
+                .username( dto.getUsername() )
+                .name( dto.getName() )
+                .phone( dto.getPhone() )
+                .sex( dto.getSex() )
+                .idNumber( dto.getIdNumber() )
+                .status( null )
+                .createTime( LocalDateTime.now() )
+                .updateTime( LocalDateTime.now() )
+                .createUser( createUserId )
+                .updateUser( createUserId )
+                .build();
+        employeeMapper.insert( employee );
     }
 
 }
