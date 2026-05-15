@@ -100,7 +100,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public PageResult page( EmployeePageQueryDTO pageQueryDTO ){
-        PageHelper.startPage( pageQueryDTO.getPage(), pageQueryDTO.getPageSize() );
+        Integer page = pageQueryDTO.getPage();
+        page = ( page == null || page < 1 ) ? 1 : page; // application.yml 配置检测 page 在[1,max]
+
+        Integer pageSize = pageQueryDTO.getPageSize();
+        pageSize = ( pageSize == null || pageSize < 1 ) ? 10 : pageSize;
+
+        PageHelper.startPage( page, pageSize );
 
         List< Employee > employeeList = employeeMapper.selectByQuery( pageQueryDTO );
         Page< Employee > employeePage = ( Page< Employee > ) employeeList;
