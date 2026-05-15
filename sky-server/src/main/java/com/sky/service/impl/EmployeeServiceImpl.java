@@ -1,6 +1,7 @@
 package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
+import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
@@ -11,6 +12,7 @@ import com.sky.exception.AccountNotFoundException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.service.EmployeeService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -59,22 +61,35 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void save( EmployeeDTO dto ){
+    public void save( EmployeeDTO employeeDTO ){
         // 按照 Tlias 的叫法是 CurrentHolder, 苍穹外卖里是 BaseContext
         Long createUserId = BaseContext.getCurrentId();
+        /*
         Employee employee = Employee.builder()
-                .id( null )
-                .username( dto.getUsername() )
-                .name( dto.getName() )
-                .phone( dto.getPhone() )
-                .sex( dto.getSex() )
-                .idNumber( dto.getIdNumber() )
-                .status( null )
+                .id( null ) // 其实不需要显示设置 id 为 null
+                .username( employeeDTO.getUsername() )
+                .name( employeeDTO.getName() )
+                .password( PasswordConstant.DEFAULT_PASSWORD )
+                .phone( employeeDTO.getPhone() )
+                .sex( employeeDTO.getSex() )
+                .idNumber( employeeDTO.getIdNumber() )
+                .status( StatusConstant.ENABLE )
                 .createTime( LocalDateTime.now() )
                 .updateTime( LocalDateTime.now() )
                 .createUser( createUserId )
                 .updateUser( createUserId )
                 .build();
+         */
+        Employee employee = new Employee();
+        BeanUtils.copyProperties( employeeDTO, employee );
+
+        employee.setPassword( PasswordConstant.DEFAULT_PASSWORD );
+        employee.setStatus( StatusConstant.ENABLE );
+        employee.setCreateTime( LocalDateTime.now() );
+        employee.setUpdateTime( LocalDateTime.now() );
+        employee.setCreateUser( createUserId );
+        employee.setUpdateUser( createUserId );
+
         employeeMapper.insert( employee );
     }
 
