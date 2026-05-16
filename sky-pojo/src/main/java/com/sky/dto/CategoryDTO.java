@@ -28,8 +28,8 @@ public class CategoryDTO implements Serializable {
     @ApiModelProperty(value = "分类名称", example = "川菜")
     private String name;
 
-    /** 排序 */
-    @ApiModelProperty(value = "排序", example = "1")
+    /** 顺序序号 */
+    @ApiModelProperty(value = "顺序序号", example = "1")
     private Integer sort;
 
 }
