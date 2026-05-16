@@ -88,8 +88,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee();
         BeanUtils.copyProperties( employeeDTO, employee );
 
-        employee.setPassword( PasswordConstant.DEFAULT_PASSWORD );
+        // 注意进行md5加密，再存入数据库
+        employee.setPassword( DigestUtils.md5DigestAsHex( PasswordConstant.DEFAULT_PASSWORD.getBytes() )  );
         employee.setStatus( StatusConstant.ENABLE );
+
         employee.setCreateTime( LocalDateTime.now() );
         employee.setUpdateTime( LocalDateTime.now() );
         employee.setCreateUser( createUserId );
