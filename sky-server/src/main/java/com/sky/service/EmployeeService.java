@@ -24,4 +24,9 @@ public interface EmployeeService {
      * 分页查询员工
      */
     PageResult page( EmployeePageQueryDTO pageQueryDTO );
+
+    /**
+     * 修改员工状态(启用/禁用账号)
+     */
+    void updateStatus( Long id, Integer status );
 }

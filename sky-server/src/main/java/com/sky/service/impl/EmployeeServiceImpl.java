@@ -56,7 +56,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 
-        if (employee.getStatus() == StatusConstant.DISABLE) {
+        if ( employee.getStatus().equals( StatusConstant.DISABLE ) ) {
             //账号被锁定
             throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
         }
@@ -112,6 +112,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         Page< Employee > employeePage = ( Page< Employee > ) employeeList;
 
         return new PageResult( employeePage.getTotal(), employeePage.getResult() );
+    }
+
+    @Override
+    public void updateStatus( Long id, Integer status ){
+        employeeMapper.updateStatusById( id, status );
     }
 
 }

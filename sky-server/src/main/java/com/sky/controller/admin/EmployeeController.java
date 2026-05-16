@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.constant.JwtClaimsConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
@@ -16,7 +17,9 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -85,7 +88,7 @@ public class EmployeeController {
      */
     @PostMapping // ( "/save" )
     @ApiOperation( value = "新增员工" )
-    public Result< EmployeeDTO > save( @RequestBody EmployeeDTO dto ){
+    public Result< Object > save( @RequestBody EmployeeDTO dto ){
         log.info( "新增员工: {}", dto );
         employeeService.save( dto );
         return Result.success(  );
@@ -95,10 +98,21 @@ public class EmployeeController {
      * 条件分页查询员工
      */
     @GetMapping( "/page" )
-    @ApiOperation( "条件分页查询员工" )
+    @ApiOperation( value = "条件分页查询员工" )
     public Result< PageResult > page(  EmployeePageQueryDTO pageQueryDTO ){
         log.info( "条件分页查询员工, 查询参数: {}", pageQueryDTO );
         PageResult pageResult = employeeService.page( pageQueryDTO );
         return Result.success( pageResult );
+    }
+
+    /**
+     * 修改员工状态(启用/禁用账号)
+     */
+    @PutMapping( "/{id}/status/{status}" )
+    @ApiOperation( value = "修改员工状态(启用/禁用账号)" )
+    public Result< Object > updateStatus( @PathVariable Long id, @PathVariable Integer status ){
+        log.info( "修改 id = {} 的员工账号状态为: {}", id, status );
+        employeeService.updateStatus( id, status );
+        return Result.success();
     }
 }

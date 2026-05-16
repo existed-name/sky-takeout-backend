@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -34,4 +35,14 @@ public interface EmployeeMapper {
      * 条件分页查询员工
      */
     List< Employee> selectByQuery( @Param( "queryParam" ) EmployeePageQueryDTO pageQueryDTO );
+
+    /**
+     * 修改员工状态(启用/禁用账号)
+     */
+    @Update( """
+            UPDATE employee
+            SET status = #{status}
+            WHERE id = #{id}
+            """ )
+    void updateStatusById( @Param( "id" ) Long id, @Param( "status" ) Integer status );
 }
