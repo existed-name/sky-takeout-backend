@@ -33,5 +33,10 @@ public interface EmployeeService {
     /**
      * 根据 id 查询员工信息
      */
-    Employee getInfo( Long id );
+    Employee getById( Long id );
+
+    /**
+     * 修改员工信息
+     */
+    void update( EmployeeDTO employeeDTO );
 }
