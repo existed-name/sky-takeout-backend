@@ -115,4 +115,15 @@ public class EmployeeController {
         employeeService.updateStatus( id, status );
         return Result.success();
     }
+
+    /**
+     * 根据 id 查询员工信息
+     */
+    @GetMapping( "/{id}" )
+    @ApiOperation( "根据 id 查询员工信息" )
+    public Result< Employee > getInfo( @PathVariable Long id ){
+        log.info( "查询 id = {} 的员工信息", id );
+        Employee employee = employeeService.getInfo( id );
+        return Result.success( employee );
+    }
 }

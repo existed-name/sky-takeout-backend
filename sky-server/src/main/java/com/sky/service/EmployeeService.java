@@ -29,4 +29,9 @@ public interface EmployeeService {
      * 修改员工状态(启用/禁用账号)
      */
     void updateStatus( Long id, Integer status );
+
+    /**
+     * 根据 id 查询员工信息
+     */
+    Employee getInfo( Long id );
 }
