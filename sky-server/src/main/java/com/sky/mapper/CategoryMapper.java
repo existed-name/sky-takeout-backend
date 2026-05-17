@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -39,4 +40,14 @@ public interface CategoryMapper {
      * 修改分类信息
      */
     void update( Category category );
+
+    /**
+     * 修改分类状态(启用/禁用)
+     */
+    @Update( """
+            UPDATE category
+            SET status = #{status}
+            WHERE id = #{id}
+            """ )
+    void updateStatusById( @Param( "id" ) Long id, @Param( "status" ) Integer status );
 }

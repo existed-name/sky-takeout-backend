@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -82,6 +83,17 @@ public class CategoryController {
     public Result< Object > update( @RequestBody CategoryDTO categoryDTO ){
         log.info( "修改分类信息: {}", categoryDTO );
         categoryService.update( categoryDTO );
+        return Result.success();
+    }
+
+    /**
+     * 修改分类状态(启用/禁用)
+     */
+    @PutMapping( "/status/{status}" )
+    @ApiOperation( value = "修改分类状态(启用/禁用)" )
+    public Result< Object > updateStatus( @RequestParam Long id, @PathVariable Integer status ){
+        log.info( "修改 id = {} 的分类状态为 {}", id, status );
+        categoryService.updateStatus( id, status );
         return Result.success();
     }
 

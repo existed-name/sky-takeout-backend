@@ -24,4 +24,9 @@ public interface CategoryService {
      * 修改分类信息
      */
     void update( CategoryDTO categoryDTO );
+
+    /**
+     * 修改分类状态(启用/禁用)
+     */
+    void updateStatus( Long id, Integer status );
 }

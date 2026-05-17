@@ -83,6 +83,11 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.update( category );
     }
 
+    @Override
+    public void updateStatus( Long id, Integer status ){
+        categoryMapper.updateStatusById( id, status );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
