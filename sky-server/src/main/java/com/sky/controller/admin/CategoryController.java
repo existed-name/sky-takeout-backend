@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -70,6 +71,17 @@ public class CategoryController {
     public Result< Object > delete( @RequestParam Long id ){
         log.info( "删除 id = {} 的分类", id );
         categoryService.deleteById( id );
+        return Result.success();
+    }
+
+    /**
+     * 修改分类信息
+     */
+    @PutMapping
+    @ApiOperation( value = "修改分类信息" )
+    public Result< Object > update( @RequestBody CategoryDTO categoryDTO ){
+        log.info( "修改分类信息: {}", categoryDTO );
+        categoryService.update( categoryDTO );
         return Result.success();
     }
 

@@ -34,4 +34,9 @@ public interface CategoryMapper {
             WHERE id = #{id}
             """ )
     void deleteById( @Param( "id" ) Long id );
+
+    /**
+     * 修改分类信息
+     */
+    void update( Category category );
 }

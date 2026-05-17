@@ -19,4 +19,9 @@ public interface CategoryService {
      * 根据 id 删除分类
      */
     void deleteById( Long id );
+
+    /**
+     * 修改分类信息
+     */
+    void update( CategoryDTO categoryDTO );
 }
