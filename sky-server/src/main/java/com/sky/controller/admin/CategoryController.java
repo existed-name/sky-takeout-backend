@@ -5,14 +5,17 @@ import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
+import com.sky.service.EmployeeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -28,7 +31,6 @@ public class CategoryController {
 
     // ==================== 实例变量 ====================
     private final CategoryService categoryService;
-
 
 
     // ==================== 构造器 ====================
@@ -58,6 +60,17 @@ public class CategoryController {
         log.info( "对分类进行条件分页查询，查询参数: {}", categoryPageQueryDTO );
         PageResult pageResult = categoryService.page( categoryPageQueryDTO );
         return Result.success( pageResult );
+    }
+
+    /**
+     * 根据 id 删除分类
+     */
+    @DeleteMapping
+    @ApiOperation( value = "根据 id 删除分类")
+    public Result< Object > delete( @RequestParam Long id ){
+        log.info( "删除 id = {} 的分类", id );
+        categoryService.deleteById( id );
+        return Result.success();
     }
 
 

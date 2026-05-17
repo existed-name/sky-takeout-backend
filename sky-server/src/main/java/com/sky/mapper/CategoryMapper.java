@@ -2,8 +2,10 @@ package com.sky.mapper;
 
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -23,4 +25,13 @@ public interface CategoryMapper {
      * 对分类进行条件查询 + PageHelper 分页
      */
     List< Category> selectByQuery( CategoryPageQueryDTO categoryPageQueryDTO );
+
+    /**
+     * 根据 id 删除分类
+     */
+    @Delete( """
+            DELETE FROM category
+            WHERE id = #{id}
+            """ )
+    void deleteById( @Param( "id" ) Long id );
 }

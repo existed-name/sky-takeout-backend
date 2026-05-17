@@ -69,6 +69,11 @@ public class CategoryServiceImpl implements CategoryService {
         return new PageResult( categoryPage.getTotal(), categoryPage.getResult() );
     }
 
+    @Override
+    public void deleteById( Long id ){
+        categoryMapper.deleteById( id );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

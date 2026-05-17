@@ -14,4 +14,9 @@ public interface CategoryService {
      * 对分类进行条件分页查询
      */
     PageResult page( CategoryPageQueryDTO categoryPageQueryDTO );
+
+    /**
+     * 根据 id 删除分类
+     */
+    void deleteById( Long id );
 }
