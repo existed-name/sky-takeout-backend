@@ -88,6 +88,12 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.updateStatusById( id, status );
     }
 
+    @Override
+    public List< Category > listByType( Integer type ){
+        List< Category > categoryList = categoryMapper.selectByType( type );
+        return categoryList;
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

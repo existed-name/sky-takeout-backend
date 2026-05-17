@@ -50,4 +50,9 @@ public interface CategoryMapper {
             WHERE id = #{id}
             """ )
     void updateStatusById( @Param( "id" ) Long id, @Param( "status" ) Integer status );
+
+    /**
+     * 查询某种类型的所有分类
+     */
+    List< Category> selectByType( @Param( "type" ) Integer type );
 }

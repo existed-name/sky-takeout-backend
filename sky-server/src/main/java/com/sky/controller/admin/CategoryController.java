@@ -2,6 +2,7 @@ package com.sky.controller.admin;
 
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.entity.Category;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -95,6 +98,17 @@ public class CategoryController {
         log.info( "修改 id = {} 的分类状态为 {}", id, status );
         categoryService.updateStatus( id, status );
         return Result.success();
+    }
+
+    /**
+     * 查询某种类型的所有分类
+     */
+    @GetMapping( "/list" )
+    @ApiOperation( value = "查询某种类型的所有分类" )
+    public Result< List< Category > > listByType( @RequestParam( required = false ) Integer type ){
+        log.info( "查询类型 {} 的所有分类", type );
+        List< Category > categoryList = categoryService.listByType( type );
+        return Result.success( categoryList );
     }
 
 
