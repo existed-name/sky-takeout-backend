@@ -32,7 +32,7 @@ public interface EmployeeMapper {
     void insert( Employee employee );
 
     /**
-     * 条件分页查询员工
+     * 条件查询员工 + PageHelper 分页
      */
     List< Employee> selectByQuery( @Param( "queryParam" ) EmployeePageQueryDTO pageQueryDTO );
 

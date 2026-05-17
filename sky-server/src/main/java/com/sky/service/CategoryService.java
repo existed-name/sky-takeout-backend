@@ -1,6 +1,8 @@
 package com.sky.service;
 
 import com.sky.dto.CategoryDTO;
+import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.result.PageResult;
 
 public interface CategoryService {
     /**
@@ -8,5 +10,8 @@ public interface CategoryService {
      */
     void save( CategoryDTO categoryDTO );
 
-
+    /**
+     * 对分类进行条件分页查询
+     */
+    PageResult page( CategoryPageQueryDTO categoryPageQueryDTO );
 }

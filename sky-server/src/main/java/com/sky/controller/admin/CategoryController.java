@@ -1,12 +1,15 @@
 package com.sky.controller.admin;
 
 import com.sky.dto.CategoryDTO;
+import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +47,17 @@ public class CategoryController {
         log.info( "新增分类: {}", categoryDTO );
         categoryService.save( categoryDTO );
         return Result.success();
+    }
+
+    /**
+     * 对分类进行条件分页查询
+     */
+    @GetMapping( "/page" )
+    @ApiOperation( value = "对分类进行条件分页查询" )
+    public Result< PageResult > page( CategoryPageQueryDTO categoryPageQueryDTO ){
+        log.info( "对分类进行条件分页查询，查询参数: {}", categoryPageQueryDTO );
+        PageResult pageResult = categoryService.page( categoryPageQueryDTO );
+        return Result.success( pageResult );
     }
 
 

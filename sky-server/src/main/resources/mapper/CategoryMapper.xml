@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.mapper.CategoryMapper">
+
+<!--    对分类进行条件查询 + PageHelper 分页-->
+    <select id="selectByQuery" resultType="com.sky.entity.Category">
+        SELECT id, type, name, sort, status, create_time, update_time, create_user, update_user
+        FROM category
+        <where>
+            <if test="name != null and name != ''">name = #{name}</if>
+            <if test="type != null">AND type = #{type}</if>
+        </where>
+    </select>
+</mapper>
