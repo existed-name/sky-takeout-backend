@@ -12,6 +12,7 @@
             <if test="name != null and name != ''">name = #{name}</if>
             <if test="type != null">AND type = #{type}</if>
         </where>
+        ORDER BY sort ASC, create_time DESC
     </select>
 
 <!--    修改分类信息-->
@@ -34,5 +35,6 @@
         <where>
             <if test="type != null">type = #{type}</if>
         </where>
+        ORDER BY sort ASC, create_time DESC
     </select>
 </mapper>
