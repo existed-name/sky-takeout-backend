@@ -9,7 +9,7 @@
         SELECT id, type, name, sort, status, create_time, update_time, create_user, update_user
         FROM category
         <where>
-            <if test="name != null and name != ''">name = #{name}</if>
+            <if test="name != null and name != ''">name LIKE concat( '%', #{name}, '%' )</if>
             <if test="type != null">AND type = #{type}</if>
         </where>
         ORDER BY sort ASC, create_time DESC
