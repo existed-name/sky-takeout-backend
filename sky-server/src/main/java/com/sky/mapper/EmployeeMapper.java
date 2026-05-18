@@ -1,5 +1,6 @@
 package com.sky.mapper;
 
+import com.sky.annotation.AutoFill;
 import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import org.apache.ibatis.annotations.Insert;
@@ -15,10 +16,12 @@ public interface EmployeeMapper {
 
     /**
      * 根据用户名查询员工
-     * @param username
-     * @return
      */
-    @Select("select * from employee where username = #{username}")
+    @Select( """
+            SELECT id, name, username, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user
+            from employee
+            where username = #{username}
+            """)
     Employee getByUsername( @Param( "username" ) String username );
 
     /**
@@ -29,6 +32,7 @@ public interface EmployeeMapper {
             ( name, username, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user )
             values ( #{name}, #{username}, #{password}, #{phone}, #{sex}, #{idNumber}, #{status}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser} )
             """ )
+    @AutoFill
     void insert( Employee employee );
 
     /**
@@ -59,5 +63,6 @@ public interface EmployeeMapper {
     /**
      * 修改员工信息
      */
+    @AutoFill
     void update( Employee employee );
 }
