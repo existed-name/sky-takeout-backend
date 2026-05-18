@@ -41,16 +41,6 @@ public interface EmployeeMapper {
     List< Employee> selectByQuery( @Param( "queryParam" ) EmployeePageQueryDTO pageQueryDTO );
 
     /**
-     * 修改员工状态(启用/禁用账号)
-     */
-    @Update( """
-            UPDATE employee
-            SET status = #{status}
-            WHERE id = #{id}
-            """ )
-    void updateStatusById( @Param( "id" ) Long id, @Param( "status" ) Integer status );
-
-    /**
      * 根据 id 查询员工信息
      */
     @Select( """
@@ -61,7 +51,7 @@ public interface EmployeeMapper {
     Employee selectById( @Param( "id" ) Long id );
 
     /**
-     * 修改员工信息
+     * 修改员工信息，包括修改分类状态(启用/禁用)
      */
     @AutoFill
     void update( Employee employee );

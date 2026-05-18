@@ -9,6 +9,7 @@ import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.entity.Category;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
@@ -118,7 +119,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void updateStatus( Long id, Integer status ){
-        employeeMapper.updateStatusById( id, status );
+        Employee employee = new Employee();
+        employee.setId( id );
+        employee.setStatus( status );
+//        employee.setUpdateTime( LocalDateTime.now() );
+//        employee.setUpdateUser( BaseContext.getCurrentId() );
+        employeeMapper.update( employee );
     }
 
     @Override
