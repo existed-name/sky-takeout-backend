@@ -107,7 +107,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void updateStatus( Long id, Integer status ){
-        categoryMapper.updateStatusById( id, status );
+        Category category = new Category();
+        category.setId( id );
+        category.setStatus( status );
+//        category.setUpdateTime( LocalDateTime.now() );
+//        category.setUpdateUser( BaseContext.getCurrentId() );
+        categoryMapper.update( category );
     }
 
     @Override

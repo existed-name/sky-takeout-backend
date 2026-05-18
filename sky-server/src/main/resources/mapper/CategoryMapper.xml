@@ -15,13 +15,14 @@
         ORDER BY sort ASC, create_time DESC
     </select>
 
-<!--    修改分类信息-->
+<!--    修改分类信息,包括修改分类状态(启用/禁用) -->
     <update id="update">
         UPDATE category
         <set>
             <if test="type != null">type = #{type},</if>
             <if test="name != null and name != ''">name = #{name},</if>
             <if test="sort != null">sort = #{sort},</if>
+            <if test="status != null">status = #{status},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="updateUser != null">update_user = #{updateUser},</if>
         </set>

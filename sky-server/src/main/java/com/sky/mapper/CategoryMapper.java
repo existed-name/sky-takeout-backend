@@ -39,20 +39,10 @@ public interface CategoryMapper {
     void deleteById( @Param( "id" ) Long id );
 
     /**
-     * 修改分类信息
+     * 修改分类信息，包括修改分类状态(启用/禁用)
      */
     @AutoFill
     void update( Category category );
-
-    /**
-     * 修改分类状态(启用/禁用)
-     */
-    @Update( """
-            UPDATE category
-            SET status = #{status}
-            WHERE id = #{id}
-            """ )
-    void updateStatusById( @Param( "id" ) Long id, @Param( "status" ) Integer status );
 
     /**
      * 查询某种类型的所有分类
