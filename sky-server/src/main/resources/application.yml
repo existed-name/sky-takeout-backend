@@ -42,7 +42,7 @@ sky:
     access-key-id: ${sky.alioss.access-key-id}
     bucket-name: ${sky.alioss.bucket-name}
     endpoint: ${sky.alioss.endpoint}
-    access-key-secret: a ${sky.alioss.access-key-secret}
+    access-key-secret: ${sky.alioss.access-key-secret}
 
 pageHelper:
   # 自动修正非法页码（0、负数改为1，超过最大页改为最后一页）

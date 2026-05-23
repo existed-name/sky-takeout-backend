@@ -4,7 +4,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UploadService {
     /**
-     * 上传菜品图片
+     * <pre>
+     * 上传文件
+     *     - 菜品图片
+     *     - ...
+     * </pre>
      */
-    String uploadDishImage( MultipartFile file );
+    String upload( MultipartFile file );
 }

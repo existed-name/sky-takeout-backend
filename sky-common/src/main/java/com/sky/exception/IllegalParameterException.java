@@ -1,0 +1,15 @@
+package com.sky.exception;
+
+/**
+ * <pre>
+ * 参数不合法
+ *      - 用于类的私有辅助方法检验参数
+ *      - 跟 JDK 的 IllegalArgumentException 名字区分开
+ * </pre>
+ *
+ */
+public class IllegalParameterException extends BaseException {
+    public IllegalParameterException( String message ){
+        super( message );
+    }
+}
