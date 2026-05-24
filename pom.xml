@@ -31,10 +31,15 @@
         <jjwt>0.9.1</jjwt>
         <jaxb-api>2.3.1</jaxb-api>
         <poi>3.16</poi>
+
 <!--        指定编译版本为 17-->
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <java.version>17</java.version>
+            <!-- Spring Boot 官方属性：控制 JDK 版本、依赖版本等，必须保留 -->
+            <java.version>17</java.version>
+
+            <!-- 这俩可以删了，下面用 plugin 显式控制更稳 -->
+            <!-- <maven.compiler.source>17</maven.compiler.source> -->
+            <!-- <maven.compiler.target>17</maven.compiler.target> -->
+
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -129,4 +134,32 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+
+
+    <build>
+        <plugins>
+            <!-- Spring Boot 打包插件（保留你原来的） -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!--
+                显式声明编译插件，强制 source/target 为 17。
+                Spring Boot parent 已经锁定了插件版本，这里不需要写 <version>。
+                加上这个后，IDEA 的 Java Compiler 设置会稳定识别，不再乱跳。
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
