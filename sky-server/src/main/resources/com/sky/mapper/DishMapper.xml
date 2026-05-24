@@ -4,5 +4,14 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sky.mapper.DishMapper">
 
-
+<!--    条件分页查询 - PageHelper 执行分页操作-->
+    <select id="selectByQuery" resultType="com.sky.entity.Dish">
+        SELECT id, name, category_id, price, image, description, status, create_time, update_time, create_user, update_user
+        FROM dish
+        <where>
+            <if test="name != null and name.trim() != ''">and name = #{name}</if>
+            <if test="categoryId != null">and category_id = #{categoryId}</if>
+            <if test="status != null">and status = #{status}</if>
+        </where>
+    </select>
 </mapper>
