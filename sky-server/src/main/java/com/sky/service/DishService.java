@@ -6,5 +6,5 @@ public interface DishService {
     /**
      * 新增菜品
      */
-    void save( DishDTO dishDTO );
+    void saveWithFlavor( DishDTO dishDTO );
 }

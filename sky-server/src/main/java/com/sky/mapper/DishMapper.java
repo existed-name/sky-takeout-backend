@@ -5,6 +5,7 @@ import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -23,10 +24,11 @@ public interface DishMapper {
      * 新增菜品
      */
     @AutoFill( OperationType.INSERT )
+    @Options( useGeneratedKeys = true, keyProperty = "id" )
     @Insert( """
             INSERT INTO dish
             ( name, category_id, price, image, description, status, create_time, update_time, create_user, update_user )
-            values ( #{name}, #{categoryId}, #{price}, #{image}, #{description}, #{status}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser} )
+            values ( #{dish.name}, #{dish.categoryId}, #{dish.price}, #{dish.image}, #{dish.description}, #{dish.status}, #{dish.createTime}, #{dish.updateTime}, #{dish.createUser}, #{dish.updateUser} )
             """ )
-    void insert( Dish dish );
+    int insert( @Param( "dish" ) Dish dish );
 }

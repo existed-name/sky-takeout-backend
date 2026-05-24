@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * 菜品管理接口
  *
@@ -48,12 +46,12 @@ public class DIshController {
      */
     @ApiOperation( value = "新增菜品" )
     @PostMapping
-    public Result< Void > save(
+    public Result< Void > saveWithFlavor(
             @Validated( ValidationGroups.Create.class )
 //            @NotNull( message = "菜品信息不能为空" ) // @ResponseBody 自动检验 null
             @RequestBody DishDTO dishDTO ){
         log.info( "新增菜品: {}", dishDTO );
-        dishService.save( dishDTO );
+        dishService.saveWithFlavor( dishDTO );
         return Result.success();
     }
 
