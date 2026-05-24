@@ -66,5 +66,10 @@
             <artifactId>wechatpay-apache-httpclient</artifactId>
         </dependency>
 
+<!--        用于 PageUtil-->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
+        </dependency>
     </dependencies>
 </project>

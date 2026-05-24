@@ -14,6 +14,7 @@ import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
+import com.sky.utils.PageUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,18 +64,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public PageResult page( CategoryPageQueryDTO categoryPageQueryDTO ){
-        Integer page = categoryPageQueryDTO.getPage();
-        page = ( page == null || page < 1 ) ? 1 : page;
-
-        Integer pageSize = categoryPageQueryDTO.getPageSize();
-        pageSize = ( pageSize == null || pageSize < 1 ) ? 10 : pageSize;
-
-        PageHelper.startPage( page, pageSize );
-
+        PageUtil.validateParameterAndStartPage( categoryPageQueryDTO.getPage(), categoryPageQueryDTO.getPageSize() );
         List< Category > categoryList = categoryMapper.selectByQuery( categoryPageQueryDTO );
-        Page< Category > categoryPage = ( Page< Category > ) categoryList;
-
-        return new PageResult( categoryPage.getTotal(), categoryPage.getResult() );
+        return PageUtil.buildPageResult( categoryList );
     }
 
     @Override

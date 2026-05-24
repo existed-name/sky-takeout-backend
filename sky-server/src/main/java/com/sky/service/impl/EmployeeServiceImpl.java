@@ -17,6 +17,7 @@ import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
+import com.sky.utils.PageUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,18 +104,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public PageResult page( EmployeePageQueryDTO pageQueryDTO ){
-        Integer page = pageQueryDTO.getPage();
-        page = ( page == null || page < 1 ) ? 1 : page; // application.yml 配置检测 page 在[1,max]
-
-        Integer pageSize = pageQueryDTO.getPageSize();
-        pageSize = ( pageSize == null || pageSize < 1 ) ? 10 : pageSize;
-
-        PageHelper.startPage( page, pageSize );
-
+        PageUtil.validateParameterAndStartPage( pageQueryDTO.getPage(), pageQueryDTO.getPageSize() );
         List< Employee > employeeList = employeeMapper.selectByQuery( pageQueryDTO );
-        Page< Employee > employeePage = ( Page< Employee > ) employeeList;
-
-        return new PageResult( employeePage.getTotal(), employeePage.getResult() );
+        return PageUtil.buildPageResult( employeeList );
     }
 
     @Override
