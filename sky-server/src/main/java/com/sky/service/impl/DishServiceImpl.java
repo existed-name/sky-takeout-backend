@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -69,7 +70,7 @@ public class DishServiceImpl implements DishService {
         // 1 个 DishVO = 1 个 Dish + 对应的多个 DishFlavor
 
         // 思路 3，既然 VO = Dish + CategoryName + DishFlavor，而这 3 个又是关联表，于是在底层关联查询，直接拿到包装的 VO
-        List< DishVO > dishVOList = pageQueryThought3( dishPageQueryDTO );
+//        return PageUtil.buildPageResult( pageQueryThought3( dishPageQueryDTO ) );
 
         // 思路 1，拿到所有 Dish 的 id，Mapper 一次性把所有 Dish 的 DishFlavor 查出来，形成嵌套链表
          // return pageQueryThought1( dishPageQueryDTO );
@@ -77,20 +78,56 @@ public class DishServiceImpl implements DishService {
         // 思路 2，循环处理每个 Dish，1 个 Dish 查一次
         // return pageQueryThought2( dishPageQueryDTO );
 
-        return PageUtil.buildPageResult( dishVOList );
+        // 思路 1 改进
+        return pageQueryThought1Optimized( dishPageQueryDTO );
     }
-
-
-
 
 
 
     // ==================== 私有辅助方法 ====================
     /**
+     * 思路 1 改进: 分 2 次查询 Dish + CategoryName、DishFlavorList，然后拼装 DishVO
+     * <br>
+     * <strong>注意可以正常对第 1 次查询进行分页</strong>，因为第 1 次联表查询还是 1 对 1，而不是 1 对 N，total 统计一定真实
+     */
+    private PageResult pageQueryThought1Optimized( DishPageQueryDTO dishPageQueryDTO ){
+        // 注意 PageHelper 只对第 1 次查询生效, 查到后就拿取 total，第 2 次查询就包装自己的链表了
+        List< DishVO > dishVOList = dishMapper.selectDishVOByQueryWithoutFlavors( dishPageQueryDTO );
+        Page< DishVO > dishVOPage = ( Page< DishVO > ) dishVOList;
+        long dishVOPageTotal = dishVOPage.getTotal();
+
+        // DishVO = Dish + CategoryName + DishFlavorList，现在就需要找到每个 Dish 的 DishFlavorList
+        // 跟着 AI 学，然后自己删了重写、多敲几次
+        List< Long > dishIdList = dishVOList.stream()
+                .map( DishVO::getId ).collect( Collectors.toList() );
+        List< DishFlavor > allDishFlavors = dishFlavorMapper.selectByDishIdList( dishIdList );
+        // 查到所有 DishFlavor，然后根据 DishId 分组
+        Map< Long, List< DishFlavor > > dishIdToFlavorsMap = allDishFlavors
+                .stream().collect( Collectors.groupingBy( DishFlavor::getDishId ) );
+
+        // 再组装完整的 DishVO
+        for ( DishVO dishVO : dishVOList ){
+            dishVO.setFlavors(
+                    dishIdToFlavorsMap.getOrDefault(
+                            dishVO.getId(),
+                            dishVO.getFlavors() // 由于 VO 本身带了 ArrayList，就直接用已有的了
+                            // Collections.EMPTY_LIST 会有警告 Unchecked assignment: 'java.util.List' to 'java.util.List<com.sky.entity.DishFlavor>'
+                    )
+            );
+        }
+
+        return PageUtil.buildPageResult( dishVOPageTotal, dishVOList );
+    }
+
+
+
+    /**
      * <pre>
      *     条件分页查询，组装 DishVO
      *     思路 3，既然 VO = Dish + CategoryName + DishFlavor，而这 3 个又是关联表，于是在底层关联查询，直接拿到包装的 VO
      *     - 改进教程的只有 Dish + Category、没有 DishFlavor
+     *     - AI 评价缺点: total 计数错误( JOIN 会产生多条数据，远超原来的 Dish 数据量)、某道/多道菜的 DishFlavor 被截断
+     *     - 也就是说 3 表一起联合，虽然查到了所有数据，但是联合的时候扩大了数据量，导致 PageHelper 出错
      * </pre>
      */
     private List< DishVO > pageQueryThought3( DishPageQueryDTO dishPageQueryDTO ){

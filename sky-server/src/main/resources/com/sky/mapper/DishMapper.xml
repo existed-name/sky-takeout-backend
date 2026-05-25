@@ -4,14 +4,38 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sky.mapper.DishMapper">
 
+    <!--
+     * 条件分页查询 - PageHelper 执行分页操作
+     * <br>
+     * 联表查询 Dish + CategoryName，之后单独查 DishFlavorList，再业务层拼装 DishVOList
+     * <br>
+     * 排序规则: 菜品修改时间降序、菜品 id 降序
+    -->
+    <select id="selectDishVOByQueryWithoutFlavors" resultType="com.sky.vo.DishVO">
+
+        SELECT d.id, d.name, d.category_id, d.price, d.image, d.description, d.status, d.update_time
+            , c.name AS categoryName
+            <!-- 注意 category 的 name 字段取别名为 VO 对象的属性，让 Mybatis 能够识别、封装 -->
+        FROM dish AS d
+        LEFT JOIN category AS c
+        ON d.category_id = c.id
+        <where>
+            <if test="dto.name != null and dto.name.trim() != ''">AND name LIKE concat( '%', #{dto.name}, '%' )</if>
+            <if test="dto.categoryId != null">AND category_id = #{dto.categoryId}</if>
+            <if test="dto.status != null">AND status = #{dto.status}</if>
+        </where>
+        ORDER BY d.update_time DESC, d.id DESC
+
+    </select>
+
 <!--    条件分页查询 - PageHelper 执行分页操作-->
     <select id="selectByQuery" resultType="com.sky.entity.Dish">
         SELECT id, name, category_id, price, image, description, status, create_time, update_time, create_user, update_user
         FROM dish
         <where>
-            <if test="name != null and name.trim() != ''">and name LIKE concat( '%', #{name}, '%' )</if>
-            <if test="categoryId != null">and category_id = #{categoryId}</if>
-            <if test="status != null">and status = #{status}</if>
+            <if test="dto.name != null and dto.name.trim() != ''">AND name LIKE concat( '%', #{dto.name}, '%' )</if>
+            <if test="dto.categoryId != null">AND category_id = #{dto.categoryId}</if>
+            <if test="dto.status != null">AND status = #{dto.status}</if>
         </where>
         ORDER BY category_id ASC, create_time DESC, id DESC
     </select>
