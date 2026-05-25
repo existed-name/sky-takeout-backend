@@ -4,6 +4,7 @@ import com.sky.entity.DishFlavor;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -26,6 +27,23 @@ public interface DishFlavorMapper {
      * 添加某种菜品对应的口味
      */
     int insertBatch( @Param( "flavors" ) List< DishFlavor> flavors );
+
+    /**
+     * 根据多个菜品 id 查询对应的所有菜品口味
+     * <br>
+     * 注: 为了匹配原来的 Dish 链表顺序，不对 DishFlavor 进行排序
+     */
+    List< DishFlavor > selectByDishIdList( @Param( "dishIdList" ) List< Long> dishIdList );
+
+    /**
+     * 查询某种菜品对应的口味
+     */
+    @Select( """
+            SELECT id, dish_id, name, value
+            FROM dish_flavor
+            WHERE dish_id = #{dishId}
+            """ )
+    List< DishFlavor > selectByDishId( @Param( "dishId" ) Long dishId );
 
 
     // ==================== 私有辅助方法 ====================

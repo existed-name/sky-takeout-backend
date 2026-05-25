@@ -3,7 +3,9 @@ package com.sky.mapper;
 import com.sky.annotation.AutoFill;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
+import com.sky.entity.DishFlavor;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.DishVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -37,6 +39,19 @@ public interface DishMapper {
 
     /**
      * 条件分页查询 - PageHelper 执行分页操作
+     * <br>
+     * <b>仅用来查询 Dish</b>，并不能关联 CategoryName、DishFlavor
+     * <br>
+     * 排序规则: 菜品种类 id 升序、创建时间降序、菜品 id 降序
      */
     List< Dish> selectByQuery( DishPageQueryDTO dishPageQueryDTO );
+
+    /**
+     * <pre>
+     *     条件分页查询 - PageHelper 执行分页操作
+     *     联表查询，组装 DishVO = Dish + CategoryName + DishFlavorList
+     *     排序规则: 菜品创建时间降序、菜品 id 降序、菜品口味 id 升序
+     * </pre>
+     */
+    List< DishVO> selectDishVOByQuery( @Param( "dto" ) DishPageQueryDTO dishPageQueryDTO );
 }

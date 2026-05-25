@@ -13,4 +13,19 @@
             ( #{flavor.dishId}, #{flavor.name}, #{flavor.value} )
         </foreach>
     </insert>
+
+    <!--
+     根据多个菜品 id 查询对应的所有菜品口味
+     注: 为了匹配原来的 Dish 链表顺序，不对 DishFlavor 进行排序
+    -->
+    <select id="selectByDishIdList" resultType="com.sky.entity.DishFlavor">
+        SELECT id, dish_id, name, value
+        FROM dish_flavor
+        <where>
+            dish_id IN
+            <foreach collection="dishIdList" open="(" item="dishId" close=")" separator=",">
+                #{dishId}
+            </foreach>
+        </where>
+    </select>
 </mapper>

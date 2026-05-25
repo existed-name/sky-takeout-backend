@@ -9,9 +9,80 @@
         SELECT id, name, category_id, price, image, description, status, create_time, update_time, create_user, update_user
         FROM dish
         <where>
-            <if test="name != null and name.trim() != ''">and name = #{name}</if>
+            <if test="name != null and name.trim() != ''">and name LIKE concat( '%', #{name}, '%' )</if>
             <if test="categoryId != null">and category_id = #{categoryId}</if>
             <if test="status != null">and status = #{status}</if>
         </where>
+        ORDER BY category_id ASC, create_time DESC, id DESC
     </select>
+
+    <!--
+    resultMap 定义
+    用来把 selectDishVOByQuery 的查询结果映射为 DishVO
+    尤其是查询的 DishFlavors 必须手动映射成链表，否则查询结果的 DishFlavors 为空数组
+     -->
+    <resultMap id="dishVOMap" type="com.sky.vo.DishVO">
+        <!-- 菜品主表字段，用 temp 子查询的列 -->
+        <id column="dish_id" property="id"/>
+        <!-- column 字段 → property 对象属性 -->
+        <result column="dish_name" property="name"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="price" property="price"/>
+        <result column="image" property="image"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="category_name" property="categoryName"/>
+
+        <!-- 一对多：口味列表 -->
+        <collection property="flavors" ofType="com.sky.entity.DishFlavor">
+            <id column="flavor_id" property="id"/>
+            <result column="flavor_dish_id" property="dishId"/>
+            <result column="flavor_name" property="name"/>
+            <result column="flavor_value" property="value"/>
+        </collection>
+    </resultMap>
+
+    <!--
+    条件分页查询 - PageHelper 执行分页操作
+    联表查询，组装 DishVO = Dish + Category.Name + DishFlavor 链表
+    -->
+    <select id="selectDishVOByQuery" resultMap="dishVOMap">
+
+        <!-- 拿到 dish 信息 + categoryName 后，再联合 DishFlavor -->
+        SELECT temp.id AS dish_id,
+            temp.name AS dish_name,
+            temp.category_id AS category_id,
+            temp.price AS price,
+            temp.image AS image,
+            temp.description AS description,
+            temp.status AS status,
+            temp.update_time AS update_time,
+            temp.categoryName AS category_name,
+            f.id AS flavor_id,
+            f.dish_id AS flavor_dish_id,
+            f.name AS flavor_name,
+            f.value AS flavor_value
+        FROM (
+            <!-- 先查 dish + category, 拿到 dish 信息 + categoryName -->
+            SELECT d.id, d.name, d.category_id, d.price, d.image, d.description, d.status, d.update_time
+                    <!-- 审计字段只需要查询更新时间 -->
+                    , c.name AS categoryName
+            FROM dish AS d
+            LEFT JOIN category AS c
+            ON d.category_id = c.id
+            <where>
+                <!-- 第 1 次联合查询的时候，就筛选出满足 DTO 条件的数据 -->
+                <if test="dto.name != null and dto.name.trim() != ''">AND d.name LIKE concat( '%', #{dto.name}, '%' )</if>
+                <if test="dto.categoryId != null">AND d.category_id = #{dto.categoryId}</if>
+                <if test="dto.status != null">AND d.status = #{dto.status}</if>
+            </where>
+        ) AS temp
+        LEFT JOIN dish_flavor AS f
+        ON flavor_dish_id = dish_id
+        ORDER BY create_time DESC, dish_id DESC, flavor_id ASC
+
+    </select>
+
+
 </mapper>
