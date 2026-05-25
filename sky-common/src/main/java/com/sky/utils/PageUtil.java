@@ -3,6 +3,7 @@ package com.sky.utils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.PageConstant;
+import com.sky.exception.IllegalParameterException;
 import com.sky.result.PageResult;
 
 import java.util.List;
@@ -39,13 +40,34 @@ public class PageUtil {
     }
 
     /**
-     * 将条件分页查询的结果包装成 PageResult
+     * <pre>
+     *     将条件分页查询的结果包装成 PageResult
+     *      仅用于被 PageHelper 代理的查询结果，也就是启动 PageHelper 后的第 1 次查询
+     * </pre>
      *
      * @param queryResult 条件分页查询的结果(泛型)
      */
     public static PageResult buildPageResult( List< ? > queryResult ){
-        Page< ? > page = ( Page< ? > ) queryResult;
-        return new PageResult( page.getTotal(), page.getResult() );
+        if ( queryResult instanceof Page ){
+            Page< ? > page = ( Page< ? > ) queryResult;
+            return new PageResult( page.getTotal(), page.getResult() );
+        }
+        // 普通 List，无法获取 total，需要外部传入
+        throw new IllegalParameterException( "参数 queryResult 不是 Page 对象，请使用 buildPageResult( total, list ) 构建 PageResult" );
+    }
+
+    /**
+     * <pre>
+     *      - 将条件分页查询的结果包装成 PageResult
+     *      - 启动 PageHelper 后的第 1 次查询拿到链表，获取数据总数 total
+     *      - 再根据业务需要做成自己的 List 传进来(链表类型通用)
+     * </pre>
+     *
+     * @param queryResult 条件分页查询的结果或者查询后自己包装的链表(泛型)
+     * @param total 条件分页查询的数据总量, 无需包装、使用基本数据类型 long
+     */
+    public static PageResult buildPageResult( long total, List< ? > queryResult ){
+        return new PageResult( total, queryResult );
     }
 
 
