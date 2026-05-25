@@ -79,8 +79,8 @@
             </where>
         ) AS temp
         LEFT JOIN dish_flavor AS f
-        ON flavor_dish_id = dish_id
-        ORDER BY create_time DESC, dish_id DESC, flavor_id ASC
+        ON f.dish_id = temp.id
+        ORDER BY temp.update_time DESC, temp.id DESC, f.id ASC
 
     </select>
 

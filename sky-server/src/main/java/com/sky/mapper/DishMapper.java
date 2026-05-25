@@ -50,7 +50,7 @@ public interface DishMapper {
      * <pre>
      *     条件分页查询 - PageHelper 执行分页操作
      *     联表查询，组装 DishVO = Dish + CategoryName + DishFlavorList
-     *     排序规则: 菜品创建时间降序、菜品 id 降序、菜品口味 id 升序
+     *     排序规则: 菜品修改时间降序、菜品 id 降序、菜品口味 id 升序
      * </pre>
      */
     List< DishVO> selectDishVOByQuery( @Param( "dto" ) DishPageQueryDTO dishPageQueryDTO );
