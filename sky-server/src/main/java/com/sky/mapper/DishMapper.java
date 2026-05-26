@@ -20,7 +20,7 @@ public interface DishMapper {
      * 根据分类id查询菜品数量
      */
     @Select( """
-            select count(id) from dish where category_id = #{categoryId}
+            select count( * ) from dish where category_id = #{categoryId}
             """)
     long countByCategoryId( @Param( "categoryId" ) Long categoryId );
 
@@ -46,13 +46,13 @@ public interface DishMapper {
     List< DishVO > selectDishVOByQueryWithoutFlavors( @Param( "dto" ) DishPageQueryDTO dishPageQueryDTO );
 
     /**
-     * 批量查询正在起售的菜品数量
+     * 批量查询某种状态的菜品数量(比如正在起售的菜品数量)
      * <br>
      * 用于删除菜品前检查是否起售
      * <br>
      * 更推荐 java.lang.Long，因为 count(*) 在 MySQL 里默认返回 BIGINT
      */
-    long countEnableByIds( @Param( "ids" ) List< Long> ids );
+    long countByIdsAndStatus( @Param( "ids" ) List< Long> ids, @Param( "status" ) Integer status );
 
     /**
      * 批量删除菜品

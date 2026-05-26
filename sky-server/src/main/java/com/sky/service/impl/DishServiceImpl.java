@@ -7,7 +7,6 @@ import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
-import com.sky.entity.Setmeal;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
@@ -140,7 +139,7 @@ public class DishServiceImpl implements DishService {
         }
          */
         // 不需要 SQL 查对象、业务层再看链表数据，直接底层 count 计数即可
-        if ( dishMapper.countEnableByIds( ids ) > 0 ){
+        if ( dishMapper.countByIdsAndStatus( ids, StatusConstant.ENABLE ) > 0 ){
             throw new DeletionNotAllowedException( MessageConstant.DISH_ON_SALE );
         }
 

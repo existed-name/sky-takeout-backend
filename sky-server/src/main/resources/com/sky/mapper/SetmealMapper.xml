@@ -10,7 +10,7 @@
      * 用于删除菜品前检查是否有关联的套餐
      -->
     <select id="countByDishIds" resultType="java.lang.Long">
-        SELECT count( 0 )
+        SELECT count( * )
         FROM setmeal_dish
         <where>
             dish_id IN

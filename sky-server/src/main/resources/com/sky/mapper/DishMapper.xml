@@ -29,17 +29,17 @@
     </select>
 
     <!--
-         * 批量查询正在起售的菜品数量
+         * 批量查询某种状态的菜品数量(比如正在起售的菜品数量)
          * <br>
          * 用于删除菜品前检查是否起售
          * <br>
          * 更推荐 java.lang.Long，因为 count(*) 在 MySQL 里默认返回 BIGINT
     -->
-    <select id="countEnableByIds" resultType="java.lang.Long">
-        SELECT count( 0 )
+    <select id="countByIdsAndStatus" resultType="java.lang.Long">
+        SELECT count( * )
         FROM dish
         <where>
-            status = 1
+            status = #{status}
             AND id IN
             <foreach collection="ids" item="id" open="(" close=")" separator=",">
                 #{id}

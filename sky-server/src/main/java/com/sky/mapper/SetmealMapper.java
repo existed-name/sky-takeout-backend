@@ -13,7 +13,7 @@ public interface SetmealMapper {
      * 根据分类id查询套餐的数量
      */
     @Select( """
-            select count(id) from setmeal where category_id = #{categoryId}
+            select count( * ) from setmeal where category_id = #{categoryId}
             """)
     long countByCategoryId( @Param( "categoryId" ) Long categoryId );
 

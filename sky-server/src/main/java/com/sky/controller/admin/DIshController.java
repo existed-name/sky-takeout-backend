@@ -30,6 +30,7 @@ import java.util.List;
 @Api( tags = "菜品管理" )
 @RestController
 @RequestMapping( "/admin/dish" )
+@Validated
 public class DIshController {
     // ==================== 常量 ====================
 
@@ -79,7 +80,8 @@ public class DIshController {
      */
     @ApiOperation( value = "批量删除菜品" )
     @DeleteMapping
-    public Result< Void > delete( @RequestParam @NotEmpty List< Long > ids ){
+    public Result< Void > delete( @RequestParam @NotEmpty( message = "选中的菜品不能为空" )
+                                      List< Long > ids ){
         log.info( "批量删除菜品, ids = {}", ids );
         dishService.deleteByIds( ids );
         return Result.success();
