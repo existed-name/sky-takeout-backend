@@ -8,7 +8,6 @@ import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.exception.DeletionNotAllowedException;
-import com.sky.exception.IllegalParameterException;
 import com.sky.exception.NotFoundException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
@@ -21,7 +20,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -64,14 +62,8 @@ public class DishServiceImpl implements DishService {
         dishMapper.insert( dish );
 
         // 注意 Mapper 是否保存了所有内容: 实体类对象所有属性( DTO 属性 + 审计字段 ) + 关联内容 = 表数据
-        List< DishFlavor > flavors = dishDTO.getFlavors();
-        if ( flavors == null || flavors.isEmpty() ){
-            return;
-        }
-        // 最细节: 设置关联 id => 需要设置主键回填，让关联对象拿到数据库表 id
-        Long dishId = dish.getId();
-        flavors.forEach( flavor -> flavor.setDishId( dishId ) );
-        dishFlavorMapper.insertBatch( flavors );
+        // 新增菜品时 dishDTO.getId() 为 null，应该用主键回填后的 dish.getId()
+        saveDishFlavors( dish.getId(), dishDTO.getFlavors() );
     }
 
     @Override
@@ -134,19 +126,6 @@ public class DishServiceImpl implements DishService {
             return;
         }
 
-        /*
-        List< Dish > dishList = dishMapper.selectByIds( ids );
-        for ( Dish dish : dishList ){
-            if ( dish.getStatus().equals( StatusConstant.ENABLE ) ){
-                throw new DeletionNotAllowedException( MessageConstant.DISH_ON_SALE );
-            }
-        }
-
-        List< Setmeal > setmealList = setmealMapper.selectByDishIds( ids );
-        if ( ! ( setmealList == null || setmealList.isEmpty() ) ){
-            throw new DeletionNotAllowedException( MessageConstant.DISH_BE_RELATED_BY_SETMEAL );
-        }
-         */
         // 不需要 SQL 查对象、业务层再看链表数据，直接底层 count 计数即可
         if ( dishMapper.countByIdsAndStatus( ids, StatusConstant.ENABLE ) > 0 ){
             throw new DeletionNotAllowedException( MessageConstant.DISH_ON_SALE );
@@ -190,23 +169,26 @@ public class DishServiceImpl implements DishService {
 
         // 关联的子表 DishFlavor 删了重装更方便
         dishFlavorMapper.deleteBatchByDishIds( List.of( dishDTO.getId() ) );
-        // 并且空链表也不能丢进 SQL
-        List< DishFlavor > dishFlavors = dishDTO.getFlavors();
-        if ( dishFlavors == null || dishFlavors.isEmpty() ){
-            return;
-        }
-        // 还要注意关联表设置关联字段
-        Long dishId = dish.getId();
-        dishFlavors.forEach( dishFlavor -> dishFlavor.setDishId( dishId ) );
-        dishFlavorMapper.insertBatch( dishFlavors );
-        /*
-            怪不得这里编译器提醒 `Duplicated code fragment (8 lines long)`
-            新增菜品已经有了完全相同逻辑的插入 DishFlavor 代码
-            (虽然没有照抄，完全自己手搓的，不过应该不用提取公用方法??
-         */
+        saveDishFlavors( dishDTO.getId(), dishDTO.getFlavors() );
     }
 
 
+
     // ==================== 私有辅助方法 ====================
+    /**
+     * 提取 save, update 的公有逻辑 - 给某个菜品添加口味
+     *
+     * @param dishId 菜品 id, <strong>由调用方检验，确保传入合法参数</strong>
+     * @param dishFlavors 菜品口味链表, <strong>由于业务允许菜品口味为空，所以这里判空后不抛异常</strong>
+     */
+    private void saveDishFlavors( Long dishId, List< DishFlavor > dishFlavors ){
+        // 空链表不能丢进 SQL
+        if ( dishFlavors == null || dishFlavors.isEmpty() ){
+            return;
+        }
+        // 关联表设置关联字段
+        dishFlavors.forEach( dishFlavor -> dishFlavor.setDishId( dishId ) );
+        dishFlavorMapper.insertBatch( dishFlavors );
+    }
 
 }
