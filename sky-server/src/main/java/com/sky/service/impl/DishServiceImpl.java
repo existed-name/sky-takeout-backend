@@ -8,6 +8,7 @@ import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.IllegalParameterException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -150,6 +151,17 @@ public class DishServiceImpl implements DishService {
         // 先删子表，后删主表
         dishFlavorMapper.deleteBatchByDishIds( ids );
         dishMapper.deleteBatch( ids );
+    }
+
+    @Override
+    public DishVO getInfoById( Long id ){
+        DishVO dishVO = dishMapper.selectDishVOByIdWithoutFlavors( id );
+        // 注意 MyBatis 单条查询可能返回 null( 多条查询返回空链表 )
+        if ( dishVO == null ){
+            throw new IllegalParameterException( MessageConstant.DISH_NOT_FOUND );
+        }
+        dishVO.setFlavors( dishFlavorMapper.selectByDishId( id ) );
+        return dishVO;
     }
 
 

@@ -59,5 +59,14 @@ public interface DishMapper {
      */
     int deleteBatch( @Param( "ids" ) List< Long> ids );
 
+    /**
+     * 根据 id 查询菜品信息
+     * <br>
+     * DishVO = Dish + CategoryName + DishFlavorList, 这里只查 Dish、CategoryName，之后单独查 DishFlavor 在业务层组装
+     */
+    DishVO selectDishVOByIdWithoutFlavors( @Param( "id" ) Long id );
+
+
+
 
 }
