@@ -28,4 +28,18 @@
             </foreach>
         </where>
     </select>
+
+    <!--
+    删除多个菜品对应的口味
+    -->
+    <delete id="deleteBatchByDishIds">
+        DELETE FROM dish_flavor
+        <where>
+            dish_id IN
+            <foreach collection="dishIds" item="dishId" open="(" close=")" separator=",">
+                #{dishId}
+            </foreach>
+        </where>
+    </delete>
+
 </mapper>

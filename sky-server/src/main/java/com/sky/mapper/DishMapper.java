@@ -22,7 +22,7 @@ public interface DishMapper {
     @Select( """
             select count(id) from dish where category_id = #{categoryId}
             """)
-    Integer countByCategoryId( @Param( "categoryId" ) Long categoryId );
+    long countByCategoryId( @Param( "categoryId" ) Long categoryId );
 
     /**
      * 新增菜品
@@ -44,4 +44,20 @@ public interface DishMapper {
      * 排序规则: 菜品修改时间降序、菜品 id 降序
      */
     List< DishVO > selectDishVOByQueryWithoutFlavors( @Param( "dto" ) DishPageQueryDTO dishPageQueryDTO );
+
+    /**
+     * 批量查询正在起售的菜品数量
+     * <br>
+     * 用于删除菜品前检查是否起售
+     * <br>
+     * 更推荐 java.lang.Long，因为 count(*) 在 MySQL 里默认返回 BIGINT
+     */
+    long countEnableByIds( @Param( "ids" ) List< Long> ids );
+
+    /**
+     * 批量删除菜品
+     */
+    int deleteBatch( @Param( "ids" ) List< Long> ids );
+
+
 }

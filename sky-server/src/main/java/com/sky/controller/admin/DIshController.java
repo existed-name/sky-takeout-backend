@@ -10,11 +10,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 /**
  * 菜品管理接口
@@ -67,6 +72,17 @@ public class DIshController {
         log.info( "条件分页查询菜品, 查询参数: {}", dishPageQueryDTO );
         PageResult dishList = dishService.pageQuery( dishPageQueryDTO );
         return Result.success( dishList );
+    }
+
+    /**
+     * 批量删除菜品
+     */
+    @ApiOperation( value = "批量删除菜品" )
+    @DeleteMapping
+    public Result< Void > delete( @RequestParam @NotEmpty List< Long > ids ){
+        log.info( "批量删除菜品, ids = {}", ids );
+        dishService.deleteByIds( ids );
+        return Result.success();
     }
 
 
