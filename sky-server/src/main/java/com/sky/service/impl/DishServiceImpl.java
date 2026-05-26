@@ -52,6 +52,12 @@ public class DishServiceImpl implements DishService {
     public void saveWithFlavor( DishDTO dishDTO ){
         Dish dish = new Dish();
         BeanUtils.copyProperties( dishDTO, dish );
+
+        // 注意部分字段如果没有设置值，需要手动设置默认值，比如 status 需要显示启用
+        if ( dish.getStatus() == null ){
+            dish.setStatus( StatusConstant.ENABLE );
+        }
+
         // 审计字段交给 AOP 处理
         dishMapper.insert( dish );
 
