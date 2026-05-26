@@ -75,5 +75,22 @@
         WHERE d.id = #{id}
     </select>
 
+    <!--
+    修改菜品信息
+    -->
+    <update id="update">
+        UPDATE dish
+        <set>
+            <if test="dish.name != null and dish.name.trim() != ''">name = #{dish.name}, </if>
+            <if test="dish.categoryId != null">category_id = #{dish.categoryId}, </if>
+            <if test="dish.price != null">price = #{dish.price}, </if>
+            <if test="dish.image != null and dish.image.trim() != ''">image = #{dish.image}, </if>
+            <if test="dish.description != null and dish.description.trim() !=''">description = #{dish.description}, </if>
+            <if test="dish.status != null">status = #{dish.status}, </if>
+            <if test="dish.updateTime != null">update_time = #{dish.updateTime}, </if>
+            <if test="dish.updateUser != null">update_user = #{dish.updateUser}, </if>
+        </set>
+        WHERE id = #{dish.id}
+    </update>
 
 </mapper>

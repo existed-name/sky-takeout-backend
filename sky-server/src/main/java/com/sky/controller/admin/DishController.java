@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -60,7 +61,7 @@ public class DishController {
     @ApiOperation( value = "新增菜品" )
     @PostMapping
     public Result< Void > saveWithFlavor(
-            @Validated( ValidationGroups.Create.class )
+            @Validated( value = ValidationGroups.Create.class )
             @RequestBody DishDTO dishDTO ){
         log.info( "新增菜品: {}", dishDTO );
         dishService.saveWithFlavor( dishDTO );
@@ -102,6 +103,18 @@ public class DishController {
         log.info( "查询 id = {} 的菜品", id );
         DishVO dishVO = dishService.getInfoById( id );
         return Result.success( dishVO );
+    }
+
+    /**
+     * 修改菜品信息
+     */
+    @ApiOperation( value = "修改菜品信息" )
+    @PutMapping
+    public Result< Void > update( @RequestBody
+          @Validated( value = ValidationGroups.Update.class ) DishDTO dishDTO ){
+        log.info( "修改菜品信息: {}", dishDTO );
+        dishService.update( dishDTO );
+        return Result.success();
     }
 
 

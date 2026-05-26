@@ -9,6 +9,7 @@ import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.IllegalParameterException;
+import com.sky.exception.NotFoundException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -20,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -164,10 +166,44 @@ public class DishServiceImpl implements DishService {
         DishVO dishVO = dishMapper.selectDishVOByIdWithoutFlavors( id );
         // 注意 MyBatis 单条查询可能返回 null( 多条查询返回空链表 )
         if ( dishVO == null ){
-            throw new IllegalParameterException( MessageConstant.DISH_NOT_FOUND );
+            throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
         }
         dishVO.setFlavors( dishFlavorMapper.selectByDishId( id ) );
         return dishVO;
+    }
+
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void update( DishDTO dishDTO ){
+        /*
+            全面更新 Dish 信息 = Dish( 包含 CategoryId ) + DishFlavors
+         */
+        // Dish 主体直接改, 只需要注意空字段不写入数据库
+        Dish dish = new Dish();
+        BeanUtils.copyProperties( dishDTO, dish );
+        // 注意审计字段交给 AOP 填充
+        int affectedRow = dishMapper.update( dish );
+        if ( affectedRow <= 0 ){
+            // 修改行数 = 0 => DTO 的 DishId 不正确，
+            throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
+        }
+
+        // 关联的子表 DishFlavor 删了重装更方便
+        dishFlavorMapper.deleteBatchByDishIds( List.of( dishDTO.getId() ) );
+        // 并且空链表也不能丢进 SQL
+        List< DishFlavor > dishFlavors = dishDTO.getFlavors();
+        if ( dishFlavors == null || dishFlavors.isEmpty() ){
+            return;
+        }
+        // 还要注意关联表设置关联字段
+        Long dishId = dish.getId();
+        dishFlavors.forEach( dishFlavor -> dishFlavor.setDishId( dishId ) );
+        dishFlavorMapper.insertBatch( dishFlavors );
+        /*
+            怪不得这里编译器提醒 `Duplicated code fragment (8 lines long)`
+            新增菜品已经有了完全相同逻辑的插入 DishFlavor 代码
+            (虽然没有照抄，完全自己手搓的，不过应该不用提取公用方法??
+         */
     }
 
 

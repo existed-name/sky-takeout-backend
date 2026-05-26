@@ -66,7 +66,9 @@ public interface DishMapper {
      */
     DishVO selectDishVOByIdWithoutFlavors( @Param( "id" ) Long id );
 
-
-
-
+    /**
+     * 修改菜品信息
+     */
+    @AutoFill( OperationType.UPDATE )
+    int update( @Param( "dish" ) Dish dish );
 }
