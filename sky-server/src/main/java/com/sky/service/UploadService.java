@@ -1,14 +1,13 @@
 package com.sky.service;
 
+import com.sky.constant.FileConstant;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UploadService {
     /**
-     * <pre>
-     * 上传文件
-     *     - 菜品图片
-     *     - ...
-     * </pre>
+     * 上传各种文件
+     * <br>
+     * <b>调用方指定业务目录前缀</b>( {@link FileConstant.BusinessDir}
      */
-    String upload( MultipartFile file );
+    String upload( MultipartFile file, String businessDir );
 }

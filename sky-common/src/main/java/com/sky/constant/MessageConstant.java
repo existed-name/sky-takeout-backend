@@ -30,6 +30,8 @@ public class MessageConstant {
     public static final String EMPTY_FILE_NAME = "文件名不能为空";
     public static final String INVALID_FILE_EXTENSION = "文件后缀不合法";
     public static final String SIZE_LIMITED = "文件大小超出限制";
+    public static final String EMPTY_DIR = "文件业务目录不能为空";
+    public static final String INVALID_DIR = "文件业务目录不合法";
 
     public static final String DISH_NOT_FOUND = "菜品不存在";
 }

@@ -41,14 +41,15 @@ public class UploadServiceImpl implements UploadService {
 
     // ==================== 公有方法 ====================
     @Override
-    public String upload( MultipartFile file ){
+    public String upload( MultipartFile file, String businessDir ){
         validateFile( file );
+        validateDir( businessDir );
 
         // 提取并校验文件后缀名
         String extension = extractAndValidateExtension( file );
 
         // 生成存入 OSS 的唯一文件名/文件路径
-        String objectName = generateObjectName( FileConstant.Dir.IMAGE, extension );
+        String objectName = generateObjectName( businessDir, extension );
 
         try {
             return aliOssUtil.upload( file.getBytes(), objectName );
@@ -57,7 +58,6 @@ public class UploadServiceImpl implements UploadService {
             throw new FileUploadFailedException( MessageConstant.FILE_UPLOAD_FAIL );
         }
     }
-
 
 
     // ==================== 私有辅助方法 ====================
@@ -75,6 +75,18 @@ public class UploadServiceImpl implements UploadService {
         }
     }
 
+
+    /**
+     * 检验上传文件时，用来分类的业务目录前缀
+     */
+    private void validateDir( String dir ){
+        if ( dir == null || dir.isBlank() ){
+            throw new IllegalParameterException( MessageConstant.EMPTY_DIR );
+        }
+        if ( ! FileConstant.BusinessDir.VALID_DIRS.contains( dir ) ){
+            throw new IllegalParameterException( MessageConstant.INVALID_DIR );
+        }
+    }
 
     /**
      * 提取并校验文件后缀名

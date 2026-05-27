@@ -1,6 +1,5 @@
 package com.sky.constant;
 
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -15,13 +14,26 @@ public class FileConstant {
 
     /**
      * 上传文件时的业务目录前缀
+     * <br>
+     * TODO: 以后业务扩大，可以考虑重构为枚举类
      */
-    public static final class Dir {
+    public static final class BusinessDir {
         /** 上传文件为图片 */
         public static final String IMAGE = "images";
+        /** 上传菜品图片 */
+        public static final String DISH = "dish";
+        /** 上传套餐图片 */
+        public static final String SETMEAL = "setmeal";
+        /** 上传用户头像 */
+        public static final String USER_AVATAR = "user-avatar";
+        /** 有效文件业务目录 <br> <b>新增 dir 时记得给链表补充元素</b> */
+        public static final List< String > VALID_DIRS = List.of(
+                IMAGE, DISH, SETMEAL, USER_AVATAR
+        );
 
-        private Dir(){}
+        private BusinessDir(){}
     }
+
 
     /** 允许上传的图片类型 */
     public static final List< String > ALLOWED_IMAGE_TYPE = List.of(

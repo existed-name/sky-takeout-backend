@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.sky.constant.FileConstant;
 import com.sky.result.Result;
 import com.sky.service.UploadService;
 import io.swagger.annotations.Api;
@@ -12,22 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 /**
- * <pre>
- * 通用接口
- *
- * - 文件上传
- * - ...
- * </pre>
+ * 文件管理接口 - 比如上传图片
  */
 @Slf4j
 @Validated
 @RestController
-@RequestMapping( "/admin/common" )
-@Api( tags = "通用接口" )
-public class CommonController {
+@RequestMapping( "/admin/files" )
+@Api( tags = "文件管理接口" )
+public class FileController {
     // ==================== 常量 ====================
 
 
@@ -40,27 +35,35 @@ public class CommonController {
 
     // ==================== 构造器 ====================
 
-    public CommonController( UploadService uploadService ){
+    public FileController( UploadService uploadService ){
         this.uploadService = uploadService;
     }
 
 
     // ==================== 公有方法 ====================
-
     /**
-     * <pre>
-     * 上传文件
-     *     - 菜品图片
-     *     - ...
-     * </pre>
+     * 上传菜品图片
      */
-    @PostMapping( "/upload" )
-    @ApiOperation( value = "上传文件" )
-    public Result< String > upload( @NotNull( message = "上传的图片不能为空" ) MultipartFile file ){
-        log.info( "上传文件: {}", file );
-        String url = uploadService.upload( file );
+    @PostMapping( "/upload/dish" )
+    @ApiOperation( value = "上传菜品图片" )
+    public Result< String > uploadDishImage( @NotNull( message = "上传的图片不能为空" ) MultipartFile file ){
+        log.info( "上传菜品图片: {}", file );
+        String url = uploadService.upload( file, FileConstant.BusinessDir.DISH );
         return Result.success( url );
     }
+
+
+    /**
+     * 上传套餐图片
+     */
+    @PostMapping( "/upload/setmeal" )
+    @ApiOperation( value = "上传套餐图片" )
+    public Result< String > uploadSetmealImage( @NotNull( message = "上传的图片不能为空" ) MultipartFile file ){
+        log.info( "上传套餐图片: {}", file );
+        String url = uploadService.upload( file, FileConstant.BusinessDir.SETMEAL );
+        return Result.success( url );
+    }
+
 
 
     // ==================== 私有辅助方法 ====================
