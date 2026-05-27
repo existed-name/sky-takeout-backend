@@ -19,4 +19,54 @@
             </foreach>
         </where>
     </select>
+
+    <!--
+    查询某种菜品对应的套餐
+    -->
+    <select id="selectByDishId" resultType="com.sky.entity.Setmeal">
+        SELECT id, category_id, name, price, status, description, image, create_time, update_time, create_user, update_user
+        FROM setmeal
+        WHERE id IN
+        (
+            SELECT setmeal_id
+            FROM setmeal_dish
+            WHERE dish_id = #{dishId}
+        )
+    </select>
+
+    <!--
+     * 修改多个套餐的状态
+     * <br>
+     * 本来想 SET 应该不能像 VALUES 那样设置多条不同值，然后 AI 提醒还可以用 CASE-WHEN，这样就可以每个对象单独设置自己的 status 了
+     -->
+    <update id="updateBatchStatusByIds">
+        <!-- 没有几年功力真的写得出来 AI 这种代码嘛😂 -->
+        UPDATE setmeal
+        SET status = CASE id
+            <foreach collection="setmealList" item="setmeal">
+                WHEN #{setmeal.id} THEN #{setmeal.status}
+            </foreach>
+        END,
+        <!-- AI 补充: 可以直接 NOW()，不依赖对象、减少 Java 侧计算 -->
+        update_time = #{setmealList[0].updateTime},
+        update_user = #{setmealList[0].updateUser}
+        WHERE id IN
+        <foreach collection="setmealList" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+
+        <!-- 效果示例, 也就是说，复杂 SQL 可以用示例倒推代码
+        UPDATE setmeal
+        SET status = CASE id
+            WHEN 1 THEN 0      - id=1 的，status 改成 0
+            WHEN 2 THEN 1      - id=2 的，status 改成 1
+            WHEN 3 THEN 0      - id=3 的，status 改成 0
+        END,                   - CASE 结束
+        update_time = 'xx',    ← setmealList[0].updateTime
+        update_user = 1
+        WHERE id IN (1, 2, 3)  - 只更新这 3 行
+        -->
+    </update>
+
+
 </mapper>

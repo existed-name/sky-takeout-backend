@@ -93,4 +93,16 @@
         WHERE id = #{dish.id}
     </update>
 
+    <!--
+    切换菜品状态(停售/起售)
+    -->
+    <update id="updateStatusById">
+        UPDATE dish
+        <!-- 由于修改字段确定，这里就不 if 判空 -->
+        SET status = #{dish.status},
+            update_time = #{dish.updateTime},
+            update_user = #{dish.updateUser}
+        WHERE id = #{dish.id}
+    </update>
+
 </mapper>

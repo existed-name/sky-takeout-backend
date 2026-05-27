@@ -3,10 +3,12 @@ package com.sky.service.impl;
 import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
+import com.sky.context.BaseContext;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.entity.Setmeal;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.NotFoundException;
 import com.sky.mapper.DishFlavorMapper;
@@ -20,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -172,6 +175,48 @@ public class DishServiceImpl implements DishService {
         saveDishFlavors( dishDTO.getId(), dishDTO.getFlavors() );
     }
 
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void updateStatusById( Long id, Integer status ){
+        StatusConstant.validateStatus( status );
+        Dish dish = new Dish();
+        dish.setId( id );
+        dish.setStatus( status );
+        // AOP 填写审计字段
+        int affectedRow = dishMapper.updateStatusById( dish );
+        if ( affectedRow <= 0 ){
+            throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
+        }
+
+        // 还要注意业务约束: 如果是禁用菜品，那也要禁用包含此菜品的套餐
+        if ( StatusConstant.isDisable( status ) ){
+            /*
+            // 思路 1: 直接传 setmeal 对象，修改 stauts
+            // 但是发现它没有 dishId 属性
+            // 而且 1 个 dishId 对应多个 setmeal
+            Setmeal setmeal = new Setmeal();
+            setmeal.sestDishId( id );
+            setmeal.setStatus( StatusConstant.DISABLE );
+            setmealMapper.updateBatchStatusByDishId( setmeal );
+             */
+
+            // 思路 2: 先拿到 dishId 对应的所有 setmeal, 修改后塞回数据库
+            // 但是这样就用不了 AOP 了(针对单个对象), 需要手动设置审计字段
+            // 怪不得教程循环调用 Mapper 的单个对象 update
+            List< Setmeal > setmealList = setmealMapper.selectByDishId( id );
+            if ( setmealList == null || setmealList.isEmpty() ){
+                // 经 AI 提醒还要防止空数据入库
+                return;
+            }
+            setmealList.forEach( setmeal -> {
+                setmeal.setStatus( StatusConstant.DISABLE );
+                setmeal.setUpdateTime( LocalDateTime.now() );
+                setmeal.setUpdateUser( BaseContext.getCurrentId() );
+                // 不过我觉得也可以修改 AOP，让它支持链表批量修改审计字段
+            } );
+            setmealMapper.updateBatchStatusByIds( setmealList );
+        }
+    }
 
 
     // ==================== 私有辅助方法 ====================

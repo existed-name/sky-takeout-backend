@@ -117,6 +117,20 @@ public class DishController {
         return Result.success();
     }
 
+    /**
+     * 切换菜品状态(停售/起售)
+     */
+    @ApiOperation( value = "切换菜品状态(停售/起售)" )
+    @PutMapping( "/status/{status}" )
+    public Result< Void > updateStatus(
+            @RequestParam @NotNull( message = "菜品 id 不能为空" )
+            @Positive( message = "菜品 id 必须是正整数" ) Long id,
+            @PathVariable @NotNull( message = "菜品状态不能为空" ) Integer status ){
+        log.info( "修改 id = {} 的菜品状态为 {}", id, status );
+        dishService.updateStatusById( id, status );
+        return Result.success();
+    }
+
 
 
     // ==================== 私有辅助方法 ====================

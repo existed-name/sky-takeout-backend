@@ -71,4 +71,10 @@ public interface DishMapper {
      */
     @AutoFill( OperationType.UPDATE )
     int update( @Param( "dish" ) Dish dish );
+
+    /**
+     * 切换菜品状态(停售/起售)
+     */
+    @AutoFill( OperationType.UPDATE )
+    int updateStatusById( @Param( "dish" ) Dish dish );
 }

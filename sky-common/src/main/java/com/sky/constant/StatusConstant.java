@@ -29,5 +29,13 @@ public class StatusConstant {
         }
     }
 
+    /**
+     * 判断状态是否为禁用
+     */
+    public static boolean isDisable( Integer status ){
+        return DISABLE.equals( status );
+    }
+
     private StatusConstant(){}
+
 }
