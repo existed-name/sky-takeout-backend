@@ -34,4 +34,7 @@ public class MessageConstant {
     public static final String INVALID_DIR = "文件业务目录不合法";
 
     public static final String DISH_NOT_FOUND = "菜品不存在";
+
+    public static final String INVALID_STATUS_PARAM = "状态参数不合法";
+
 }

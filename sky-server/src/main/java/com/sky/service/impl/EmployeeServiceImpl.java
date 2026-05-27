@@ -13,6 +13,7 @@ import com.sky.entity.Category;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
+import com.sky.exception.InvalidStatusParamException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.result.PageResult;
@@ -111,11 +112,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void updateStatus( Long id, Integer status ){
+        StatusConstant.validateStatus( status );
         Employee employee = new Employee();
         employee.setId( id );
         employee.setStatus( status );
-//        employee.setUpdateTime( LocalDateTime.now() );
-//        employee.setUpdateUser( BaseContext.getCurrentId() );
+        // AOP 补充审计字段
         employeeMapper.update( employee );
     }
 

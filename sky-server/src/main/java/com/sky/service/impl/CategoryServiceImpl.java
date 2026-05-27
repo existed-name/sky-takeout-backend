@@ -9,6 +9,7 @@ import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.InvalidStatusParamException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -99,11 +100,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void updateStatus( Long id, Integer status ){
+        StatusConstant.validateStatus( status );
         Category category = new Category();
         category.setId( id );
         category.setStatus( status );
-//        category.setUpdateTime( LocalDateTime.now() );
-//        category.setUpdateUser( BaseContext.getCurrentId() );
+        // AOP 填写审计字段
         categoryMapper.update( category );
     }
 
