@@ -4,6 +4,7 @@ import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishVO;
+import org.apache.ibatis.annotations.Select;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -39,4 +40,11 @@ public interface DishService {
      * 切换菜品状态(停售/起售)
      */
     void updateStatusById( Long id, Integer status );
+
+    /**
+     * 根据分类 id 查询菜品
+     * <br>
+     * <b>并没有检验参数</b>: 由于分类 id 非必须，这里参数可能为空，就会查到所有菜品；参数无效则查询为空
+     */
+    List< DishVO> listByCategoryId( Long categoryId );
 }

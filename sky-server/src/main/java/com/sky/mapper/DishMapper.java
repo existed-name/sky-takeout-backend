@@ -77,4 +77,11 @@ public interface DishMapper {
      */
     @AutoFill( OperationType.UPDATE )
     int updateStatusById( @Param( "dish" ) Dish dish );
+
+    /**
+     * 根据分类 id 查询菜品
+     *
+     * @return 参数为空，查到所有菜品；参数无效则查询为空
+     */
+    List< DishVO> selectDishVOByCategoryId( @Param( "categoryId" ) Long categoryId );
 }

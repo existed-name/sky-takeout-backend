@@ -218,6 +218,20 @@ public class DishServiceImpl implements DishService {
         }
     }
 
+    @Override
+    public List< DishVO > listByCategoryId( Long categoryId ){
+        List< DishVO > dishVOList = dishMapper.selectDishVOByCategoryId( categoryId );
+        // 原型只需要展示 name, price, status, 接口文档也只涉及 Dish 属性 + CategoryName，无 DishFlavor
+        // TODO: 所以这里也可以不设置 DishFlavor
+        List< Long > dishIdList = dishVOList.stream().map( DishVO::getId ).toList();
+        List< DishFlavor > dishFlavors = dishFlavorMapper.selectByDishIdList( dishIdList );
+        Map< Long, List< DishFlavor > > dishIdToFlavorsMap = dishFlavors.stream().collect( Collectors.groupingBy( DishFlavor::getDishId ) );
+        dishVOList.forEach( dishVO -> dishVO.setFlavors(
+                dishIdToFlavorsMap.getOrDefault( dishVO.getId(), dishVO.getFlavors() )
+        ) );
+        return dishVOList;
+    }
+
 
     // ==================== 私有辅助方法 ====================
     /**

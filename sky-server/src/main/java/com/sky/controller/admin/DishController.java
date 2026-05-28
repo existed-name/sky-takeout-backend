@@ -131,6 +131,19 @@ public class DishController {
         return Result.success();
     }
 
+    /**
+     * 根据分类 id 查询菜品
+     */
+    @ApiOperation( value = "根据分类 id 查询菜品" )
+    @GetMapping( "/list" )
+    public Result< List< DishVO > > list(  // 然后教程返回的 List< Dish >
+            @RequestParam( required = false ) // 教程说必须，但是我想增加复用性，就设置的非必须
+            Long categoryId ){
+        log.info( "查询分类 id = {} 的菜品", categoryId );
+        List< DishVO > dishVOList = dishService.listByCategoryId( categoryId );
+        return Result.success( dishVOList );
+    }
+
 
 
     // ==================== 私有辅助方法 ====================
