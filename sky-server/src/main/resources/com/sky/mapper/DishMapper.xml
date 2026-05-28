@@ -20,9 +20,10 @@
         LEFT JOIN category AS c
         ON d.category_id = c.id
         <where>
-            <if test="dto.name != null and dto.name.trim() != ''">AND name LIKE concat( '%', #{dto.name}, '%' )</if>
-            <if test="dto.categoryId != null">AND category_id = #{dto.categoryId}</if>
-            <if test="dto.status != null">AND status = #{dto.status}</if>
+            <!-- 注意字段全部带上表别名来限定，防止数据库认为字段模糊 -->
+            <if test="dto.name != null and dto.name.trim() != ''">AND d.name LIKE concat( '%', #{dto.name}, '%' )</if>
+            <if test="dto.categoryId != null">AND d.category_id = #{dto.categoryId}</if>
+            <if test="dto.status != null">AND d.status = #{dto.status}</if>
         </where>
         ORDER BY d.update_time DESC, d.id DESC
 
