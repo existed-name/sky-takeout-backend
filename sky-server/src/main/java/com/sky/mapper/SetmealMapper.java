@@ -5,6 +5,7 @@ import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -41,5 +42,21 @@ public interface SetmealMapper {
      * 注意: <b>由于 AOP 暂不支持批量设置对象的审计字段，所有交给调用方设置审计字段</b>
      */
 //    @AutoFill( OperationType.UPDATE )
+    // TODO: 优化为 AOP 批量填写审计字段而不是只针对单个对象
     void updateBatchStatusByIds( @Param( "setmealList" ) List< Setmeal > setmealList );
+
+    /**
+     * 新增套餐
+     * <br>
+     * 注意: 由{@link com.sky.mapper.SetmealDishMapper}存储该套餐和相关菜品的关联关系
+     */
+    // 注意不要自己插入 id，交给数据库生成
+    @Insert( """
+            INSERT INTO setmeal
+            ( category_id, name, price, status, description, image, create_time, update_time, create_user, update_user )
+            VALUES ( #{setmeal.categoryId}, #{setmeal.name}, #{setmeal.price}, #{setmeal.status}, #{setmeal.description}, #{setmeal.image}, #{setmeal.createTime}, #{setmeal.updateTime}, #{setmeal.createUser}, #{setmeal.updateUser} )
+            """ )
+    @AutoFill( OperationType.INSERT )
+    @Options( useGeneratedKeys = true, keyProperty = "setmeal.id" )
+    void insert( @Param( "setmeal" ) Setmeal setmeal );
 }
