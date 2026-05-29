@@ -74,6 +74,25 @@ public class PageUtil {
         return new PageResult( total, queryResult );
     }
 
+    /**
+     * 使用场景: <b>条件分页查询结果为 null</b>, 此时不想抛异常，就包装成空的 PageResult 返回
+     * <pre>
+     *     <code>
+     *   {
+     *             "code": 1,
+     *             "msg": null,
+     *             "data": {
+     *                 "total": 0,
+     *                 "records": null
+     *             }
+     *         }
+     *     </code>
+     * </pre>
+     */
+    public static PageResult buildEmptyPageResult(){
+        return new PageResult();
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

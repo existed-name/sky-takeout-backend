@@ -66,19 +66,22 @@ public class SetmealServiceImpl implements SetmealService {
         PageUtil.validateParameterAndStartPage( setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize() );
         // SetmealVO = Setmeal + CategoryName + 关联关系 SetmealDish
         // 先联表查 Setmeal + CategoryName
-        List< SetmealVO > setmealVOList = setmealMapper.selectSetmealVOByQueryWithoutSetmealDishRelation( setmealPageQueryDTO );
+        List< SetmealVO > setmealVOList = // null; 测试
+                setmealMapper.selectSetmealVOByQueryWithoutSetmealDishRelation( setmealPageQueryDTO );
+
+        // 考虑判空
+        if ( setmealVOList == null ){
+            return PageUtil.buildEmptyPageResult();
+        }
+
         // 注意第 1 次查询后记录总数据数
+        // null 可以强转为任意类型还是 null, 再调 getTotal 就可能空指针
         Page< SetmealVO > setmealVOPage = ( Page< SetmealVO > ) setmealVOList;
         long setmealVOPageTotal = setmealVOPage.getTotal();
 
         // 再查关联对象 SetmealDish
         // 查询之前先检验参数
-        /*
-        if ( setmealVOList == null || setmealVOList.isEmpty() ){
-            return setmealVOList;
-        }
-         */
-        if ( setmealVOPage == null || setmealVOPage.isEmpty() ){
+        if ( setmealVOPage.isEmpty() ){
             return PageUtil.buildPageResult( setmealVOPageTotal, setmealVOPage );
         }
 
