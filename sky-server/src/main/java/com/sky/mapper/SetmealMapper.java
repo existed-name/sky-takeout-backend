@@ -1,8 +1,10 @@
 package com.sky.mapper;
 
 import com.sky.annotation.AutoFill;
+import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -59,4 +61,11 @@ public interface SetmealMapper {
     @AutoFill( OperationType.INSERT )
     @Options( useGeneratedKeys = true, keyProperty = "setmeal.id" )
     void insert( @Param( "setmeal" ) Setmeal setmeal );
+
+    /**
+     * 条件分页查询 - PageHelper 负责分页
+     *
+     * @return {@link com.sky.vo.SetmealVO} 链表，包含 {@link com.sky.entity.Setmeal} + CategoryName, <B>不包含关联对象{@link com.sky.entity.SetmealDish}(由调用方拼装)</B>
+     */
+    List< SetmealVO > selectSetmealVOByQueryWithoutSetmealDishRelation( @Param( "dto" ) SetmealPageQueryDTO setmealPageQueryDTO );
 }

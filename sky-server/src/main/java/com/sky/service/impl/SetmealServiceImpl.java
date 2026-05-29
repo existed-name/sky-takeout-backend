@@ -1,17 +1,23 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
 import com.sky.dto.SetmealDTO;
+import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
+import com.sky.result.PageResult;
 import com.sky.service.SetmealService;
+import com.sky.utils.PageUtil;
+import com.sky.vo.SetmealVO;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class SetmealServiceImpl implements SetmealService {
@@ -52,6 +58,43 @@ public class SetmealServiceImpl implements SetmealService {
         }
         setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( setmeal.getId() ) );
         setmealDishMapper.insertBatch( setmealDishes );
+    }
+
+    @Transactional( readOnly = true )
+    @Override
+    public PageResult page( SetmealPageQueryDTO setmealPageQueryDTO ){
+        PageUtil.validateParameterAndStartPage( setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize() );
+        // SetmealVO = Setmeal + CategoryName + 关联关系 SetmealDish
+        // 先联表查 Setmeal + CategoryName
+        List< SetmealVO > setmealVOList = setmealMapper.selectSetmealVOByQueryWithoutSetmealDishRelation( setmealPageQueryDTO );
+        // 注意第 1 次查询后记录总数据数
+        Page< SetmealVO > setmealVOPage = ( Page< SetmealVO > ) setmealVOList;
+        long setmealVOPageTotal = setmealVOPage.getTotal();
+
+        // 再查关联对象 SetmealDish
+        // 查询之前先检验参数
+        /*
+        if ( setmealVOList == null || setmealVOList.isEmpty() ){
+            return setmealVOList;
+        }
+         */
+        if ( setmealVOPage == null || setmealVOPage.isEmpty() ){
+            return PageUtil.buildPageResult( setmealVOPageTotal, setmealVOPage );
+        }
+
+        List< Long > setmealIds = setmealVOList.stream().map( SetmealVO::getId ).toList();
+        List< SetmealDish > setmealDishList = setmealDishMapper.selectBySetmealIds( setmealIds );
+
+        // 注意多个套餐 id 对应的一大批关联对象需要分组
+        Map< Long, List< SetmealDish > > setmealIdToSetmealDishesMap = setmealDishList.stream().collect( Collectors.groupingBy( SetmealDish::getSetmealId ) );
+        // 最后组装完整 SetmealVO
+        setmealVOList.forEach( setmealVO -> setmealVO.setSetmealDishes(
+                setmealIdToSetmealDishesMap.getOrDefault(
+                        setmealVO.getId(), setmealVO.getSetmealDishes()
+                )
+        ) );
+
+        return PageUtil.buildPageResult( setmealVOPageTotal, setmealVOPage );
     }
 
 

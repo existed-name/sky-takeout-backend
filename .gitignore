@@ -4,4 +4,6 @@
 *.class
 *Test.java
 **/test/
-documents
+
+documents/prompt.md
+documents/Tutorial-Code.md

@@ -48,6 +48,10 @@ public class PageUtil {
      * @param queryResult 条件分页查询的结果(泛型)
      */
     public static PageResult buildPageResult( List< ? > queryResult ){
+        if ( queryResult == null ){
+            throw new IllegalParameterException( "参数 queryResult 不能为 null" );
+        }
+        // 不过 instanceof 对 null 直接 false
         if ( queryResult instanceof Page ){
             Page< ? > page = ( Page< ? > ) queryResult;
             return new PageResult( page.getTotal(), page.getResult() );

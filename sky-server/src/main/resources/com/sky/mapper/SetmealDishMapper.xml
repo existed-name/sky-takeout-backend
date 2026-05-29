@@ -19,4 +19,16 @@
             </foreach>
     </insert>
 
+    <!--
+     * 查询多个套餐对应的所有 {@link com.sky.entity.SetmealDish} 关联关系对象, 用于组装 {@link com.sky.vo.SetmealVO}
+    -->
+    <select id="selectBySetmealIds" resultType="com.sky.entity.SetmealDish">
+        SELECT id, setmeal_id, dish_id, name, price, copies
+        FROM setmeal_dish
+        WHERE setmeal_id IN
+            <foreach collection="setmealIds" item="setmealId" open="(" close=")" separator=",">
+                #{setmealId}
+            </foreach>
+    </select>
+
 </mapper>

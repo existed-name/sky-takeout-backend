@@ -68,5 +68,22 @@
         -->
     </update>
 
+    <!--
+     * 条件分页查询 - PageHelper 负责分页
+     *
+     * @return {@link com.sky.vo.SetmealVO} 链表，包含 {@link com.sky.entity.Setmeal} + CategoryName, <B>不包含关联对象{@link com.sky.entity.SetmealDish}(由调用方拼装)</B>
+    -->
+    <select id="selectSetmealVOByQueryWithoutSetmealDishRelation" resultType="com.sky.vo.SetmealVO">
+        SELECT s.id, s.category_id, s.name, s.price, s.status, s.description, s.image, s.update_time
+            , c.name AS categoryName
+        FROM setmeal AS s
+        LEFT JOIN category AS c
+        ON s.category_id = c.id
+        <where>
+            <if test="dto.name != null and dto.name.trim() != ''">AND s.name LIKE concat( '%', #{dto.name}, '%' ) </if>
+            <if test="dto.categoryId != null">AND s.category_id = #{dto.categoryId} </if>
+            <if test="dto.status != null">AND s.status = #{dto.status} </if>
+        </where>
+    </select>
 
 </mapper>

@@ -60,4 +60,5 @@
      2026-05-28 08:06:32.561 DEBUG 19276 --- [nio-8080-exec-3] c.s.m.D.selectByDishIdList               : <==      Total: 3
      ```
 
-
+* 最终定位: SQL 的联表查询 `<where>` 标签内的字段名没有带表名，导致列名歧义
+* 解决: 补上表名，比如 `name` -> `d.name`
