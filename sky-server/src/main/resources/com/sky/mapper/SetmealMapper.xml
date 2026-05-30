@@ -123,4 +123,22 @@
         WHERE s.id = #{id}
     </select>
 
+    <!--
+     * 修改套餐信息
+     * <br>
+     * 注意: <b>仅修改 {@link com.sky.entity.Setmeal}</b>, 关联关系 {@link com.sky.entity.SetmealDish} 由 {@link com.sky.mapper.SetmealDishMapper} 负责
+    -->
+    <update id="update">
+        UPDATE setmeal
+        <set>
+            <if test="setmeal.categoryId != null">category_id = #{setmeal.categoryId}, </if>
+            <if test="setmeal.name != null and setmeal.name.trim() != ''">name = #{setmeal.name}, </if>
+            <if test="setmeal.price != null">category_id = #{setmeal.price}, </if>
+            <if test="setmeal.status != null">category_id = #{setmeal.status}, </if>
+            <if test="setmeal.description != null and setmeal.description.trim() != ''">description = #{setmeal.description}, </if>
+            <if test="setmeal.image != null and setmeal.image.trim() != ''">image = #{setmeal.image}, </if>
+        </set>
+        WHERE id = #{setmeal.id}
+    </update>
+
 </mapper>

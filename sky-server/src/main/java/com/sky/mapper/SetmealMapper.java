@@ -45,7 +45,7 @@ public interface SetmealMapper {
      */
 //    @AutoFill( OperationType.UPDATE )
     // TODO: 优化为 AOP 批量填写审计字段而不是只针对单个对象
-    void updateBatchStatusByIds( @Param( "setmealList" ) List< Setmeal > setmealList );
+    int updateBatchStatusByIds( @Param( "setmealList" ) List< Setmeal > setmealList );
 
     /**
      * 新增套餐
@@ -72,12 +72,12 @@ public interface SetmealMapper {
     /**
      * 批量删除套餐
      */
-    int deleteByIds( @Param( "ids" ) List< Integer> ids );
+    int deleteByIds( @Param( "ids" ) List< Long > ids );
 
     /**
      * 批量查询套餐, 用于批量删除套餐之前检查套餐状态
      */
-    List< Setmeal > selectByIds( @Param( "ids" ) List< Integer> ids );
+    List< Setmeal > selectByIds( @Param( "ids" ) List< Long > ids );
 
     /**
      * 根据 id 查询套餐 VO,
@@ -85,4 +85,11 @@ public interface SetmealMapper {
      * 关联关系 {@link com.sky.entity.SetmealDish} 由业务层单独查询再组装 VO
      */
     SetmealVO selectSetmealVOByIdWithoutSetmealDishRelation( @Param( "id" ) Long id );
+
+    /**
+     * 修改套餐信息
+     * <br>
+     * 注意: <b>仅修改 {@link com.sky.entity.Setmeal}</b>, 关联关系 {@link com.sky.entity.SetmealDish} 由 {@link com.sky.mapper.SetmealDishMapper} 负责
+     */
+    int update( @Param( "setmeal" ) Setmeal setmeal );
 }

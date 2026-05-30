@@ -106,7 +106,7 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void deleteBatch( List< Integer > ids ){
+    public void deleteBatch( List< Long > ids ){
         if ( ids == null || ids.isEmpty() ){
             return;
         }
@@ -144,6 +144,31 @@ public class SetmealServiceImpl implements SetmealService {
         setmealVO.setSetmealDishes( setmealDishes );
 
         return setmealVO;
+    }
+
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void update( SetmealDTO setmealDTO ){
+        // SetmealDTO = Setmeal + 关联关系 SetmealDish
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties( setmealDTO, setmeal );
+
+        int updateRow = setmealMapper.update( setmeal );
+        if ( updateRow <= 0 ){
+            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
+        }
+
+        // 关联子表内容删了重装
+        // 本来应该分开单独写方法，但是这里的批量删除方法大概率不会改，所以就复用了
+        Long setmealId = setmealDTO.getId();
+        setmealDishMapper.deleteBySetmealIds( List.of( setmealId ) );
+        List< SetmealDish > setmealDishes = setmealDTO.getSetmealDishes();
+        if ( setmealDishes == null || setmealDishes.isEmpty() ){
+            return;
+        }
+        // 又忘了写子表的关联逻辑外键
+        setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( setmealId ) );
+        setmealDishMapper.insertBatch( setmealDishes );
     }
 
 

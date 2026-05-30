@@ -30,7 +30,7 @@ public interface SetmealDishMapper {
     /**
      * 删除多个套餐对应的关联关系
      */
-    int deleteBySetmealIds( @Param( "setmealIds" ) List< Integer> setmealIds );
+    int deleteBySetmealIds( @Param( "setmealIds" ) List< Long > setmealIds );
 
     /**
      * 查询某个套餐和菜品关联关系

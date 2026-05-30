@@ -21,7 +21,11 @@ public class SetmealDish implements Serializable {
 
     private Long id;
 
-    //套餐id
+    /**
+     *     套餐id
+     *     <br>
+     *     ⚠️ 注意：Service 层处理时必须为<b>每个元素设置 setmealId</b>
+     */
     private Long setmealId;
 
     //菜品id

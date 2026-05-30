@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -86,7 +87,7 @@ public class SetmealController {
     @ApiOperation( value = "批量删除套餐" )
     @DeleteMapping
     public Result< Void > delete( @RequestParam( name = "ids" )
-        @NotEmpty( message = "选中的套餐不能为空" ) List< Integer > ids ){
+        @NotEmpty( message = "选中的套餐不能为空" ) List< Long > ids ){
         log.info( "批量删除套餐 ids = {}", ids );
         setmealService.deleteBatch( ids );
         return Result.success();
@@ -104,6 +105,18 @@ public class SetmealController {
         log.info( "查询 id = {} 的套餐", id );
         SetmealVO setmealVO = setmealService.getInfo( id );
         return Result.success( setmealVO );
+    }
+
+    /**
+     * 修改套餐信息
+     */
+    @ApiOperation( value = "修改套餐信息" )
+    @PutMapping
+    public Result< Void > update( @RequestBody
+        @Validated( value = ValidationGroups.Update.class ) SetmealDTO setmealDTO ){
+        log.info( "修改套餐: {}", setmealDTO );
+        setmealService.update( setmealDTO );
+        return Result.success();
     }
 
 
