@@ -31,4 +31,15 @@
             </foreach>
     </select>
 
+    <!--
+    删除多个套餐对应的关联关系
+    -->
+    <delete id="deleteBySetmealIds">
+        DELETE FROM setmeal_dish
+        WHERE setmeal_id IN
+        <foreach collection="setmealIds" item="setmealId" open="(" close=")" separator=",">
+            #{setmealId}
+        </foreach>
+    </delete>
+
 </mapper>

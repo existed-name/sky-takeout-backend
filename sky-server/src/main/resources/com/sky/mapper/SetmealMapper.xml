@@ -86,4 +86,27 @@
         </where>
     </select>
 
+    <!--
+    批量删除套餐
+    -->
+    <delete id="deleteByIds">
+        DELETE FROM setmeal
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--
+    批量查询套餐, 用于批量删除套餐之前检查套餐状态
+    -->
+    <select id="selectByIds" resultType="com.sky.entity.Setmeal">
+        SELECT id, category_id, name, price, status, description, image, create_time, update_time, create_user, update_user
+        FROM setmeal
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>

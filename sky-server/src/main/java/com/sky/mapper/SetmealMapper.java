@@ -60,7 +60,7 @@ public interface SetmealMapper {
             """ )
     @AutoFill( OperationType.INSERT )
     @Options( useGeneratedKeys = true, keyProperty = "setmeal.id" )
-    void insert( @Param( "setmeal" ) Setmeal setmeal );
+    int insert( @Param( "setmeal" ) Setmeal setmeal );
 
     /**
      * 条件分页查询 - PageHelper 负责分页
@@ -68,4 +68,14 @@ public interface SetmealMapper {
      * @return {@link com.sky.vo.SetmealVO} 链表，包含 {@link com.sky.entity.Setmeal} + CategoryName, <B>不包含关联对象{@link com.sky.entity.SetmealDish}(由调用方拼装)</B>
      */
     List< SetmealVO > selectSetmealVOByQueryWithoutSetmealDishRelation( @Param( "dto" ) SetmealPageQueryDTO setmealPageQueryDTO );
+
+    /**
+     * 批量删除套餐
+     */
+    int deleteByIds( @Param( "ids" ) List< Integer> ids );
+
+    /**
+     * 批量查询套餐, 用于批量删除套餐之前检查套餐状态
+     */
+    List< Setmeal> selectByIds( @Param( "ids" ) List< Integer> ids );
 }

@@ -37,4 +37,5 @@ public class MessageConstant {
 
     public static final String INVALID_STATUS_PARAM = "状态参数不合法";
 
+    public static final String SETMEAL_NOT_FOUND = "套餐不存在";
 }

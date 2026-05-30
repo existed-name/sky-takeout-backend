@@ -21,10 +21,15 @@ public interface SetmealDishMapper {
      * 注意: 由{@link com.sky.mapper.SetmealMapper}存储该套餐
      */
     // 太好了，不用设置审计字段
-    void insertBatch( @Param( "setmealDishes" ) List< SetmealDish > setmealDishes );
+    int insertBatch( @Param( "setmealDishes" ) List< SetmealDish > setmealDishes );
 
     /**
      * 查询多个套餐对应的所有 {@link com.sky.entity.SetmealDish} 关联关系对象, 用于组装 {@link com.sky.vo.SetmealVO}
      */
     List< SetmealDish > selectBySetmealIds( @Param( "setmealIds" ) List< Long> setmealIds );
+
+    /**
+     * 删除多个套餐对应的关联关系
+     */
+    int deleteBySetmealIds( @Param( "setmealIds" ) List< Integer> setmealIds );
 }

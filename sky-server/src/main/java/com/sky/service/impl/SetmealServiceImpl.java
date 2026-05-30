@@ -1,10 +1,14 @@
 package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
+import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.NotFoundException;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
@@ -98,6 +102,30 @@ public class SetmealServiceImpl implements SetmealService {
         ) );
 
         return PageUtil.buildPageResult( setmealVOPageTotal, setmealVOPage );
+    }
+
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void deleteBatch( List< Integer > ids ){
+        if ( ids == null || ids.isEmpty() ){
+            return;
+        }
+
+        // 业务检查: 起售的套餐不能删除
+        List< Setmeal > setmealList = setmealMapper.selectByIds( ids );
+        if ( setmealList == null || setmealList.isEmpty() ){
+            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
+        }
+        for ( Setmeal setmeal : setmealList ){
+            // 查询获得的单个元素不可能为 null
+            if ( StatusConstant.isEnable( setmeal.getStatus() ) ){
+                throw new DeletionNotAllowedException( MessageConstant.SETMEAL_ON_SALE );
+            }
+        }
+
+        // 先删除关联内容(子表)，后删主表
+        setmealDishMapper.deleteBySetmealIds( ids );
+        setmealMapper.deleteByIds( ids );
     }
 
 

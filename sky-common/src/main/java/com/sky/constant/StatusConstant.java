@@ -36,6 +36,14 @@ public class StatusConstant {
         return DISABLE.equals( status );
     }
 
+    /**
+     * 判断状态是否为启用
+     */
+    public static boolean isEnable( Integer status ){
+        return ENABLE.equals( status );
+    }
+
+
     private StatusConstant(){}
 
 }

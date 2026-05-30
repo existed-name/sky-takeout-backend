@@ -10,19 +10,24 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * 套餐管理接口
  *
  * @CreateTime 2026/5/28 19:16
  */
+@Validated
 @Slf4j
 @RestController
 @RequestMapping( "/admin/setmeal" )
@@ -69,6 +74,18 @@ public class SetmealController {
         log.info( "条件分页查询套餐, 查询参数: {}", setmealPageQueryDTO );
         PageResult pageResult = setmealService.page( setmealPageQueryDTO );
         return Result.success( pageResult );
+    }
+
+    /**
+     * 批量删除套餐
+     */
+    @ApiOperation( value = "批量删除套餐" )
+    @DeleteMapping
+    public Result< Void > delete(
+            @RequestParam @NotEmpty( message = "选中的套餐不能为空" ) List< Integer > ids ){
+        log.info( "批量删除套餐 ids = {}", ids );
+        setmealService.deleteBatch( ids );
+        return Result.success();
     }
 
 
