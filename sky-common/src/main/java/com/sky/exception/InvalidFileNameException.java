@@ -5,7 +5,7 @@ package com.sky.exception;
  *
  * @CreateTime 2026/5/23 9:31
  */
-public class InvalidFileNameException extends BaseException {
+public class InvalidFileNameException extends BusinessException {
     public InvalidFileNameException( String message ){
         super( message );
     }

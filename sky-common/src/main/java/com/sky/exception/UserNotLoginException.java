@@ -1,6 +1,6 @@
 package com.sky.exception;
 
-public class UserNotLoginException extends BaseException {
+public class UserNotLoginException extends BusinessException {
 
     public UserNotLoginException() {
     }

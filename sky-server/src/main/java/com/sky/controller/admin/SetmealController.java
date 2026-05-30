@@ -73,6 +73,7 @@ public class SetmealController {
     @GetMapping( "/page" )
     public Result< PageResult > page(
             @NotNull( message = "条件分页查询参数不能为空" )
+            // TODO: 如果需要检验属性，则加上 @Valid
             SetmealPageQueryDTO setmealPageQueryDTO ){
         log.info( "条件分页查询套餐, 查询参数: {}", setmealPageQueryDTO );
         PageResult pageResult = setmealService.page( setmealPageQueryDTO );
@@ -84,8 +85,8 @@ public class SetmealController {
      */
     @ApiOperation( value = "批量删除套餐" )
     @DeleteMapping
-    public Result< Void > delete(
-            @RequestParam @NotEmpty( message = "选中的套餐不能为空" ) List< Integer > ids ){
+    public Result< Void > delete( @RequestParam( name = "ids" )
+        @NotEmpty( message = "选中的套餐不能为空" ) List< Integer > ids ){
         log.info( "批量删除套餐 ids = {}", ids );
         setmealService.deleteBatch( ids );
         return Result.success();
@@ -94,9 +95,10 @@ public class SetmealController {
     /**
      * 根据 id 查询套餐
      */
-    @ApiOperation( value = "" )
+    @ApiOperation( value = "根据 id 查询套餐" )
     @GetMapping( "/{id}" )
-    public Result< SetmealVO > getInfo( @PathVariable
+    public Result< SetmealVO > getInfo(
+        @PathVariable( name = "id" )
         @NotNull( message = "套餐 id 不能为空" )
         @Positive( message = "套餐 id 必须是正整数" ) Long id ){
         log.info( "查询 id = {} 的套餐", id );

@@ -8,7 +8,7 @@ package com.sky.exception;
  * </pre>
  *
  */
-public class IllegalParameterException extends BaseException {
+public class IllegalParameterException extends BusinessException {
     public IllegalParameterException( String message ){
         super( message );
     }

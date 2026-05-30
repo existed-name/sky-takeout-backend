@@ -5,7 +5,7 @@ package com.sky.exception;
  *
  * @CreateTime 2026/5/23 11:16
  */
-public class FileTypeNotSupportedException extends BaseException {
+public class FileTypeNotSupportedException extends BusinessException {
     public FileTypeNotSupportedException( String message ){
         super( message );
     }
