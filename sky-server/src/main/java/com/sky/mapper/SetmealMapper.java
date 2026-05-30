@@ -77,5 +77,12 @@ public interface SetmealMapper {
     /**
      * 批量查询套餐, 用于批量删除套餐之前检查套餐状态
      */
-    List< Setmeal> selectByIds( @Param( "ids" ) List< Integer> ids );
+    List< Setmeal > selectByIds( @Param( "ids" ) List< Integer> ids );
+
+    /**
+     * 根据 id 查询套餐 VO,
+     * 包含 {@link com.sky.entity.Setmeal} + CategoryName,
+     * 关联关系 {@link com.sky.entity.SetmealDish} 由业务层单独查询再组装 VO
+     */
+    SetmealVO selectSetmealVOByIdWithoutSetmealDishRelation( @Param( "id" ) Long id );
 }

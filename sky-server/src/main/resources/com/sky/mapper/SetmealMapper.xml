@@ -109,4 +109,18 @@
         </foreach>
     </select>
 
+    <!--
+    根据 id 查询套餐 VO,
+    包含 Setmeal + CategoryName,
+    关联关系 com.sky.entity.SetmealDish 由业务层单独查询再组装 VO
+    -->
+    <select id="selectSetmealVOByIdWithoutSetmealDishRelation" resultType="com.sky.vo.SetmealVO">
+        SELECT s.id, s.category_id, s.name, s.price, s.status, s.description, s.image, s.create_time, s.update_time, s.create_user, s.update_user
+            , c.name AS categoryName
+        FROM setmeal AS s
+        LEFT JOIN category AS c
+        ON s.category_id = c.id
+        WHERE s.id = #{id}
+    </select>
+
 </mapper>

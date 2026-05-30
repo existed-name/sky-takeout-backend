@@ -6,12 +6,14 @@ import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.SetmealService;
 import com.sky.validation.ValidationGroups;
+import com.sky.vo.SetmealVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -86,6 +89,19 @@ public class SetmealController {
         log.info( "批量删除套餐 ids = {}", ids );
         setmealService.deleteBatch( ids );
         return Result.success();
+    }
+
+    /**
+     * 根据 id 查询套餐
+     */
+    @ApiOperation( value = "" )
+    @GetMapping( "/{id}" )
+    public Result< SetmealVO > getInfo( @PathVariable
+        @NotNull( message = "套餐 id 不能为空" )
+        @Positive( message = "套餐 id 必须是正整数" ) Long id ){
+        log.info( "查询 id = {} 的套餐", id );
+        SetmealVO setmealVO = setmealService.getInfo( id );
+        return Result.success( setmealVO );
     }
 
 

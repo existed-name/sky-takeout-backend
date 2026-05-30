@@ -128,6 +128,24 @@ public class SetmealServiceImpl implements SetmealService {
         setmealMapper.deleteByIds( ids );
     }
 
+    @Transactional( readOnly = true )
+    @Override
+    public SetmealVO getInfo( Long id ){
+        if ( id == null || id <= 0 ){
+            return null;
+        }
+
+        // setmealVO = setmeal + categoryName + setmealDishes
+        SetmealVO setmealVO = setmealMapper.selectSetmealVOByIdWithoutSetmealDishRelation( id );
+        if ( setmealVO == null ){
+            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
+        }
+        List< SetmealDish > setmealDishes = setmealDishMapper.selectBySetmealId( id );
+        setmealVO.setSetmealDishes( setmealDishes );
+
+        return setmealVO;
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

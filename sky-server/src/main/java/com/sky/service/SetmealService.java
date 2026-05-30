@@ -3,7 +3,10 @@ package com.sky.service;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.result.PageResult;
+import com.sky.vo.SetmealVO;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -26,4 +29,9 @@ public interface SetmealService {
      * 批量删除套餐
      */
     void deleteBatch( List< Integer> ids );
+
+    /**
+     * 根据 id 查询套餐
+     */
+    SetmealVO getInfo( Long id );
 }
