@@ -1,4 +1,4 @@
- package com.sky.dto;
+package com.sky.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -8,6 +8,7 @@ import java.io.Serializable;
 
 /**
  * 套餐分页查询数据传输对象
+ * 用于套餐信息的条件分页查询
  */
 @Data
 @ApiModel(description = "套餐分页查询 DTO")

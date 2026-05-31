@@ -51,7 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void save( CategoryDTO categoryDTO ){
         Category category = new Category();
         BeanUtils.copyProperties( categoryDTO, category );
-
+        // 分类: 默认禁用
         category.setStatus( StatusConstant.DISABLE );
 //        category.setCreateTime( LocalDateTime.now() );
 //        category.setUpdateTime( LocalDateTime.now() );

@@ -1,6 +1,8 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.LogOperation;
 import com.sky.constant.FileConstant;
+import com.sky.enumeration.OperationType;
 import com.sky.result.Result;
 import com.sky.service.UploadService;
 import io.swagger.annotations.Api;
@@ -46,6 +48,7 @@ public class FileController {
      */
     @PostMapping( "/upload/dish" )
     @ApiOperation( value = "上传菜品图片" )
+    @LogOperation( description = "上传菜品图片", operationType = OperationType.INSERT )
     public Result< String > uploadDishImage( @NotNull( message = "上传的图片不能为空" ) MultipartFile file ){
         log.info( "上传菜品图片: {}", file );
         String url = uploadService.upload( file, FileConstant.BusinessDir.DISH );
@@ -58,6 +61,7 @@ public class FileController {
      */
     @PostMapping( "/upload/setmeal" )
     @ApiOperation( value = "上传套餐图片" )
+    @LogOperation( description = "上传套餐图片", operationType = OperationType.INSERT )
     public Result< String > uploadSetmealImage( @NotNull( message = "上传的图片不能为空" ) MultipartFile file ){
         log.info( "上传套餐图片: {}", file );
         String url = uploadService.upload( file, FileConstant.BusinessDir.SETMEAL );

@@ -4,11 +4,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Positive;
 import java.io.Serializable;
 
 /**
  * 分类分页查询数据传输对象
- * 用于菜品/套餐分类的分页查询请求参数
+ * 用于菜品/套餐分类的条件分页查询
  */
 @Data
 @ApiModel(description = "分类分页查询 DTO")

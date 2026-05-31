@@ -32,7 +32,16 @@ public class AutoFillAspect {
 
 
     // ==================== 公有方法 ====================
-    // 补充限定 mapper 层，优化过滤性能、避免注解误用到非 Mapper 导致误切
+
+    /**
+     * 填写字段切入点表达式
+     * <br>
+     * 补充限定 mapper 层，优化过滤性能、避免注解误用到非 Mapper 导致误切
+     * <br>
+     * 虽然报错 Cannot resolve symbol 'mapper'，但是实际可以正常运行
+     * <br>
+     * Spring AOP 在运行时通过类加载器去匹配这里的字符串
+     */
     @Pointcut( "execution( * com.sky.mapper.*.*(..) ) && @annotation( com.sky.annotation.AutoFill )" )
     public void autoFillPointcut(){}
 

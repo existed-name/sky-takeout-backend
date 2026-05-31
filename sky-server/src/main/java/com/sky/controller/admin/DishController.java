@@ -1,7 +1,9 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.LogOperation;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
+import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.DishService;
@@ -59,10 +61,11 @@ public class DishController {
      * 新增菜品
      */
     @ApiOperation( value = "新增菜品" )
+    @LogOperation( description = "新增菜品", operationType = OperationType.INSERT )
     @PostMapping
     public Result< Void > saveWithFlavor(
             @Validated( value = ValidationGroups.Create.class )
-            @RequestBody DishDTO dishDTO ){
+            @RequestBody  DishDTO dishDTO ){
         log.info( "新增菜品: {}", dishDTO );
         dishService.saveWithFlavor( dishDTO );
         return Result.success();
@@ -73,7 +76,8 @@ public class DishController {
      */
     @ApiOperation( value = "条件分页查询菜品" )
     @GetMapping( "/page" )
-    public Result< PageResult > page( // TODO: 如果 DTO 拓展，可能需要 @Validated 检验
+    public Result< PageResult > page(
+            @NotNull( message = "分页查询参数不能为空" )
             DishPageQueryDTO dishPageQueryDTO ){
         log.info( "条件分页查询菜品, 查询参数: {}", dishPageQueryDTO );
         PageResult dishList = dishService.pageQuery( dishPageQueryDTO );
@@ -84,9 +88,11 @@ public class DishController {
      * 批量删除菜品
      */
     @ApiOperation( value = "批量删除菜品" )
+    @LogOperation( description = "批量删除菜品", operationType = OperationType.DELETE )
     @DeleteMapping
-    public Result< Void > delete( @RequestParam
-        @NotEmpty( message = "选中的菜品不能为空" ) List< Long > ids ){
+    public Result< Void > delete(
+            @NotEmpty( message = "选中的菜品不能为空" )
+            @RequestParam( name = "ids" ) List< Long > ids ){
         log.info( "批量删除菜品, ids = {}", ids );
         dishService.deleteByIds( ids );
         return Result.success();
@@ -97,9 +103,10 @@ public class DishController {
      */
     @ApiOperation( value = "根据 id 查询菜品" )
     @GetMapping( "/{id}" )
-    public Result< DishVO > getInfo( @PathVariable
-         @NotNull( message = "菜品 id 不能为空" )
-         @Positive( message = "菜品 id 必须是正整数" ) Long id ){
+    public Result< DishVO > getInfo(
+            @PathVariable( name = "id" )
+            @NotNull( message = "菜品 id 不能为空" )
+            @Positive( message = "菜品 id 必须是正整数" ) Long id ){
         log.info( "查询 id = {} 的菜品", id );
         DishVO dishVO = dishService.getInfoById( id );
         return Result.success( dishVO );
@@ -109,9 +116,10 @@ public class DishController {
      * 修改菜品信息
      */
     @ApiOperation( value = "修改菜品信息" )
+    @LogOperation( description = "修改菜品信息", operationType = OperationType.UPDATE )
     @PutMapping
-    public Result< Void > update( @RequestBody
-          @Validated( value = ValidationGroups.Update.class ) DishDTO dishDTO ){
+    public Result< Void > update( @Validated( value = ValidationGroups.Update.class )
+            @RequestBody DishDTO dishDTO ){
         log.info( "修改菜品信息: {}", dishDTO );
         dishService.update( dishDTO );
         return Result.success();
@@ -121,11 +129,13 @@ public class DishController {
      * 切换菜品状态(停售/起售)
      */
     @ApiOperation( value = "切换菜品状态(停售/起售)" )
+    @LogOperation( description = "切换菜品状态", operationType = OperationType.UPDATE )
     @PutMapping( "/status/{status}" )
     public Result< Void > updateStatus(
-            @RequestParam @NotNull( message = "菜品 id 不能为空" )
+            @RequestParam( name = "id" ) @NotNull( message = "菜品 id 不能为空" )
             @Positive( message = "菜品 id 必须是正整数" ) Long id,
-            @PathVariable @NotNull( message = "菜品状态不能为空" ) Integer status ){
+            @PathVariable( name = "status" )
+            @NotNull( message = "菜品状态不能为空" ) Integer status ){
         log.info( "修改 id = {} 的菜品状态为 {}", id, status );
         dishService.updateStatusById( id, status );
         return Result.success();
@@ -136,8 +146,8 @@ public class DishController {
      */
     @ApiOperation( value = "根据分类 id 查询菜品" )
     @GetMapping( "/list" )
-    public Result< List< DishVO > > list(  // 然后教程返回的 List< Dish >
-            @RequestParam( required = false ) // 教程说必须，但是我想增加复用性，就设置的非必须
+    public Result< List< DishVO > > list(
+            @RequestParam( name = "categoryId", required = false )
             Long categoryId ){
         log.info( "查询分类 id = {} 的菜品", categoryId );
         List< DishVO > dishVOList = dishService.listByCategoryId( categoryId );

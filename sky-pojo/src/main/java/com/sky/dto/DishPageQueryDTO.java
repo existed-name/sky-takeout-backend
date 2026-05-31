@@ -4,19 +4,22 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.io.Serializable;
 
 /**
- * 菜品分页查询 DTO
+ * 菜品分页查询数据传输对象
+ * 用于菜品信息的条件分页查询
  */
 @Data
 @ApiModel(description = "菜品分页查询 DTO")
 public class DishPageQueryDTO implements Serializable {
 
     /**
-     * 页码
+     * 起始页码
      */
-    @ApiModelProperty(value = "页码", example = "1")
+    @ApiModelProperty(value = "起始页码", example = "1")
     private Integer page;
 
     /**

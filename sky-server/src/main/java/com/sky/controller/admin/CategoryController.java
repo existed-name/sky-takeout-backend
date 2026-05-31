@@ -1,16 +1,18 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.LogOperation;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
+import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
-import com.sky.service.EmployeeService;
+import com.sky.validation.ValidationGroups;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,8 +23,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
+@Validated
 @Slf4j
 @RestController
 @RequestMapping( "/admin/category" )
@@ -50,7 +55,9 @@ public class CategoryController {
      */
     @PostMapping
     @ApiOperation( value = "新增分类(菜品/套餐分类)" )
-    public Result< Object > save( @RequestBody CategoryDTO categoryDTO ){
+    @LogOperation( description = "新增分类", operationType = OperationType.INSERT )
+    public Result< Void > save( @Validated( value = ValidationGroups.Create.class )
+            @RequestBody CategoryDTO categoryDTO ){
         log.info( "新增分类: {}", categoryDTO );
         categoryService.save( categoryDTO );
         return Result.success();
@@ -61,7 +68,9 @@ public class CategoryController {
      */
     @GetMapping( "/page" )
     @ApiOperation( value = "对分类进行条件分页查询" )
-    public Result< PageResult > page( CategoryPageQueryDTO categoryPageQueryDTO ){
+    public Result< PageResult > page(
+            @NotNull( message = "分页查询参数不能为空" )
+             CategoryPageQueryDTO categoryPageQueryDTO ){
         log.info( "对分类进行条件分页查询，查询参数: {}", categoryPageQueryDTO );
         PageResult pageResult = categoryService.page( categoryPageQueryDTO );
         return Result.success( pageResult );
@@ -72,7 +81,11 @@ public class CategoryController {
      */
     @DeleteMapping
     @ApiOperation( value = "根据 id 删除分类")
-    public Result< Object > delete( @RequestParam Long id ){
+    @LogOperation( description = "删除分类", operationType = OperationType.DELETE )
+    public Result< Void > delete(
+            @RequestParam( name = "id" )
+            @NotNull( message = "分类 id 不能为空" )
+            @Positive( message = "分类 id 必须是正整数" ) Long id ){
         log.info( "删除 id = {} 的分类", id );
         categoryService.deleteById( id );
         return Result.success();
@@ -83,7 +96,9 @@ public class CategoryController {
      */
     @PutMapping
     @ApiOperation( value = "修改分类信息" )
-    public Result< Object > update( @RequestBody CategoryDTO categoryDTO ){
+    @LogOperation( description = "修改分类信息", operationType = OperationType.UPDATE )
+    public Result< Void > update( @Validated( ValidationGroups.Update.class )
+            @RequestBody CategoryDTO categoryDTO ){
         log.info( "修改分类信息: {}", categoryDTO );
         categoryService.update( categoryDTO );
         return Result.success();
@@ -94,7 +109,13 @@ public class CategoryController {
      */
     @PutMapping( "/status/{status}" )
     @ApiOperation( value = "修改分类状态(启用/禁用)" )
-    public Result< Object > updateStatus( @RequestParam Long id, @PathVariable Integer status ){
+    @LogOperation( description = "修改分类状态(启用/禁用)", operationType = OperationType.UPDATE )
+    public Result< Void > updateStatus(
+            @RequestParam( name = "id" )
+            @NotNull( message = "分类 id 不能为空" )
+            @Positive( message = "分类 id 必须是正整数" ) Long id,
+            @PathVariable( name = "status" )
+            @NotNull( message = "分类状态不能为空" ) Integer status ){
         log.info( "修改 id = {} 的分类状态为 {}", id, status );
         categoryService.updateStatus( id, status );
         return Result.success();
@@ -105,7 +126,8 @@ public class CategoryController {
      */
     @GetMapping( "/list" )
     @ApiOperation( value = "查询某种类型的所有分类" )
-    public Result< List< Category > > listByType( @RequestParam( required = false ) Integer type ){
+    public Result< List< Category > > listByType(
+            @RequestParam( name = "type", required = false ) Integer type ){
         log.info( "查询类型 {} 的所有分类", type );
         List< Category > categoryList = categoryService.listByType( type );
         return Result.success( categoryList );
