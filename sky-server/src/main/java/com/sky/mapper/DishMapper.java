@@ -84,4 +84,11 @@ public interface DishMapper {
      * @return 参数为空，查到所有菜品；参数无效则查询为空
      */
     List< DishVO> selectDishVOByCategoryId( @Param( "categoryId" ) Long categoryId );
+
+    /**
+     * 批量查询菜品状态 {@link com.sky.entity.Dish}
+     * <br>
+     * 用于起售套餐时检查有无停售的关联菜品
+     */
+    List< Integer > selectDishStatusListByIds( @Param( "ids" ) List< Long> ids );
 }

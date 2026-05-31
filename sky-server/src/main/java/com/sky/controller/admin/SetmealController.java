@@ -119,6 +119,20 @@ public class SetmealController {
         return Result.success();
     }
 
+    /**
+     * 修改套餐状态(起售/停售)
+     */
+    @ApiOperation( value = "修改套餐状态(起售/停售)" )
+    @PutMapping( "/status/{status}" )
+    public Result< Void > updateStatus( @RequestParam( name = "id" )
+        @NotNull( message = "套餐 id 不能为空" )
+        @Positive( message = "套餐 id 必须是正整数" ) Long id,
+        @PathVariable( name = "status" )
+        @NotNull( message = "修改后的套餐状态不能为空" ) Integer status ){
+        log.info( "修改 id = {} 的套餐状态为 {}", id, status );
+        setmealService.updateStatusById( id, status );
+        return Result.success();
+    }
 
 
     // ==================== 私有辅助方法 ====================

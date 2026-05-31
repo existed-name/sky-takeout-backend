@@ -9,6 +9,8 @@ import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.SetmealEnableFailedException;
+import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
@@ -34,13 +36,14 @@ public class SetmealServiceImpl implements SetmealService {
     // ==================== 实例变量 ====================
     private final SetmealMapper setmealMapper;
     private final SetmealDishMapper setmealDishMapper;
-
+    private final DishMapper dishMapper;
 
 
     // ==================== 构造器 ====================
-    public SetmealServiceImpl( SetmealMapper setmealMapper, SetmealDishMapper setmealDishMapper ){
+    public SetmealServiceImpl( SetmealMapper setmealMapper, SetmealDishMapper setmealDishMapper, DishMapper dishMapper ){
         this.setmealMapper = setmealMapper;
         this.setmealDishMapper = setmealDishMapper;
+        this.dishMapper = dishMapper;
     }
 
 
@@ -169,6 +172,36 @@ public class SetmealServiceImpl implements SetmealService {
         // 又忘了写子表的关联逻辑外键
         setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( setmealId ) );
         setmealDishMapper.insertBatch( setmealDishes );
+    }
+
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void updateStatusById( Long id, Integer status ){
+        StatusConstant.validateStatus( status );
+
+        // 起售套餐时需要检查包含的菜品是不是停售的
+        // 停售套餐则不需要修改菜品状态
+        if ( StatusConstant.isEnable( status ) ){
+            // 从套餐-菜品关联关系拿到对应的菜品 id
+            List< SetmealDish > setmealDishList = setmealDishMapper.selectBySetmealId( id );
+            if ( ! ( setmealDishList == null || setmealDishList.isEmpty() ) ){
+                List< Long > dishIds = setmealDishList.stream().map( SetmealDish::getDishId ).toList();
+                // 可以只查需要的字段，而不用查整个对象
+                List< Integer > statusList = dishMapper.selectDishStatusListByIds( dishIds );
+                for ( Integer dishStatus : statusList ){
+                    if ( StatusConstant.isDisable( dishStatus ) ){
+                        throw new SetmealEnableFailedException( MessageConstant.SETMEAL_ENABLE_FAILED );
+                    }
+                }
+            }
+        }
+
+        // 注意还要更新审计字段，需要传对象
+        Setmeal updatedSetmeal = Setmeal.builder().id( id ).status( status ).build();
+        int updateRow = setmealMapper.updateStatusById( updatedSetmeal );
+        if ( updateRow <= 0 ){
+            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
+        }
     }
 
 

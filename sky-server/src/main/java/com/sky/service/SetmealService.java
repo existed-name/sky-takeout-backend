@@ -39,4 +39,9 @@ public interface SetmealService {
      * 修改套餐信息
      */
     void update( SetmealDTO setmealDTO );
+
+    /**
+     * 修改套餐状态(起售/停售)
+     */
+    void updateStatusById( Long id, Integer status );
 }

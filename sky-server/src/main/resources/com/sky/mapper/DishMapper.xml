@@ -124,4 +124,18 @@
         ORDER BY d.update_time DESC, d.id DESC
     </select>
 
+    <!--
+     * 批量查询菜品状态 {@link com.sky.entity.Dish}
+     * <br>
+     * 用于起售套餐时检查有无停售的关联菜品
+     -->
+    <select id="selectDishStatusListByIds" resultType="java.lang.Integer">
+        SELECT status
+        FROM dish
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>

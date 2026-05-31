@@ -133,8 +133,8 @@
         <set>
             <if test="setmeal.categoryId != null">category_id = #{setmeal.categoryId}, </if>
             <if test="setmeal.name != null and setmeal.name.trim() != ''">name = #{setmeal.name}, </if>
-            <if test="setmeal.price != null">category_id = #{setmeal.price}, </if>
-            <if test="setmeal.status != null">category_id = #{setmeal.status}, </if>
+            <if test="setmeal.price != null">price = #{setmeal.price}, </if>
+            <if test="setmeal.status != null">status = #{setmeal.status}, </if>
             <if test="setmeal.description != null and setmeal.description.trim() != ''">description = #{setmeal.description}, </if>
             <if test="setmeal.image != null and setmeal.image.trim() != ''">image = #{setmeal.image}, </if>
         </set>

@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -92,4 +93,19 @@ public interface SetmealMapper {
      * 注意: <b>仅修改 {@link com.sky.entity.Setmeal}</b>, 关联关系 {@link com.sky.entity.SetmealDish} 由 {@link com.sky.mapper.SetmealDishMapper} 负责
      */
     int update( @Param( "setmeal" ) Setmeal setmeal );
+
+    /**
+     * 修改套餐状态(起售/停售)
+     * <br>
+     * 注意: <b>传入对象用于 AOP 修改审计字段</b>
+     */
+    @Update( """
+            UPDATE setmeal
+            SET status = #{setmeal.status},
+                update_time = #{setmeal.updateTime},
+                update_user = #{setmeal.updateUser}
+            WHERE id = #{setmeal.id}
+            """ )
+    @AutoFill( value = OperationType.UPDATE )
+    int updateStatusById( @Param( "setmeal" ) Setmeal setmeal );
 }
