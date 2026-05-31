@@ -40,10 +40,18 @@ public class LogAspect {
      * 操作日志切入点表达式
      * <br>
      * 限定范围: 所有 controller 的所有方法 && 操作日志注解
+     * <br>
+     * execution 是关键字，不需要给它加 @
+     * <br>
+     * annotation 要加 @, 它是注解、不是关键字
+     * <pre>
+     *      <code>execution( * com.sky.controller.*.*(..) )</code>
+     *      从左到右
+     *      任意返回值类型 -> 包路径 -> 所有类 -> 任意方法名称(也就是所有方法) -> 任意方法参数类型
+     *      如果包路径后面是 2个点(<code>controller..*</code>)，就包括了这个包的所有子包（及子包的子包)
+     * </pre>
      */
-    // execution 执行范围路径最前面要加星号
-    // @annotation 要加 @
-    @Pointcut( "execution( * com.sky.controller.*.*(..) ) && @annotation( com.sky.annotation.LogOperation )" )
+    @Pointcut( "execution( * com.sky.controller..*.*(..) ) && @annotation( com.sky.annotation.LogOperation )" )
     public void operationLogPointcut(){}
 
     /**
@@ -56,7 +64,7 @@ public class LogAspect {
     // 切入点方法名称 + 括号
     // 还要传入注解参数(同方法参数的名字)
     @Around( "operationLogPointcut() && @annotation( logOperationAnnotation )" )
-    public Object recordOperationLog( ProceedingJoinPoint joinPoint, LogOperation logOperationAnnotation ){
+    public Object recordOperationLog( ProceedingJoinPoint joinPoint, LogOperation logOperationAnnotation ) throws Throwable{
         // 目标对象 OperationLog = id + operatorId + operationType + description +
         // methodName + args + status + errorMsg + costTime + createTime;
         // 注解已经记录了 description、operationType，其他由 jointPoint 获得
@@ -67,9 +75,19 @@ public class LogAspect {
         // "INSERT"
         String operationType = logOperationAnnotation.operationType().getName();
 
-        String methodName = joinPoint.getSignature().getName();
+        // 注意这里只是方法名
+        String simpleMethodName = joinPoint.getSignature().getName();
+        // 方法全限定名 = 类全名(包路径.类名).方法名
+        // 切入点 getTarget 可以拿到被代理对象的实例
+        String fullClassName = joinPoint.getTarget().getClass().getName();
+        String fullMethodName = fullClassName + "." + simpleMethodName;
+
         Object[] args = joinPoint.getArgs();
-        String requestParams = JSON.toJSONString( args );
+        // 注解指定是否记录方法传参
+        String requestParams = null;
+        if ( logOperationAnnotation.recordParams() ){
+            requestParams = JSON.toJSONString( args );
+        }
 
         LocalDateTime createTime = LocalDateTime.now();
         long begin = System.currentTimeMillis();
@@ -82,7 +100,7 @@ public class LogAspect {
             // 代理方法出现异常
             status = OperationLogConstant.Status.FAILED;
             errorMessage = e.getMessage();
-            throw new RuntimeException( e );
+            throw e; // 不包装，直接抛出，避免去掉原有异常类型(比如业务异常)
         } finally {
             // 由于 finally 块一定会执行，所以放在这里构建对象 + 写入数据库
             try {
@@ -93,7 +111,7 @@ public class LogAspect {
                         .operatorId( operatorId )
                         .operationType( operationType )
                         .description( description )
-                        .methodName( methodName )
+                        .methodName( fullMethodName )
                         .requestParams( requestParams )
                         .status( status )
                         .errorMsg( errorMessage )
