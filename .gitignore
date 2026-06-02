@@ -2,8 +2,8 @@
 .idea
 *.iml
 *.class
-*Test.java
-**/test/
+#*Test.java
+#**/test/
 
 documents/prompt.md
 documents/Tutorial-Code.md

@@ -2,6 +2,11 @@ package com.sky.annotation;
 
 import com.sky.enumeration.OperationType;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * 操作日志注解
  * <br>
@@ -9,6 +14,8 @@ import com.sky.enumeration.OperationType;
  *
  * @CreateTime 2026/5/31 8:55
  */
+@Retention( value = RetentionPolicy.RUNTIME )
+@Target( value = { ElementType.METHOD })
 public @interface LogOperation {
     /** 操作描述，如"新增菜品-鱼香肉丝"、"启用账号-admin" */
     String description();
