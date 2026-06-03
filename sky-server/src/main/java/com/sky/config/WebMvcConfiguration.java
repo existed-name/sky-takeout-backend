@@ -3,7 +3,6 @@ package com.sky.config;
 import com.sky.interceptor.JwtTokenAdminInterceptor;
 import com.sky.json.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -27,13 +26,14 @@ import java.util.List;
 @Slf4j
 public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
-    @Autowired
-    private JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
+    private final JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
+
+    public WebMvcConfiguration( JwtTokenAdminInterceptor jwtTokenAdminInterceptor ){
+        this.jwtTokenAdminInterceptor = jwtTokenAdminInterceptor;
+    }
 
     /**
      * 注册自定义拦截器
-     *
-     * @param registry
      */
     protected void addInterceptors(InterceptorRegistry registry) {
         log.info("开始注册自定义拦截器...");
@@ -43,28 +43,57 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     }
 
     /**
-     * 通过knife4j生成接口文档
-     * @return
+     * 通过 knife4j 生成管理端接口文档
      */
     @Bean
-    public Docket docket() {
+    public Docket adminDocket() {
+        log.info( "正在生成管理端接口文档" );
         ApiInfo apiInfo = new ApiInfoBuilder()
-                .title("苍穹外卖项目接口文档")
+                .title("苍穹外卖管理端接口文档")
                 .version("2.0")
-                .description("苍穹外卖项目接口文档")
+                .description("苍穹外卖管理端接口文档")
                 .build();
         Docket docket = new Docket(DocumentationType.SWAGGER_2)
+                // 补充分组
+                .groupName( "管理端接口" )
                 .apiInfo(apiInfo)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.sky.controller"))
+                // 指定扫描的包( Controller 接口 )
+                .apis(RequestHandlerSelectors.basePackage("com.sky.controller.admin"))
                 .paths(PathSelectors.any())
                 .build();
         return docket;
     }
 
     /**
+     * 通过 Knife4j 生成用户端接口文档
+     * <br>
+     * <b>注意需要添加 @Bean 注册对象</b>
+     * <br>
+     * Knife4j/Swagger 会扫描容器中所有 Docket 类型的 Bean，每个 Bean 对应一个文档分组
+     * <br>
+     * 可以发现不添加 @Bean 不会输出日志
+     */
+    @Bean
+    public Docket userDocket(){
+        log.info( "正在生成用户端接口文档" );
+        ApiInfo apiInfo = new ApiInfoBuilder()
+                .title( "苍穹外卖用户端接口文档" )
+                .version( "2.0" )
+                .description( "苍穹外卖用户端接口文档" )
+                .build();
+        Docket docket = new Docket( DocumentationType.SWAGGER_2 )
+                .groupName( "用户端接口" )
+                .apiInfo( apiInfo )
+                .select()
+                .apis( RequestHandlerSelectors.basePackage( "com.sky.controller.user" ) )
+                .paths( PathSelectors.any() )
+                .build();
+        return docket;
+    }
+
+    /**
      * 设置静态资源映射
-     * @param registry
      */
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/doc.html").addResourceLocations("classpath:/META-INF/resources/");
