@@ -16,6 +16,7 @@ public class StatusConstant {
     /** 禁用 - 停售 - 打烊 */
     public static final Integer DISABLE = 0;
 
+
     /**
      * 有效状态, 可用于检验传入的 status 参数
      * <br>
@@ -49,6 +50,8 @@ public class StatusConstant {
         public static final String OPEN = "营业中";
         /** 店铺打烊 */
         public static final String CLOSED = "打烊";
+        /** 店铺默认状态: 营业中 */
+        public static final Integer DEFAULT = 1;
 
         /**
          * 拿到对应的描述

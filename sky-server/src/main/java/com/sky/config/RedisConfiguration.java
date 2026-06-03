@@ -1,12 +1,12 @@
 package com.sky.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -26,12 +26,13 @@ public class RedisConfiguration {
 
 
     // ==================== 公有方法 ====================
+
+    /**
+     * String 类型 key -> JSON 数据，比如储存对象值
+     */
     @Bean
-    @Primary // 强制使用自定义 Bean(这玩意儿硬要用它自己的，导致我设置序列化器，存储的 key-value 还是乱码)
-//    @ConditionalOnMissingBean // 条件创建: 容器已有对象，就不重复创建；否则创建对象
-    // 去掉 @ConditionalOnMissingBean, 和 @Primary 一起用反而容易混淆，直接去掉
     public RedisTemplate< String, Object > // 加泛型类型安全
-        getRedisTemplate( RedisConnectionFactory redisConnectionFactory ){
+        redisTemplate( RedisConnectionFactory redisConnectionFactory ){
 
         log.info( "正在创建自定义 RedisTemplate" );
         RedisTemplate< String, Object > redisTemplate = new RedisTemplate<>();
@@ -46,21 +47,42 @@ public class RedisConfiguration {
         redisTemplate.setKeySerializer( new StringRedisSerializer() );
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
 
-        // value - 二选一
-        // 方案1: 纯 String
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
-
-        // 方案2: JSON（存对象用这个）
-        // Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        // redisTemplate.setValueSerializer(serializer);
-        // redisTemplate.setHashValueSerializer(serializer);
+        // value
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+        // ↓ 反序列化时会丢失具体类型（变成 LinkedHashMap）
+//        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+         redisTemplate.setValueSerializer(serializer);
+         redisTemplate.setHashValueSerializer(serializer);
 
         // 初始化校验和设置默认值,调用它让 RedisTemplate 真正就绪
         redisTemplate.afterPropertiesSet();
 
         return redisTemplate;
     }
+
+    /**
+     * 全 String 类型 Key -> Value
+     * <br>
+     * 这里是学习造轮子, <b>干活时要用 SpringBoot 自己的</b>
+     * <br>
+     * 等价于直接<code>return new StringRedisTemplate( facotry )</code>
+     */
+    @Bean
+    public StringRedisTemplate stringRedisTemplate( RedisConnectionFactory factory ){
+        log.info( "创建自定义 StringRedisTemplate" );
+        // 连接工厂对象
+        StringRedisTemplate stringRedisTemplate = new StringRedisTemplate( factory );
+        // 设置 Key 的序列化器
+        stringRedisTemplate.setKeySerializer( new StringRedisSerializer() );
+        stringRedisTemplate.setHashKeySerializer( new StringRedisSerializer() );
+        // Value
+        stringRedisTemplate.setValueSerializer( new StringRedisSerializer() );
+        stringRedisTemplate.setHashValueSerializer( new StringRedisSerializer() );
+        // 检验状态
+        stringRedisTemplate.afterPropertiesSet();
+        return stringRedisTemplate;
+    }
+
 
 
     // ==================== 私有辅助方法 ====================
