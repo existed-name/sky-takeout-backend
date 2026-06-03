@@ -6,6 +6,7 @@ import com.sky.service.ShopService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,15 +44,26 @@ public class ShopController {
 
     // ==================== 公有方法 ====================
     /**
-     * 修改营业状态(营业/打烊)
+     * 修改店铺营业状态(营业/打烊)
      */
-    @ApiOperation( value = "修改营业状态(营业/打烊)" )
+    @ApiOperation( value = "修改店铺营业状态(营业/打烊)" )
     @PutMapping( "/{status}" )
     public Result< Void > updateStatus( @PathVariable( name = "status" )
             @NotNull( message = "店铺营业状态不能为空" ) Integer status ){
         log.info( "修改营业状态为: {}, {}", status, StatusConstant.ShopStatus.getDescription( status ) );
         shopService.updateStatus( status );
         return Result.success();
+    }
+
+    /**
+     * 查询店铺营业状态
+     */
+    @ApiOperation( value = "查询店铺营业状态" )
+    @GetMapping( "/status" )
+    public Result< Integer > getStatus(){
+        log.info( "查询店铺营业状态" );
+        Integer status = shopService.getStatus();
+        return Result.success( status );
     }
 
 

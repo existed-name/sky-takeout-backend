@@ -41,6 +41,11 @@ public class ShopServiceImpl implements ShopService {
         // 由于只调用 1 次，其实不需要创建对象、直接调方法就行
     }
 
+    @Override
+    public Integer getStatus(){
+        return ( Integer ) redisTemplate.opsForValue().get( RedisConstant.Key.SHOP_STATUS );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
