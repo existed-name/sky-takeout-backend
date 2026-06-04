@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @Api( tags = "店铺相关接口" )
-// 推荐显式命名 value/name，防止 Spring 容器中 Bean 名冲突（尤其 admin/user 都有 ShopController 时）
+// 同名类 / Service 多实现类，需要显式指定 value/name，平时不加
 @RestController( "userShopController" )
 @RequestMapping( "/user/shop" )
 public class ShopController {

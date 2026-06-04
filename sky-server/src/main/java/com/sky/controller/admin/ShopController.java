@@ -1,6 +1,8 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.LogOperation;
 import com.sky.constant.StatusConstant;
+import com.sky.enumeration.OperationType;
 import com.sky.result.Result;
 import com.sky.service.ShopService;
 import io.swagger.annotations.Api;
@@ -21,7 +23,7 @@ import javax.validation.constraints.NotNull;
  */
 @Slf4j
 @Api( tags = "店铺管理接口" )
-// 推荐显式命名 value/name，防止 Spring 容器中 Bean 名冲突（尤其 admin/user 都有 ShopController 时）
+// 同名类 / Service 多实现类，需要显式指定 value/name，平时不加
 @RestController( "adminShopController" )
 @RequestMapping( "/admin/shop" )
 public class ShopController {
@@ -46,6 +48,7 @@ public class ShopController {
     /**
      * 修改店铺营业状态(营业/打烊)
      */
+    @LogOperation( description = "修改店铺营业状态(营业/打烊)", operationType = OperationType.UPDATE )
     @ApiOperation( value = "修改店铺营业状态(营业/打烊)" )
     @PutMapping( "/{status}" )
     public Result< Void > updateStatus( @PathVariable( name = "status" )
