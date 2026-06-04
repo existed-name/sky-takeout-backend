@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.io.Serializable;
@@ -36,7 +36,7 @@ public class SetmealDTO implements Serializable {
 
     /** 套餐名称(必填) */
     @ApiModelProperty(value = "套餐名称(必填)", example = "商务套餐A")
-    @NotEmpty( message = "套餐名称不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+    @NotBlank( message = "套餐名称不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private String name;
 
     /** 套餐价格(必填) */
@@ -55,7 +55,7 @@ public class SetmealDTO implements Serializable {
 
     /** 图片路径(必填) */
     @ApiModelProperty(value = "图片路径(必填)", example = "https://example.com/setmeal.jpg")
-    @NotEmpty( message = "套餐图片路径不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+    @NotBlank( message = "套餐图片路径不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private String image;
 
     /** 套餐菜品关系列表(选填) */

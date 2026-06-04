@@ -5,38 +5,47 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * 微信用户实体类
+ * 对应数据库 user 表，存储 C 端微信用户信息
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
+    /** 主键ID */
     private Long id;
 
-    //微信用户唯一标识
+    /** 微信用户唯一标识（openid） */
     private String openid;
 
-    //姓名
+    /** 姓名 */
     private String name;
 
-    //手机号
+    /** 手机号 */
     private String phone;
 
-    //性别 0 女 1 男
+    /** 性别：0 女 1 男 */
     private String sex;
 
-    //身份证号
+    /** 身份证号 */
     private String idNumber;
 
-    //头像
+    /** 头像URL */
     private String avatar;
 
-    //注册时间
+    /** 注册时间 */
     private LocalDateTime createTime;
+
+    /** 更新时间 */
+    private LocalDateTime updateTime;
 }

@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
@@ -27,17 +27,17 @@ public class EmployeeDTO implements Serializable {
 
     /** 员工用户名(唯一) */
     @ApiModelProperty(value = "员工用户名(唯一)", example = "admin")
-    @NotEmpty( message = "员工用户名不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+    @NotBlank( message = "员工用户名不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private String username;
 
     /** 员工姓名 */
     @ApiModelProperty(value = "员工姓名", example = "张三")
-    @NotEmpty( message = "员工姓名不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+    @NotBlank( message = "员工姓名不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private String name;
 
     /** 员工手机号 */
     @ApiModelProperty(value = "员工手机号", example = "13800138000")
-    @NotEmpty( message = "员工手机号不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+    @NotBlank( message = "员工手机号不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     @Pattern( regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     /*
     ^1[3-9]\d{9}$ => 匹配以1开头、第二位是3-9、总共11位数字的手机号
@@ -51,7 +51,7 @@ public class EmployeeDTO implements Serializable {
 
     /** 员工性别(1男,2女) */
     @ApiModelProperty(value = "员工性别(1男,2女)", example = "1")
-    @NotEmpty( message = "员工性别不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+    @NotBlank( message = "员工性别不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     @Pattern( regexp = "^[12]$", message = "员工性别只能是 1(男) 或 2(女)", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     /*
     ^ 字符串开头
@@ -62,7 +62,7 @@ public class EmployeeDTO implements Serializable {
 
     /** 员工身份证号 */
     @ApiModelProperty(value = "员工身份证号", example = "110101199001011234")
-    @NotEmpty( message = "员工身份证号不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+    @NotBlank( message = "员工身份证号不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     @Pattern( regexp = "(^\\d{15}$)|(^\\d{18}$)|(^\\d{17}(\\d|X|x)$)", message = "身份证号格式不正确", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     /*
     |  或

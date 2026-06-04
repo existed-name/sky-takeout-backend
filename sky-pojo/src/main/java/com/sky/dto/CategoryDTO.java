@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.io.Serializable;
@@ -31,7 +31,7 @@ public class CategoryDTO implements Serializable {
 
     /** 分类名称 */
     @ApiModelProperty(value = "分类名称", example = "川菜")
-    @NotEmpty( message = "分类名称不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+    @NotBlank( message = "分类名称不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private String name;
 
     /** 顺序序号 */
