@@ -5,7 +5,7 @@ package com.sky.exception.auth;
  *
  * @CreateTime 2026/6/5 14:23
  */
-public class EmptyClaimsException extends LoginFailedException {
+public class EmptyClaimsException extends UserNotLoginException {
     public EmptyClaimsException( String message ){
         super( message );
     }

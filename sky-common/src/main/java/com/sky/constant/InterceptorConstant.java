@@ -49,9 +49,9 @@ public class InterceptorConstant {
         /**
          * 请求路径是否是{@link com.sky.constant.InterceptorConstant.User#GET_SHOP_STATUS_PATH}
          *
-         * @param path 请求路径或者 URL
+         * @param path 请求路径或者 URL( 内部 contains 而不是 equals )
          */
-        public static boolean isPathGetShopStatus( String path ){
+        public static boolean isRequestForShopStatus( String path ){
             if ( path == null || path.isBlank() ){
                 return false;
             }

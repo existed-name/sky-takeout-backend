@@ -4,15 +4,19 @@ import com.sky.constant.InterceptorConstant;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.entity.User;
-import com.sky.exception.NotFoundException;
+import com.sky.exception.auth.AuthExpiredException;
 import com.sky.exception.auth.EmptyClaimsException;
 import com.sky.exception.auth.EmptyJwtTokenException;
-import com.sky.mapper.UserMapper;
+import com.sky.exception.auth.InvalidJwtTokenException;
+import com.sky.exception.auth.ParseJwtFailedException;
 import com.sky.properties.JwtProperties;
 import com.sky.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
-import org.springframework.lang.Nullable;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -25,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @CreateTime 2026/6/5 12:42
  */
+@Slf4j
 @Component
 public class UserJwtTokenInterceptor implements HandlerInterceptor {
     // ==================== 常量 ====================
@@ -35,13 +40,11 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
 
     // ==================== 实例变量 ====================
     private final JwtProperties jwtProperties;
-    private final UserMapper userMapper;
 
 
     // ==================== 构造器 ====================
-    public UserJwtTokenInterceptor( JwtProperties jwtProperties, UserMapper userMapper ){
+    public UserJwtTokenInterceptor( JwtProperties jwtProperties ){
         this.jwtProperties = jwtProperties;
-        this.userMapper = userMapper;
     }
 
 
@@ -51,7 +54,11 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
      *
      * @param request 请求对象，从中获取请求头、参数、URL 等
      * @param response 响应对象，用于设置状态码、写响应体
-     * @param handler 被拦截的目标，通常是 HandlerMethod（Controller 的方法）
+     * @param handler 被拦截的目标
+     *                <p>
+     *                - HandlerMethod => Controller 的方法
+     *                <p>
+     *                - ResourceHttpRequestHandler → 静态资源请求（如 /static/logo.png）
      *
      * @return true 放行(通过检验) | false 拦截
      */
@@ -74,7 +81,8 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
          */
         // 先看拦到的是不是 Controller 方法( HandlerMethod )
         if ( ! ( handler instanceof HandlerMethod ) ){
-            return false;
+            // 不是 HandleMethod 那就是静态资源 ResourceHttpRequestHandler, 直接放行
+            return true;
         }
 
         HandlerMethod handlerMethod = ( HandlerMethod ) handler;
@@ -84,8 +92,11 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
         }
 
         // 请求路径 /user/shop/status 查看店铺营业状态直接放行( 教程业务需求 )
-        String requestURL = request.getRequestURL().toString();
-        if ( InterceptorConstant.User.isPathGetShopStatus( requestURL ) ){
+        // 备注: requestURL 是完整 URL 路径: http://localhost:8080/user/shop/status
+        // requestURI 才是纯请求路径 /user/shop/status
+        // 为了避免极端情况 URL 包括目标路径，建议换成 URI
+        String requestURI = request.getRequestURI();
+        if ( InterceptorConstant.User.isRequestForShopStatus( requestURI ) ){
             return true;
         }
 
@@ -101,23 +112,38 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
         }
 
         // claims 本质是 Map(看源码), 就是 token 携带的信息( "userId" : xx )
-        Claims claims = JwtUtil.parseJWT( jwtProperties.getUserSecretKey(), jwtToken );
+        Claims claims = null;
+        try {
+            // 注意源码底层 JwtParser#parseClaimsJws 会抛出运行时异常，需要手动捕获
+            claims = JwtUtil.parseJWT( jwtProperties.getUserSecretKey(), jwtToken );
+        } catch ( MalformedJwtException e ){
+            // if the claimsJws string is not a valid JWS
+            // 查看 JwtUtil, parseClaimsJws( token ), 也就是 claimsJws = 传入的 jwtToken
+            throw new InvalidJwtTokenException( MessageConstant.LOGIN_FAILED );
+        } catch ( SignatureException e ){
+            //  if the claimsJws JWS signature validation fails
+            throw new InvalidJwtTokenException( MessageConstant.LOGIN_FAILED );
+        }  catch ( ExpiredJwtException e ){
+            // if the specified JWT is a Claims JWT and the Claims has an expiration time before the time this method is invoked
+            throw new AuthExpiredException( MessageConstant.TOKEN_EXPIRED );
+        } catch ( JwtException e ){
+            // 注意: 只捕获 Jwt 解析相关异常、不捕获所有 Exception，防止吞掉未知异常
+            throw new ParseJwtFailedException( MessageConstant.PARSE_TOKEN_FAILED );
+        }
+
+        // 不过解析成功一定会返回非空 claims ?
         if ( claims == null || claims.isEmpty() ){
-            // claims 为空可能是 JWT 过期了
-            throw new EmptyClaimsException( MessageConstant.TOKEN_EXPIRED );
+            throw new EmptyClaimsException( MessageConstant.PARSE_TOKEN_FAILED );
         }
 
-        // 系统生成的 JWT 跟解析的 JWT 必须一一对应
         // JWT = secretKey( 服务端 JWT 密钥 ) + tokenName( 前端传参命名 ) + ttl( 有效时间 ) + claims( 携带信息 )
-        // 前 2 个已经指定，然后如果超出 ttl, claims 应该为空
-        // 于是现在只需要比对 claims
+        // 最后只需要从 claims 中拿到用户信息( userId )
         Object object = claims.get( JwtClaimsConstant.USER_ID );
-        Long userId = ( Long ) object;
-        User user = userMapper.selectById( userId );
-        if ( user == null ){
-            throw new NotFoundException( MessageConstant.ACCOUNT_NOT_FOUND );
-        }
+        // 注意数字在 claims 内部通常为 Integer，强转 Long 可能报错
+        Long userId = Long.valueOf( object.toString() );
 
+        // 由于 JWT 是服务端签发的，这里解析成功说明用户必存在，就不需要再查库验证了
+        log.info( "当前用户 id = {}", userId );
         BaseContext.setCurrentId( userId );
         return true;
     }
@@ -126,8 +152,7 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
      * 删除记录的用户 id
      */
     @Override
-    public void afterCompletion( HttpServletRequest request, HttpServletResponse response, Object handler,
-                                 @Nullable Exception ex ){
+    public void afterCompletion( HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex ){
         BaseContext.removeCurrentId();
     }
 
