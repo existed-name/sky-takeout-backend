@@ -1,6 +1,8 @@
 package com.sky.config;
 
-import com.sky.interceptor.JwtTokenAdminInterceptor;
+import com.sky.constant.InterceptorConstant;
+import com.sky.interceptor.AdminJwtTokenInterceptor;
+import com.sky.interceptor.UserJwtTokenInterceptor;
 import com.sky.json.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -26,20 +28,27 @@ import java.util.List;
 @Slf4j
 public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
-    private final JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
+    private final AdminJwtTokenInterceptor adminJwtTokenInterceptor;
+    private final UserJwtTokenInterceptor userJwtTokenInterceptor;
 
-    public WebMvcConfiguration( JwtTokenAdminInterceptor jwtTokenAdminInterceptor ){
-        this.jwtTokenAdminInterceptor = jwtTokenAdminInterceptor;
+    public WebMvcConfiguration( AdminJwtTokenInterceptor adminJwtTokenInterceptor, UserJwtTokenInterceptor userJwtTokenInterceptor ){
+        this.adminJwtTokenInterceptor = adminJwtTokenInterceptor;
+        this.userJwtTokenInterceptor = userJwtTokenInterceptor;
     }
 
     /**
-     * 注册自定义拦截器
+     * 注册自定义拦截器 - 管理端 + 用户端
      */
     protected void addInterceptors(InterceptorRegistry registry) {
-        log.info("开始注册自定义拦截器...");
-        registry.addInterceptor(jwtTokenAdminInterceptor)
-                .addPathPatterns("/admin/**")
-                .excludePathPatterns("/admin/employee/login");
+        log.info( "注册管理端拦截器" );
+        registry.addInterceptor( adminJwtTokenInterceptor )
+                .addPathPatterns( InterceptorConstant.Admin.REGISTRY_ADD_PATHS )
+                .excludePathPatterns( InterceptorConstant.Admin.REGISTRY_EXCLUDE_PATHS );
+
+        log.info( "注册用户端拦截器" );
+        registry.addInterceptor( userJwtTokenInterceptor )
+                .addPathPatterns( InterceptorConstant.User.REGISTRY_ADD_PATHS )
+                .excludePathPatterns( InterceptorConstant.User.REGISTRY_EXCLUDE_PATHS );
     }
 
     /**

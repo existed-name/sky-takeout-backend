@@ -41,4 +41,5 @@ public class MessageConstant {
     public static final String UNKOWN_SYSTEM_ERROR = "未知系统异常";
     public static final String UNKNOWN_DATABASE_ERROR = "未知数据库异常";
     public static final String LOG_OPERATION_FAILED = "操作日志记录失败";
+    public static final String TOKEN_EXPIRED = "登录状态过期, 请重新登录";
 }

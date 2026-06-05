@@ -8,7 +8,7 @@ import com.sky.constant.MessageConstant;
 import com.sky.dto.UserLoginDTO;
 import com.sky.external.WechatSessionDTO;
 import com.sky.entity.User;
-import com.sky.exception.WechatAuthFailedException;
+import com.sky.exception.auth.WechatAuthFailedException;
 import com.sky.mapper.UserMapper;
 import com.sky.properties.JwtProperties;
 import com.sky.service.UserService;
@@ -21,13 +21,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j

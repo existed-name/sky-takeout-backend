@@ -37,4 +37,14 @@ public interface UserMapper {
         WHERE openid = #{opendid}
         """ )
     User selectByOpenid( @Param( "openid" ) String openid );
+
+    /**
+     * 根据 id 查询用户( <b>所有字段</b> )
+     */
+    @Select( """
+            SELECT id, openid, name, phone, sex, id_number, avatar, create_time, update_time
+            FROM user
+            WHERE id = #{id}
+            """ )
+    User selectById( @Param( "id" ) Long userId );
 }
