@@ -7,7 +7,6 @@ import com.sky.vo.UserLoginVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,7 +51,7 @@ public class UserController {
     @PostMapping( "/login" )
     public Result< UserLoginVO > login( @Valid @RequestBody UserLoginDTO userLoginDTO ){
         log.info( "用户登录，登录参数: {}", userLoginDTO );
-        UserLoginVO userLoginVO = userService.login( userLoginDTO );
+        UserLoginVO userLoginVO = userService.wechatLogin( userLoginDTO );
         return Result.success( userLoginVO );
     }
 

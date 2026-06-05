@@ -1,5 +1,6 @@
 package com.sky.external;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,12 +27,15 @@ public class WechatSessionDTO {
     private String openid;
 
     /** 会话密钥 */
+    @JsonProperty("session_key") // 对应返回数据 session_key
     private String sessionKey;
 
     /** 错误码 */
+    @JsonProperty( "errcode" ) // 对应返回数据 errcode
     private Integer errorCode;
 
     /** 错误信息 */
+    @JsonProperty( "errmsg" ) // 对应返回数据 errmsg
     private String errorMessage;
 
 

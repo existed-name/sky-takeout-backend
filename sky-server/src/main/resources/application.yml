@@ -35,14 +35,26 @@ logging:
         controller: info
 
 sky:
+  # JwtProperties
   jwt:
+    # 管理端 JWT
     # 设置jwt签名加密时使用的秘钥
     admin-secret-key: itcast
-    # 设置jwt过期时间
+    # 设置jwt过期时间(ms)
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
-
+    # 用户端 JWT
+    user-secret-key: itheima
+    user-ttl: 7200000
+    user-token-name: authentication
+  # 自己的微信小程序开发者信息
+  wechat:
+    # 小程序 id
+    appid: ${sky.wechat.appid}
+    # 小程序密钥
+    secret: ${sky.wechat.secret}
+  # 阿里 OSS 配置
   alioss:
     access-key-id: ${sky.alioss.access-key-id}
     bucket-name: ${sky.alioss.bucket-name}

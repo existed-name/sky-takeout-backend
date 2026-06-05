@@ -9,5 +9,5 @@ public interface UserService {
      *
      * @see <a href="https://developers.weixin.qq.com/minigame/dev/api-backend/login/api_code2session.html">微信官网登录 API 使用操作</alink="https://developers.weixin.qq.com/minigame/dev/api-backend/login/api_code2session.html">
      */
-    UserLoginVO login( UserLoginDTO userLoginDTO );
+    UserLoginVO wechatLogin( UserLoginDTO userLoginDTO );
 }

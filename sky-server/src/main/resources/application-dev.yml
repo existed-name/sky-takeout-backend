@@ -13,11 +13,15 @@ sky:
     access-key-secret: <自己的access-key-secret>
     bucket-name: <自己的bucket-name>
 
-
-
   redis:
     host: localhost
     port: 6379
     password: 123456
     # 推荐用 0 号数据库
     database: 0
+
+  wechat:
+    appid: <自己的小程序 id>
+    secret: <自己的小程序密钥>
+
+

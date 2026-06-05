@@ -3,13 +3,16 @@ package com.sky.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.constant.HttpClientConstant;
+import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.dto.UserLoginDTO;
 import com.sky.external.WechatSessionDTO;
 import com.sky.entity.User;
-import com.sky.exception.WechatAuthFailed;
+import com.sky.exception.WechatAuthFailedException;
 import com.sky.mapper.UserMapper;
+import com.sky.properties.JwtProperties;
 import com.sky.service.UserService;
+import com.sky.utils.JwtUtil;
 import com.sky.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -18,11 +21,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -35,18 +41,20 @@ public class UserServiceImpl implements UserService {
 
     // ==================== 实例变量 ====================
     private final UserMapper userMapper;
+    private final JwtProperties jwtProperties;
 
 
 
     // ==================== 构造器 ====================
-    public UserServiceImpl( UserMapper userMapper ){
+    public UserServiceImpl( UserMapper userMapper, JwtProperties jwtProperties ){
         this.userMapper = userMapper;
+        this.jwtProperties = jwtProperties;
     }
 
 
     // ==================== 公有方法 ====================
     @Override
-    public UserLoginVO login( UserLoginDTO userLoginDTO ){
+    public UserLoginVO wechatLogin( UserLoginDTO userLoginDTO ){
         // 传入参数: 微信用户授权码 code
         // 官网 API 要求 RequestParam = appid + secret + js_code + grant_type
         // 只需填入 js_code 即可拿到 session_id, openid
@@ -55,6 +63,11 @@ public class UserServiceImpl implements UserService {
         WechatSessionDTO wechatSessionDTO = wechatCode2Session( code );
 
         String openid = wechatSessionDTO.getOpenid();
+        if ( openid == null || openid.isBlank() ){
+            log.error( "微信用户唯一标识 openid 不能为空" );
+            throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
+        }
+
         User user = userMapper.selectByOpenid( openid );
         if ( user == null ){
             user = registerWithOpenid( openid );
@@ -63,7 +76,7 @@ public class UserServiceImpl implements UserService {
         return UserLoginVO.builder()
                 .id( user.getId() )
                 .openid( openid )
-                .token( wechatSessionDTO.getSessionKey() )
+                .token( generateUserJwtToken( user ) )
                 .build();
     }
 
@@ -73,7 +86,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 注册用户
      *
-     * @param openid 微信用户唯一标识
+     * @param openid 微信用户唯一标识, <b>不能是空字符串</b>
      * @return 字段完整的用户对象
      */
     private User registerWithOpenid( String openid ){
@@ -122,7 +135,7 @@ public class UserServiceImpl implements UserService {
                 // 出现异常记得提前关闭资源
                 // 由于异常、正常情况 finally 都会执行，而正常情况不需要提前关闭资源，就不需要 finally，直接在 catch 块里面关闭资源
                 closeResource( httpResponse );
-                throw new WechatAuthFailed( MessageConstant.LOGIN_FAILED );
+                throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
             }
 
             // 响应体数据
@@ -133,7 +146,7 @@ public class UserServiceImpl implements UserService {
             } catch ( IOException e ){
                 log.error( "解析用户登录响应体失败", e );
                 closeResource( httpResponse );
-                throw new WechatAuthFailed( MessageConstant.LOGIN_FAILED );
+                throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
             }
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -156,12 +169,12 @@ public class UserServiceImpl implements UserService {
             // 转换 DTO 失败后，DTO 应该为 null
             // 单独从 catch 块拎出来，是为了少写 1 次关闭资源 + 避免传回空对象
             if ( wechatSessionDTO == null ){
-                throw new WechatAuthFailed( MessageConstant.LOGIN_FAILED );
+                throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
             }
             return wechatSessionDTO;
         } catch ( IOException e ){
             log.error( "HttpClient 创建失败", e );
-            throw new WechatAuthFailed( MessageConstant.LOGIN_FAILED );
+            throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
         }
     }
 
@@ -177,5 +190,23 @@ public class UserServiceImpl implements UserService {
                 log.warn( "{} 关闭失败", closeable.toString() );
             }
         }
+    }
+
+    /**
+     * 调用{@link com.sky.utils.JwtUtil}生成用户登录 token
+     * <p>
+     * token 携带信息(claims): userId
+     */
+    private String generateUserJwtToken( User user ){
+        // claims 声明: token 携带的信息，比如不敏感的 userId 等等
+        Map< String, Object > claims = Map.ofEntries(
+                Map.entry( JwtClaimsConstant.USER_ID, user.getId() )
+        );
+        String jwt = JwtUtil.createJWT(
+                jwtProperties.getUserSecretKey(),
+                jwtProperties.getUserTtl(),
+                claims
+        );
+        return jwt;
     }
 }
