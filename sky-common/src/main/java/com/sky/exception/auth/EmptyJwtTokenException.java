@@ -5,7 +5,7 @@ package com.sky.exception.auth;
  *
  * @CreateTime 2026/6/5 14:19
  */
-public class EmptyJwtTokenException extends UserNotLoginException {
+public class EmptyJwtTokenException extends NotLoginException {
     public EmptyJwtTokenException( String message ){
         super( message );
     }

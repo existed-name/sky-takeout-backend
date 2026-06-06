@@ -38,9 +38,11 @@ public class MessageConstant {
     public static final String INVALID_STATUS_PARAM = "状态参数不合法";
 
     public static final String SETMEAL_NOT_FOUND = "套餐不存在";
-    public static final String UNKOWN_SYSTEM_ERROR = "未知系统异常";
+    public static final String UNKNOWN_SYSTEM_ERROR = "未知系统异常";
     public static final String UNKNOWN_DATABASE_ERROR = "未知数据库异常";
     public static final String LOG_OPERATION_FAILED = "操作日志记录失败";
     public static final String TOKEN_EXPIRED = "登录状态过期, 请重新登录";
     public static final String PARSE_TOKEN_FAILED = "登录状态解析失败, 请重新登录";
+    public static final String NOT_LOGIN = "您还没有登录哦~";
+    public static final String TOKEN_INVALID = "登录参数错误, 请重新登录";
 }

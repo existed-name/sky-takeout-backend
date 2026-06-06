@@ -2,10 +2,13 @@ package com.sky.handler;
 
 import com.sky.constant.MessageConstant;
 import com.sky.exception.BusinessException;
+import com.sky.exception.auth.NotLoginException;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolationException;
@@ -21,6 +24,14 @@ import java.sql.SQLIntegrityConstraintViolationException;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    /*
+    异常类型	        HTTP状态码	理由
+    参数校验失败	    200	        业务错误，请求本身没问题
+    业务异常（如"菜品不存在"）	200	同上
+    未登录 / Token 过期	401	    认证失败，标准语义
+    无权限	            403	        授权失败，标准语义
+    系统异常	        500	        服务端错误，标准语义
+     */
 
     /**
      * 捕获检验方法<b>单个字段参数</b>时抛出的异常
@@ -39,7 +50,8 @@ public class GlobalExceptionHandler {
     /**
      * 捕获检验方法 <b>DTO 参数</b>时抛出的异常
      */
-    @ExceptionHandler( MethodArgumentNotValidException.class ) // ValidationException 是它父类，也可以捕获
+    // ValidationException 是它父类，也可以捕获
+    @ExceptionHandler( MethodArgumentNotValidException.class )
     public Result< String > handleDtoValidationException( MethodArgumentNotValidException exception ){
         String message = exception.getMessage();
         log.warn( "DTO 检验未通过: {}", message );
@@ -47,13 +59,22 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 捕获未登录异常
+     */
+    @ExceptionHandler( NotLoginException.class )
+    @ResponseStatus( HttpStatus.UNAUTHORIZED )
+    public Result< String > handleNotLoginException( NotLoginException e ){
+        String message = e.getMessage();
+        log.warn( "管理员或用户未登录: {}", message );
+        return Result.error( message );
+    }
+
+    /**
      * 捕获业务异常
-     * @param ex
-     * @return
+     * <p>
+     *   - 包括登录失败
      */
     @ExceptionHandler( value = BusinessException.class )
-    // @ResponseStatus( code = HttpStatus.INTERNAL_SERVER_ERROR )
-    // ↑ 不需要，因为 Result 已经封装了业务状态码 code
     public Result< String > handleBusinessException( BusinessException ex){
         log.warn( "业务异常信息：{}", ex.getMessage() );
         return Result.error( ex.getMessage() );
@@ -88,7 +109,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler( Exception.class )
     public Result< String > handleSystemException( Exception exception ){
         log.error( "未知系统异常", exception );
-        return Result.error( MessageConstant.UNKOWN_SYSTEM_ERROR );
+        return Result.error( MessageConstant.UNKNOWN_SYSTEM_ERROR );
     }
 
 }

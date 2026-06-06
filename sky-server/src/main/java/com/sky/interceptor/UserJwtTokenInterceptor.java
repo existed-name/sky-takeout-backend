@@ -5,7 +5,7 @@ import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.exception.auth.AuthExpiredException;
-import com.sky.exception.auth.EmptyClaimsException;
+import com.sky.exception.auth.EmptyJwtClaimsException;
 import com.sky.exception.auth.EmptyJwtTokenException;
 import com.sky.exception.auth.InvalidJwtTokenException;
 import com.sky.exception.auth.ParseJwtFailedException;
@@ -106,7 +106,7 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
         String jwtToken = request.getHeader( jwtProperties.getUserTokenName() );
         if ( jwtToken == null || jwtToken.isBlank() ){
             // 请求头没带 token
-            throw new EmptyJwtTokenException( MessageConstant.USER_NOT_LOGIN );
+            throw new EmptyJwtTokenException( MessageConstant.NOT_LOGIN );
             // 由于登录次数会很多，可能不需要追踪，所以这里没有打日志
             // 然后不确定应该放哪种具体的报错信息
         }
@@ -119,10 +119,10 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
         } catch ( MalformedJwtException e ){
             // if the claimsJws string is not a valid JWS
             // 查看 JwtUtil, parseClaimsJws( token ), 也就是 claimsJws = 传入的 jwtToken
-            throw new InvalidJwtTokenException( MessageConstant.LOGIN_FAILED );
+            throw new InvalidJwtTokenException( MessageConstant.TOKEN_INVALID );
         } catch ( SignatureException e ){
             //  if the claimsJws JWS signature validation fails
-            throw new InvalidJwtTokenException( MessageConstant.LOGIN_FAILED );
+            throw new InvalidJwtTokenException( MessageConstant.TOKEN_INVALID );
         }  catch ( ExpiredJwtException e ){
             // if the specified JWT is a Claims JWT and the Claims has an expiration time before the time this method is invoked
             throw new AuthExpiredException( MessageConstant.TOKEN_EXPIRED );
@@ -133,7 +133,7 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
 
         // 不过解析成功一定会返回非空 claims ?
         if ( claims == null || claims.isEmpty() ){
-            throw new EmptyClaimsException( MessageConstant.PARSE_TOKEN_FAILED );
+            throw new EmptyJwtClaimsException( MessageConstant.LOGIN_FAILED );
         }
 
         // JWT = secretKey( 服务端 JWT 密钥 ) + tokenName( 前端传参命名 ) + ttl( 有效时间 ) + claims( 携带信息 )

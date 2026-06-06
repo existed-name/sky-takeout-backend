@@ -5,7 +5,7 @@ package com.sky.exception.auth;
  *
  * @CreateTime 2026/6/5 21:53
  */
-public class ParseJwtFailedException extends UserNotLoginException {
+public class ParseJwtFailedException extends NotLoginException {
     public ParseJwtFailedException( String message ){
         super( message );
     }
