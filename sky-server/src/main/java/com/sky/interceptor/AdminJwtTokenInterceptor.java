@@ -6,6 +6,7 @@ import com.sky.context.BaseContext;
 import com.sky.exception.auth.AuthExpiredException;
 import com.sky.exception.auth.EmptyJwtTokenException;
 import com.sky.exception.auth.InvalidJwtTokenException;
+import com.sky.exception.auth.NotLoginException;
 import com.sky.exception.auth.ParseJwtFailedException;
 import com.sky.properties.JwtProperties;
 import com.sky.utils.JwtUtil;
@@ -80,6 +81,7 @@ public class AdminJwtTokenInterceptor implements HandlerInterceptor {
         // Claims 内的数字默认 Integer, 但要注意判空
         Object object = claims.get( JwtClaimsConstant.EMP_ID );
         if ( object == null ){
+            // 服务端签发的 claims 包含了用户 id，但没有解析出来，那就是解析异常
             throw new ParseJwtFailedException( MessageConstant.LOGIN_FAILED );
         }
         Long empId = Long.valueOf( object.toString() );

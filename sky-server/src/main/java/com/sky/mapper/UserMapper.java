@@ -34,7 +34,7 @@ public interface UserMapper {
     @Select( """
         SELECT id, openid, name, phone, sex, id_number, avatar, create_time, update_time
         FROM user
-        WHERE openid = #{opendid}
+        WHERE openid = #{openid}
         """ )
     User selectByOpenid( @Param( "openid" ) String openid );
 

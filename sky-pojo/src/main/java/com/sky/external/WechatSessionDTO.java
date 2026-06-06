@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WechatSessionDTO {
+public class WeChatSessionDTO {
     // ==================== 常量 ====================
 
 
@@ -43,6 +43,17 @@ public class WechatSessionDTO {
 
 
     // ==================== 公有方法 ====================
+
+    /**
+     * 通过 API 登录失败会返回<code>errcode</code>和<code>errmsg</code>, 由此判断登录失败
+     *
+     * @see <a href="https://developers.weixin.qq.com/minigame/dev/api-backend/login/api_code2session.html">微信小程序登录官网</a>
+     */
+    public boolean isLoginFailed(){
+        return errorCode != null && errorCode != 0 // 成功时 0
+                &&  // 这里为了保险还补充了异常信息检验
+                errorMessage != null && ! errorMessage.isBlank();
+    }
 
 
     // ==================== 私有辅助方法 ====================

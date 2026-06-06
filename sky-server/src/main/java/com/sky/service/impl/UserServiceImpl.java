@@ -6,11 +6,12 @@ import com.sky.constant.HttpClientConstant;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.dto.UserLoginDTO;
-import com.sky.external.WechatSessionDTO;
+import com.sky.external.WeChatSessionDTO;
 import com.sky.entity.User;
-import com.sky.exception.auth.WechatAuthFailedException;
+import com.sky.exception.auth.WeChatAuthFailedException;
 import com.sky.mapper.UserMapper;
 import com.sky.properties.JwtProperties;
+import com.sky.properties.WeChatProperties;
 import com.sky.service.UserService;
 import com.sky.utils.JwtUtil;
 import com.sky.vo.UserLoginVO;
@@ -40,13 +41,14 @@ public class UserServiceImpl implements UserService {
     // ==================== 实例变量 ====================
     private final UserMapper userMapper;
     private final JwtProperties jwtProperties;
-
+    private final WeChatProperties weChatProperties;
 
 
     // ==================== 构造器 ====================
-    public UserServiceImpl( UserMapper userMapper, JwtProperties jwtProperties ){
+    public UserServiceImpl( UserMapper userMapper, JwtProperties jwtProperties, WeChatProperties weChatProperties ){
         this.userMapper = userMapper;
         this.jwtProperties = jwtProperties;
+        this.weChatProperties = weChatProperties;
     }
 
 
@@ -58,12 +60,19 @@ public class UserServiceImpl implements UserService {
         // 只需填入 js_code 即可拿到 session_id, openid
         // 于是手搓 HttpClient、设置请求体、访问目标路径、解析响应体
         String code = userLoginDTO.getCode();
-        WechatSessionDTO wechatSessionDTO = wechatCode2Session( code );
+        WeChatSessionDTO wechatSessionDTO = wechatCode2Session( code );
+
+        Integer errorCode = wechatSessionDTO.getErrorCode();
+        String errorMessage = wechatSessionDTO.getErrorMessage();
+        if ( wechatSessionDTO.isLoginFailed() ){
+            log.warn( "微信登录失败, 错误码 = {}, 错误信息 = {}", errorCode, errorMessage );
+            throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
+        }
 
         String openid = wechatSessionDTO.getOpenid();
         if ( openid == null || openid.isBlank() ){
-            log.error( "微信用户唯一标识 openid 不能为空" );
-            throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
+            log.warn( "微信用户唯一标识 openid 不能为空" );
+            throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
         }
 
         User user = userMapper.selectByOpenid( openid );
@@ -85,18 +94,18 @@ public class UserServiceImpl implements UserService {
      * 注册用户
      *
      * @param openid 微信用户唯一标识, <b>不能是空字符串</b>
-     * @return 字段完整的用户对象
+     * @return 用户对象，不包含项目、电话、性别、身份证号、头像
      */
     private User registerWithOpenid( String openid ){
         User user = User.builder()
-                // .id(  )
+                // .id(  ) 主键回填
                 .openid( openid )
                 // .name().phone().sex().idNumber().avatar()
                 .createTime( LocalDateTime.now() )
                 .updateTime( LocalDateTime.now() )
                 .build();
         userMapper.insert( user );
-        return userMapper.selectByOpenid( openid );
+        return user;
     }
 
     /**
@@ -106,7 +115,7 @@ public class UserServiceImpl implements UserService {
      * @return <b>保证非空, 空则抛异常</b>
      * @see <a href="https://developers.weixin.qq.com/minigame/dev/api-backend/login/api_code2session.html">微信官网登录 API 使用操作</alink="https://developers.weixin.qq.com/minigame/dev/api-backend/login/api_code2session.html">
      */
-    private WechatSessionDTO wechatCode2Session( String code ){
+    private WeChatSessionDTO wechatCode2Session( String code ){
         /*
             对比 2 种操作
             * 外层都是 try-with-resources 自动管理 HttpClient
@@ -121,8 +130,13 @@ public class UserServiceImpl implements UserService {
          */
         try ( CloseableHttpClient httpClient = HttpClients.createDefault() ) {
             // GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JS_CODE&grant_type=GRANT_TYPE
-            HttpGet httpGet = new HttpGet( HttpClientConstant.WECHAT_LOGIN_URL
-                    + HttpClientConstant.formatQueryParams( code ) );
+            HttpGet httpGet = new HttpGet(
+                    HttpClientConstant.WECHAT_LOGIN_URL
+                    + HttpClientConstant.formatQueryParams(
+                            weChatProperties.getAppid(),
+                            weChatProperties.getSecret(),
+                            code
+                    ) );
 
             // 响应体  -  局部变量不会初始化，必须显式赋 null
             CloseableHttpResponse httpResponse = null;
@@ -133,7 +147,7 @@ public class UserServiceImpl implements UserService {
                 // 出现异常记得提前关闭资源
                 // 由于异常、正常情况 finally 都会执行，而正常情况不需要提前关闭资源，就不需要 finally，直接在 catch 块里面关闭资源
                 closeResource( httpResponse );
-                throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
+                throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
             }
 
             // 响应体数据
@@ -144,7 +158,7 @@ public class UserServiceImpl implements UserService {
             } catch ( IOException e ){
                 log.error( "解析用户登录响应体失败", e );
                 closeResource( httpResponse );
-                throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
+                throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
             }
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -155,11 +169,11 @@ public class UserServiceImpl implements UserService {
             String openid = responseMap.get( HttpClientConstant.OPEN_ID_STRING );
              */
 
-            WechatSessionDTO wechatSessionDTO = null;
+            WeChatSessionDTO wechatSessionDTO = null;
             try {
-                wechatSessionDTO = objectMapper.readValue( responseString, WechatSessionDTO.class );
+                wechatSessionDTO = objectMapper.readValue( responseString, WeChatSessionDTO.class );
             } catch ( JsonProcessingException e ){
-                log.error( "用户登录响应体转换 WechatSessionDTO 失败", e );
+                log.error( "用户登录响应体转换 WeChatSessionDTO 失败", e );
             }
 
             // 最后还需要再手动关闭
@@ -167,12 +181,12 @@ public class UserServiceImpl implements UserService {
             // 转换 DTO 失败后，DTO 应该为 null
             // 单独从 catch 块拎出来，是为了少写 1 次关闭资源 + 避免传回空对象
             if ( wechatSessionDTO == null ){
-                throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
+                throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
             }
             return wechatSessionDTO;
         } catch ( IOException e ){
             log.error( "HttpClient 创建失败", e );
-            throw new WechatAuthFailedException( MessageConstant.LOGIN_FAILED );
+            throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
         }
     }
 

@@ -5,8 +5,8 @@ package com.sky.exception.auth;
  *
  * @CreateTime 2026/6/4 20:06
  */
-public class WechatAuthFailedException extends LoginFailedException {
-    public WechatAuthFailedException( String message ){
+public class WeChatAuthFailedException extends LoginFailedException {
+    public WeChatAuthFailedException( String message ){
         super( message );
     }
 }

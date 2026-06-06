@@ -8,6 +8,7 @@ import com.sky.exception.auth.AuthExpiredException;
 import com.sky.exception.auth.EmptyJwtClaimsException;
 import com.sky.exception.auth.EmptyJwtTokenException;
 import com.sky.exception.auth.InvalidJwtTokenException;
+import com.sky.exception.auth.NotLoginException;
 import com.sky.exception.auth.ParseJwtFailedException;
 import com.sky.properties.JwtProperties;
 import com.sky.utils.JwtUtil;
@@ -140,6 +141,10 @@ public class UserJwtTokenInterceptor implements HandlerInterceptor {
         // 最后只需要从 claims 中拿到用户信息( userId )
         Object object = claims.get( JwtClaimsConstant.USER_ID );
         // 注意数字在 claims 内部通常为 Integer，强转 Long 可能报错
+        if ( object == null ){
+            // 注意判空
+            throw new ParseJwtFailedException( MessageConstant.LOGIN_FAILED );
+        }
         Long userId = Long.valueOf( object.toString() );
 
         // 由于 JWT 是服务端签发的，这里解析成功说明用户必存在，就不需要再查库验证了
