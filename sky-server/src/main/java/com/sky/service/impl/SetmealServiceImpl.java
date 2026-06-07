@@ -204,6 +204,7 @@ public class SetmealServiceImpl implements SetmealService {
         }
     }
 
+    @Transactional( readOnly = true )
     @Override
     public List< SetmealVO > listByCategoryId( Long categoryId ){
         // SetmealVO = Setmeal + categoryName + SetmealDishList 关联关系
@@ -226,6 +227,12 @@ public class SetmealServiceImpl implements SetmealService {
         }
 
         return setmealVOList;
+    }
+
+    @Transactional( readOnly = true )
+    @Override
+    public List< SetmealDish > listRelationBySetmealId( Long id ){
+        return setmealDishMapper.selectBySetmealId( id );
     }
 
 

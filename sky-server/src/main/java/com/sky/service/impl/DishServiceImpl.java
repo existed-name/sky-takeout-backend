@@ -69,6 +69,7 @@ public class DishServiceImpl implements DishService {
         saveDishFlavors( dish.getId(), dishDTO.getFlavors() );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public PageResult pageQuery( DishPageQueryDTO dishPageQueryDTO ){
         PageUtil.validateParameterAndStartPage( dishPageQueryDTO.getPage(), dishPageQueryDTO.getPageSize() );
@@ -143,6 +144,7 @@ public class DishServiceImpl implements DishService {
         dishMapper.deleteBatch( ids );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public DishVO getInfoById( Long id ){
         DishVO dishVO = dishMapper.selectDishVOByIdWithoutFlavors( id );
@@ -218,6 +220,7 @@ public class DishServiceImpl implements DishService {
         }
     }
 
+    @Transactional( readOnly = true )
     @Override
     public List< DishVO > listByCategoryId( Long categoryId ){
         List< DishVO > dishVOList = dishMapper.selectDishVOByCategoryId( categoryId );

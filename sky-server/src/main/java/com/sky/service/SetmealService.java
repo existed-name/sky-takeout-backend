@@ -2,6 +2,7 @@ package com.sky.service;
 
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.entity.SetmealDish;
 import com.sky.result.PageResult;
 import com.sky.vo.SetmealVO;
 
@@ -49,4 +50,9 @@ public interface SetmealService {
      * 根据套餐分类 id 查询对应的套餐
      */
     List< SetmealVO> listByCategoryId( Long categoryId );
+
+    /**
+     * 查询套餐对应的套餐-菜品关联关系
+     */
+    List< SetmealDish > listRelationBySetmealId( @NotNull( message = "套餐 id 不能为空" ) @Positive( message = "套餐 id 必须是正整数" ) Long id );
 }

@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 
@@ -47,6 +48,7 @@ public class ShopServiceImpl implements ShopService {
     // Redis 还可以用 @Transactional ??
     // @Transactional( rollbackFor = Exception.class )
     // Redis 不需要这些注解，而且因为非关系型数据库，也不需要持久层 @Mapper/Repository
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void updateStatus( Integer status ){
         StatusConstant.validateStatus( status );
@@ -58,6 +60,7 @@ public class ShopServiceImpl implements ShopService {
         // 由于只调用 1 次，其实不需要创建对象、直接调方法就行
     }
 
+    @Transactional( readOnly = true )
     @Override
     public Integer getStatus(){
         Object status = stringRedisTemplate.opsForValue().get( RedisConstant.Key.SHOP_STATUS );

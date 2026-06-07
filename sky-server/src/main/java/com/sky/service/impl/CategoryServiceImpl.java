@@ -20,6 +20,7 @@ import com.sky.utils.PageUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,6 +49,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     // ==================== 公有方法 ====================
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void save( CategoryDTO categoryDTO ){
         Category category = new Category();
@@ -64,6 +66,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.insert( category );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public PageResult page( CategoryPageQueryDTO categoryPageQueryDTO ){
         PageUtil.validateParameterAndStartPage( categoryPageQueryDTO.getPage(), categoryPageQueryDTO.getPageSize() );
@@ -71,6 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
         return PageUtil.buildPageResult( categoryList );
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void deleteById( Long id ){
         //查询当前分类是否关联了菜品，如果关联了就抛出业务异常
@@ -90,6 +94,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.deleteById( id );
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void update( CategoryDTO categoryDTO ){
         Category category = new Category();
@@ -99,6 +104,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.update( category );
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void updateStatus( Long id, Integer status ){
         StatusConstant.validateStatus( status );
@@ -109,6 +115,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.update( category );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public List< Category > listByType( Integer type ){
         // 不需要额外检验 type，动态 SQL 处理了 null 查所有，无效 type 也只是返回空数组

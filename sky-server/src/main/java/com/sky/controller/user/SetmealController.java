@@ -1,5 +1,6 @@
 package com.sky.controller.user;
 
+import com.sky.entity.SetmealDish;
 import com.sky.result.Result;
 import com.sky.service.SetmealService;
 import com.sky.vo.SetmealVO;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -49,6 +52,22 @@ public class SetmealController {
         List< SetmealVO > setmealVOList = setmealService.listByCategoryId( categoryId );
         return Result.success( setmealVOList );
     }
+
+    /**
+     * 查询套餐包含的菜品
+     * <p>
+     *     附: 教程接口文档查的是关联关系 SetmealDish 而不是 Dish
+     * </p>
+     */
+    public Result< List< SetmealDish > > listRelationBySetmealId(
+            @RequestParam( name = "id" )
+            @NotNull( message = "套餐 id 不能为空" )
+            @Positive( message = "套餐 id 必须是正整数" ) Long id ){
+        log.info( "查询套餐 id = {} 对应的套餐-菜品关联关系", id );
+        List< SetmealDish > setmealDishList = setmealService.listRelationBySetmealId( id );
+        return Result.success( setmealDishList );
+    }
+
 
 
     // ==================== 私有辅助方法 ====================
