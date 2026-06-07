@@ -35,7 +35,7 @@ import java.util.List;
  */
 @Slf4j
 @Api( tags = "菜品管理" )
-@RestController
+@RestController( "adminDishController" )
 @RequestMapping( "/admin/dish" )
 @Validated
 public class DishController {

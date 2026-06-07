@@ -226,8 +226,9 @@ public class DishServiceImpl implements DishService {
             return dishVOList;
         }
 
-        // 原型只需要展示 name, price, status, 接口文档也只涉及 Dish 属性 + CategoryName，无 DishFlavor
-        // TODO: 所以这里也可以不设置 DishFlavor
+        // 管理端原型只需要展示 name, price, status, 接口文档也只涉及 Dish 属性 + CategoryName，无 DishFlavor
+        // 但是用户端需要全部展示
+        // 而且从业务上来看，应该保持 VO 完整，所以这里还是要设置 DishFlavor
         List< Long > dishIdList = dishVOList.stream().map( DishVO::getId ).toList();
         List< DishFlavor > dishFlavors = dishFlavorMapper.selectByDishIdList( dishIdList );
         Map< Long, List< DishFlavor > > dishIdToFlavorsMap = dishFlavors.stream().collect( Collectors.groupingBy( DishFlavor::getDishId ) );
