@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -211,9 +212,10 @@ public class UserServiceImpl implements UserService {
      */
     private String generateUserJwtToken( User user ){
         // claims 声明: token 携带的信息，比如不敏感的 userId 等等
-        Map< String, Object > claims = Map.ofEntries(
-                Map.entry( JwtClaimsConstant.USER_ID, user.getId() )
-        );
+        // 注意 jjwt-0.9.1 内部会往 claims Map 里 put 东西
+        // 所以这里不能用 Map.of/ofEntries 不可变 Map
+        Map< String, Object > claims = new HashMap<>();
+        claims.put( JwtClaimsConstant.USER_ID, user.getId() );
         String jwt = JwtUtil.createJWT(
                 jwtProperties.getUserSecretKey(),
                 jwtProperties.getUserTtl(),
