@@ -29,7 +29,7 @@ import java.util.List;
 
 @Validated
 @Slf4j
-@RestController
+@RestController( "adminCategoryController" )
 @RequestMapping( "/admin/category" )
 @Api( tags = "分类管理接口")
 public class CategoryController {

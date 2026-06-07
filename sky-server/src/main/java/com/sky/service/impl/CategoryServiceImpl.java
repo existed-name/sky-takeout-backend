@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
+import com.sky.constant.TypeConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
@@ -110,6 +111,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List< Category > listByType( Integer type ){
+        // 不需要额外检验 type，动态 SQL 处理了 null 查所有，无效 type 也只是返回空数组
         List< Category > categoryList = categoryMapper.selectByType( type );
         return categoryList;
     }
