@@ -44,4 +44,9 @@ public interface SetmealService {
      * 修改套餐状态(起售/停售)
      */
     void updateStatusById( Long id, Integer status );
+
+    /**
+     * 根据套餐分类 id 查询对应的套餐
+     */
+    List< SetmealVO> listByCategoryId( Long categoryId );
 }

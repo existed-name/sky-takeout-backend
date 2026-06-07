@@ -35,7 +35,7 @@ import java.util.List;
  */
 @Validated
 @Slf4j
-@RestController
+@RestController( "adminSetmealController" )
 @RequestMapping( "/admin/setmeal" )
 @Api( tags = "套餐管理接口" )
 public class SetmealController {
@@ -138,6 +138,17 @@ public class SetmealController {
         log.info( "修改 id = {} 的套餐状态为 {}", id, status );
         setmealService.updateStatusById( id, status );
         return Result.success();
+    }
+
+    /**
+     * 根据套餐分类 id 查询对应的套餐
+     */
+    public Result< List< SetmealVO > > list(
+            @RequestParam( name = "categoryId", required = false ) Long categoryId ){
+        String logInfo = ( categoryId == null ) ? "所有套餐" : "分类 id = " + categoryId;
+        log.info( "查询套餐: {}", logInfo );
+        List< SetmealVO > setmealVOList = setmealService.listByCategoryId( categoryId );
+        return Result.success( setmealVOList );
     }
 
 

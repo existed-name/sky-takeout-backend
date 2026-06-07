@@ -108,4 +108,11 @@ public interface SetmealMapper {
             """ )
     @AutoFill( value = OperationType.UPDATE )
     int updateStatusById( @Param( "setmeal" ) Setmeal setmeal );
+
+    /**
+     * 根据套餐分类 id 查询对应的套餐 VO = setmeal + categoryName
+     * <p>
+     *     <b>不包含套餐-菜品关联关系</b>
+     */
+    List< SetmealVO > selectSetmealVOByCategoryIdWithoutSetmealDishRelation( @Param( "categoryId" ) Long categoryId );
 }

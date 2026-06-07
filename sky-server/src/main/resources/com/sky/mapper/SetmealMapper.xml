@@ -141,4 +141,18 @@
         WHERE id = #{setmeal.id}
     </update>
 
+    <!--
+     * 根据套餐分类 id 查询对应的套餐 VO = setmeal + categoryName
+     * <p>
+     *     <b>不包含套餐-菜品关联关系</b>
+    -->
+    <select id="selectSetmealVOByCategoryIdWithoutSetmealDishRelation" resultType="com.sky.vo.SetmealVO">
+        SELECT s.id, s.category_id, s.name, s.price, s.status, s.description, s.image, s.create_time, s.update_time, s.create_user, s.update_user
+                , c.name AS categoryName
+        FROM setmeal AS s
+        LEFT JOIN category AS c
+        ON s.category_id = c.id
+        WHERE s.category_id = {categoryId}
+    </select>
+
 </mapper>
