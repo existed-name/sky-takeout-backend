@@ -123,6 +123,13 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryList;
     }
 
+    @Transactional( readOnly = true )
+    @Override
+    public List< Category > listEnabledByType( Integer type ){
+        List< Category > categoryList = categoryMapper.selectByTypeAndStatus( type, StatusConstant.ENABLE );
+        return categoryList;
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

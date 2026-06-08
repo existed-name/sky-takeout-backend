@@ -44,14 +44,14 @@ public class CategoryController {
 
     // ==================== 公有方法 ====================
     /**
-     * 查询所有分类(菜品/套餐分类)
+     * 查询所有分类(菜品/套餐分类), <b>只展示启用状态的分类</b>
      */
-    @ApiOperation( value = "查询所有分类(菜品/套餐分类)" )
+    @ApiOperation( value = "查询启用的所有分类(菜品/套餐分类)" )
     @GetMapping( "/list" )
     public Result< List< Category > > list( @RequestParam( name = "type", required = false )
                 Integer type ){
         log.info( "查询分类, type = {}, 业务描述 = {} )", type, TypeConstant.toDescription( type ) );
-        List< Category > categoryList = categoryService.listByType( type );
+        List< Category > categoryList = categoryService.listEnabledByType( type );
         return Result.success( categoryList );
     }
 

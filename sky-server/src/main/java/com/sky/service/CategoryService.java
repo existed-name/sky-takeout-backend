@@ -9,32 +9,37 @@ import java.util.List;
 
 public interface CategoryService {
     /**
-     * 新增分类(菜品/套餐分类)
+     * <b>管理端</b>: 新增分类(菜品/套餐分类)
      */
     void save( CategoryDTO categoryDTO );
 
     /**
-     * 对分类进行条件分页查询
+     * <b>管理端</b>: 对分类进行条件分页查询
      */
     PageResult page( CategoryPageQueryDTO categoryPageQueryDTO );
 
     /**
-     * 根据 id 删除分类
+     * <b>管理端</b>: 根据 id 删除分类
      */
     void deleteById( Long id );
 
     /**
-     * 修改分类信息
+     * <b>管理端</b>: 修改分类信息
      */
     void update( CategoryDTO categoryDTO );
 
     /**
-     * 修改分类状态(启用/禁用)
+     * <b>管理端</b>: 修改分类状态(启用/禁用)
      */
     void updateStatus( Long id, Integer status );
 
     /**
-     * 查询某种类型的所有分类
+     * <b>管理端</b>: 查询某种类型的所有分类
      */
     List< Category> listByType( Integer type );
+
+    /**
+     * <b>用户端</b>: 查询启用的所有分类(菜品/套餐分类)
+     */
+    List< Category> listEnabledByType( Integer type );
 }

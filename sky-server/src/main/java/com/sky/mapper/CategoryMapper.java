@@ -47,6 +47,18 @@ public interface CategoryMapper {
 
     /**
      * 查询某种类型的所有分类
+     * <p>
+     *     按照设定优先级升序排列，优先级相同按照创建时间降序排列
+     * </p>
      */
     List< Category> selectByType( @Param( "type" ) Integer type );
+
+    /**
+     * 查询某种状态、某种类型对应的所有分类
+     * <p>
+     *     按照设定优先级升序排列，优先级相同按照创建时间降序排列
+     * </p>
+     * <b>SQL 直接根据 status 筛选，传参不能为空</b>
+     */
+    List< Category> selectByTypeAndStatus( @Param( "type" ) Integer type, @Param( "status" ) Integer enable );
 }

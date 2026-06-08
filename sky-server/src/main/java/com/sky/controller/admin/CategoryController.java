@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
+import com.sky.constant.TypeConstant;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
@@ -128,7 +129,7 @@ public class CategoryController {
     @ApiOperation( value = "查询某种类型的所有分类" )
     public Result< List< Category > > listByType(
             @RequestParam( name = "type", required = false ) Integer type ){
-        log.info( "查询类型 {} 的所有分类", type );
+        log.info( "查询分类, type = {}, 业务描述 = {}", type, TypeConstant.toDescription( type ) );
         List< Category > categoryList = categoryService.listByType( type );
         return Result.success( categoryList );
     }
