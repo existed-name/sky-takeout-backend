@@ -5,7 +5,9 @@ import com.sky.result.Result;
 import com.sky.service.SetmealService;
 import com.sky.vo.SetmealVO;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,13 +45,18 @@ public class SetmealController {
 
     // ==================== 公有方法 ====================
     /**
-     * 根据套餐分类 id 查询对应的套餐
+     * 根据套餐分类 id 查询起售的套餐
      */
+    @ApiOperation( value = "根据套餐分类 id 查询起售的套餐" )
+    @GetMapping
     public Result< List< SetmealVO > > list(
-            @RequestParam( name = "categoryId", required = false ) Long categoryId ){
-        String logInfo = ( categoryId == null ) ? "所有套餐" : "分类 id = " + categoryId;
+            @RequestParam( name = "categoryId" ) // 用户端接口文档要求不能为空
+            @NotNull( message = "套餐分类 id 不能为空" )
+            @Positive( message = "套餐分类 id 必须是正整数" ) Long categoryId ){
+        String logInfo = // ( categoryId == null ) ? "所有套餐" :
+                "分类 id = " + categoryId;
         log.info( "查询套餐: {}", logInfo );
-        List< SetmealVO > setmealVOList = setmealService.listByCategoryId( categoryId );
+        List< SetmealVO > setmealVOList = setmealService.listEnabledByCategoryId( categoryId );
         return Result.success( setmealVOList );
     }
 

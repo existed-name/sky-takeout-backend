@@ -207,26 +207,15 @@ public class SetmealServiceImpl implements SetmealService {
     @Transactional( readOnly = true )
     @Override
     public List< SetmealVO > listByCategoryId( Long categoryId ){
-        // SetmealVO = Setmeal + categoryName + SetmealDishList 关联关系
         List< SetmealVO > setmealVOList = setmealMapper.selectSetmealVOByCategoryIdWithoutSetmealDishRelation( categoryId );
-        // 由于之后要查关联关系, 所以先判空看需不需要后续查询
-        if ( setmealVOList == null || setmealVOList.isEmpty() ){
-            return setmealVOList;
-        }
+        return setRelationListToSetmealVOList( setmealVOList );
+    }
 
-        List< Long > setmealIds = setmealVOList.stream().map( SetmealVO::getId ).toList();
-        List< SetmealDish > allSetmealDishes = setmealDishMapper.selectBySetmealIds( setmealIds );
-        // 再分出各个套餐对应的关系
-        Map< Long, List< SetmealDish > > setmealIdToRelationMap = allSetmealDishes.stream().collect( Collectors.groupingBy( SetmealDish::getSetmealId ) );
-        for ( SetmealVO setmealVO : setmealVOList ){
-            setmealVO.setSetmealDishes(
-                    setmealIdToRelationMap.getOrDefault(
-                            setmealVO.getId(), setmealVO.getSetmealDishes()
-                    )
-            );
-        }
-
-        return setmealVOList;
+    @Transactional( readOnly = true )
+    @Override
+    public List< SetmealVO > listEnabledByCategoryId( Long categoryId ){
+        List< SetmealVO > enabled = setmealMapper.selectVOByCategoryIdAndStatusWithoutRelation( categoryId, StatusConstant.ENABLE );
+        return setRelationListToSetmealVOList( enabled );
     }
 
     @Transactional( readOnly = true )
@@ -237,5 +226,32 @@ public class SetmealServiceImpl implements SetmealService {
 
 
     // ==================== 私有辅助方法 ====================
+    /**
+     * 抽取公共逻辑: SetmealVOList 判空、设置 setmealDish 关联对象
+     * <br>
+     * SetmealVO = Setmeal + categoryName + SetmealDishList 关联关系
+     *
+     * @param setmealVOList Mapper 查询好的 VO 列表(不带 setmealDish 关联关系 )
+     * @return 完整的 VO 列表
+     */
+    private List< SetmealVO> setRelationListToSetmealVOList( List< SetmealVO > setmealVOList ){
+        // 由于之后要查关联关系, 所以先判空看需不需要后续查询
+        if ( setmealVOList == null || setmealVOList.isEmpty() ){
+            return setmealVOList;
+        }
+
+        List< Long > setmealIds = setmealVOList.stream().map( SetmealVO::getId ).toList();
+        List< SetmealDish > allSetmealDishes = setmealDishMapper.selectBySetmealIds( setmealIds );
+        // 再分出各个套餐对应的关系
+        Map< Long, List< SetmealDish > > setmealIdToRelationMap = allSetmealDishes.stream().collect( Collectors.groupingBy( SetmealDish::getSetmealId ) );
+        setmealVOList.forEach(
+                setmealVO -> setmealVO.setSetmealDishes(
+                        setmealIdToRelationMap.getOrDefault(
+                                setmealVO.getId(), setmealVO.getSetmealDishes()
+                        )
+                ) );
+
+        return setmealVOList;
+    }
 
 }

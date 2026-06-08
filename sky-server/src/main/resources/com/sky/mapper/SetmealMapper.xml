@@ -143,8 +143,8 @@
 
     <!--
      * 根据套餐分类 id 查询对应的套餐 VO = setmeal + categoryName
-     * <p>
      *     <b>不包含套餐-菜品关联关系</b>
+     按修改时间降序，修改时间相同按照 id 降序
     -->
     <select id="selectSetmealVOByCategoryIdWithoutSetmealDishRelation" resultType="com.sky.vo.SetmealVO">
         SELECT s.id, s.category_id, s.name, s.price, s.status, s.description, s.image, s.create_time, s.update_time, s.create_user, s.update_user
@@ -152,7 +152,28 @@
         FROM setmeal AS s
         LEFT JOIN category AS c
         ON s.category_id = c.id
-        WHERE s.category_id = {categoryId}
+        <where>
+            <if test="categoryId != null">s.category_id = #{categoryId}</if>
+        </where>
+        ORDER BY c.update_time DESC, c.id DESC
+    </select>
+
+    <!--
+     根据套餐分类 id、起售状态查询对应的套餐 VO = setmeal + categoryName
+     *     <b>不包含套餐-菜品关联关系</b>
+     * 按修改时间降序，修改时间相同按照 id 降序
+     -->
+    <select id="selectVOByCategoryIdAndStatusWithoutRelation" resultType="com.sky.vo.SetmealVO">
+        SELECT s.id, s.category_id, s.name, s.price, s.status, s.description, s.image, s.create_time, s.update_time, s.create_user, s.update_user
+                , c.name AS categoryName
+        FROM setmeal AS s
+        LEFT JOIN category AS c
+        ON s.category_id = c.id
+        <where>
+            AND s.category_id = #{categoryId}
+            AND s.status = #{status}
+        </where>
+        ORDER BY c.update_time DESC, c.id DESC
     </select>
 
 </mapper>

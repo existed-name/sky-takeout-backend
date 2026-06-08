@@ -112,7 +112,18 @@ public interface SetmealMapper {
     /**
      * 根据套餐分类 id 查询对应的套餐 VO = setmeal + categoryName
      * <p>
-     *     <b>不包含套餐-菜品关联关系</b>
+     *     <b>不包含套餐-菜品关联关系, 参数可为空</b>
+     * </p>
+     * 按修改时间降序，修改时间相同按照 id 降序
      */
     List< SetmealVO > selectSetmealVOByCategoryIdWithoutSetmealDishRelation( @Param( "categoryId" ) Long categoryId );
+
+    /**
+     * 根据套餐分类 id、起售状态查询对应的套餐 VO = setmeal + categoryName
+     * <p>
+     *     <b>不包含套餐-菜品关联关系, 参数不可为空</b>
+     * </p>
+     * 按修改时间降序，修改时间相同按照 id 降序
+     */
+    List< SetmealVO > selectVOByCategoryIdAndStatusWithoutRelation( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
 }

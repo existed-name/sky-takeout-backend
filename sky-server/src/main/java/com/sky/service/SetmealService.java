@@ -17,42 +17,47 @@ import java.util.List;
  */
 public interface SetmealService {
     /**
-     * 新增套餐, 同时存储该套餐和相关菜品的关联关系
+     * <b>管理端</b>: 新增套餐, 同时存储该套餐和相关菜品的关联关系
      */
     void saveWithRelation( SetmealDTO setmealDTO );
 
     /**
-     * 条件分页查询套餐
+     * <b>管理端</b>: 条件分页查询套餐
      */
     PageResult page( SetmealPageQueryDTO setmealPageQueryDTO );
 
     /**
-     * 批量删除套餐
+     * <b>管理端</b>: 批量删除套餐
      */
     void deleteBatch( List< Long > ids );
 
     /**
-     * 根据 id 查询套餐
+     * <b>管理端</b>: 根据 id 查询套餐
      */
     SetmealVO getInfo( Long id );
 
     /**
-     * 修改套餐信息
+     * <b>管理端</b>: 修改套餐信息
      */
     void update( SetmealDTO setmealDTO );
 
     /**
-     * 修改套餐状态(起售/停售)
+     * <b>管理端</b>: 修改套餐状态(起售/停售)
      */
     void updateStatusById( Long id, Integer status );
 
     /**
-     * 根据套餐分类 id 查询对应的套餐
+     * <b>管理端</b>: 根据套餐分类 id 查询对应的套餐
      */
-    List< SetmealVO> listByCategoryId( Long categoryId );
+    List< SetmealVO > listByCategoryId( Long categoryId );
 
     /**
-     * 查询套餐对应的套餐-菜品关联关系
+     * <b>用户端</b>: 根据套餐分类 id 查询<b>起售的</b>套餐
      */
-    List< SetmealDish > listRelationBySetmealId( @NotNull( message = "套餐 id 不能为空" ) @Positive( message = "套餐 id 必须是正整数" ) Long id );
+    List< SetmealVO > listEnabledByCategoryId( Long categoryId );
+
+    /**
+     * <b>用户端</b>: 查询套餐对应的套餐-菜品关联关系
+     */
+    List< SetmealDish > listRelationBySetmealId( Long id );
 }
