@@ -155,7 +155,7 @@
         <where>
             <if test="categoryId != null">s.category_id = #{categoryId}</if>
         </where>
-        ORDER BY c.update_time DESC, c.id DESC
+        ORDER BY s.update_time DESC, s.id DESC
     </select>
 
     <!--
@@ -173,7 +173,22 @@
             AND s.category_id = #{categoryId}
             AND s.status = #{status}
         </where>
-        ORDER BY c.update_time DESC, c.id DESC
+        ORDER BY s.update_time DESC, s.id DESC
+    </select>
+
+    <!--
+     * 查询套餐包含的菜品信息
+     * <br>
+     * DishItemVO = SetmealDish + Dish
+     * <br>
+     * <b>无排序</b>
+     -->
+    <select id="selectDishItemVOListById" resultType="com.sky.vo.DishItemVO">
+        SELECT sd.copies, d.name, d.image, d.description
+        FROM setmeal_dish AS sd
+        LEFT JOIN dish AS d
+        ON sd.dish_id = d.id
+        WHERE sd.setmeal_id = #{setmealId}
     </select>
 
 </mapper>

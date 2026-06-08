@@ -1,13 +1,14 @@
 package com.sky.controller.user;
 
-import com.sky.entity.SetmealDish;
 import com.sky.result.Result;
 import com.sky.service.SetmealService;
+import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,18 +62,17 @@ public class SetmealController {
     }
 
     /**
-     * 查询套餐包含的菜品
-     * <p>
-     *     附: 教程接口文档查的是关联关系 SetmealDish 而不是 Dish
-     * </p>
+     * 查询套餐包含的菜品信息
      */
-    public Result< List< SetmealDish > > listRelationBySetmealId(
-            @RequestParam( name = "id" )
+    @ApiOperation( value = "查询套餐包含的菜品" )
+    @GetMapping( "/dish/{id}" )
+    public Result< List< DishItemVO > > listRelationBySetmealId(
+            @PathVariable( name = "id" )
             @NotNull( message = "套餐 id 不能为空" )
             @Positive( message = "套餐 id 必须是正整数" ) Long id ){
-        log.info( "查询套餐 id = {} 对应的套餐-菜品关联关系", id );
-        List< SetmealDish > setmealDishList = setmealService.listRelationBySetmealId( id );
-        return Result.success( setmealDishList );
+        log.info( "查询 id = {} 的套餐包含的菜品", id );
+        List< DishItemVO > dishItemVOList = setmealService.listDishItemVOById( id );
+        return Result.success( dishItemVOList );
     }
 
 

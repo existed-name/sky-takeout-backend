@@ -16,6 +16,7 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.SetmealService;
 import com.sky.utils.PageUtil;
+import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -218,10 +219,10 @@ public class SetmealServiceImpl implements SetmealService {
         return setRelationListToSetmealVOList( enabled );
     }
 
-    @Transactional( readOnly = true )
     @Override
-    public List< SetmealDish > listRelationBySetmealId( Long id ){
-        return setmealDishMapper.selectBySetmealId( id );
+    public List< DishItemVO > listDishItemVOById( Long id ){
+        List< DishItemVO > dishItemVOList = setmealMapper.selectDishItemVOListById( id );
+        return dishItemVOList;
     }
 
 

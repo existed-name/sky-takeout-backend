@@ -4,6 +4,7 @@ import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.SetmealDish;
 import com.sky.result.PageResult;
+import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 
 import javax.validation.constraints.NotNull;
@@ -57,7 +58,9 @@ public interface SetmealService {
     List< SetmealVO > listEnabledByCategoryId( Long categoryId );
 
     /**
-     * <b>用户端</b>: 查询套餐对应的套餐-菜品关联关系
+     * <b>用户端</b>: 查询套餐包含的菜品信息
+     * <br>
+     * DishItemVO = SetmealDish + Dish
      */
-    List< SetmealDish > listRelationBySetmealId( Long id );
+    List< DishItemVO > listDishItemVOById( Long id );
 }

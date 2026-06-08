@@ -4,6 +4,7 @@ import com.sky.annotation.AutoFill;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -126,4 +127,13 @@ public interface SetmealMapper {
      * 按修改时间降序，修改时间相同按照 id 降序
      */
     List< SetmealVO > selectVOByCategoryIdAndStatusWithoutRelation( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
+
+    /**
+     * 查询套餐包含的菜品信息
+     * <br>
+     * DishItemVO = SetmealDish + Dish
+     * <br>
+     * <b>无排序</b>
+     */
+    List< DishItemVO > selectDishItemVOListById( @Param( "setmealId" ) Long id );
 }
