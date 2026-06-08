@@ -242,6 +242,26 @@ public class DishServiceImpl implements DishService {
         return dishVOList;
     }
 
+    @Transactional( readOnly = true )
+    @Override
+    public List< DishVO > listEnabledByCategoryId( Long categoryId ){
+        List< DishVO > enabled = dishMapper.selectDishVOByCategoryIdAndStatusWithoutFlavors( categoryId, StatusConstant.ENABLE );
+        if ( enabled == null || enabled.isEmpty() ){
+            return enabled;
+        }
+
+        List< Long > dishIds = enabled.stream().map( DishVO::getId ).toList();
+        List< DishFlavor > allDishFlavors = dishFlavorMapper.selectByDishIdList( dishIds );
+        Map< Long, List< DishFlavor > > dishIdToFlavorsMap = allDishFlavors.stream().collect( Collectors.groupingBy( DishFlavor::getDishId ) );
+        enabled.forEach(
+                dishVO -> dishVO.setFlavors(
+                        dishIdToFlavorsMap.getOrDefault( dishVO.getId(), dishVO.getFlavors() )
+                )
+        );
+
+        return enabled;
+    }
+
 
     // ==================== 私有辅助方法 ====================
     /**

@@ -80,15 +80,25 @@ public interface DishMapper {
 
     /**
      * 根据分类 id 查询菜品
+     * 按照修改时间降序排列，修改时间相同按照 id 降序
      *
      * @return 参数为空，查到所有菜品；参数无效则查询为空
      */
-    List< DishVO> selectDishVOByCategoryId( @Param( "categoryId" ) Long categoryId );
+    List< DishVO > selectDishVOByCategoryId( @Param( "categoryId" ) Long categoryId );
 
     /**
      * 批量查询菜品状态 {@link com.sky.entity.Dish}
      * <br>
      * 用于起售套餐时检查有无停售的关联菜品
+     * <br>
+     * 无需排序
      */
     List< Integer > selectDishStatusListByIds( @Param( "ids" ) List< Long> ids );
+
+    /**
+     * 根据菜品分类、起售状态查询菜品 VO( <b>不包含菜品口味</b> )
+     * <br>
+     * 按照修改时间降序排列，修改时间相同按照 id 降序
+     */
+    List< DishVO > selectDishVOByCategoryIdAndStatusWithoutFlavors( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
 }

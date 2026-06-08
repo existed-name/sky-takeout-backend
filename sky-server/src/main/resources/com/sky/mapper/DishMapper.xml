@@ -108,7 +108,7 @@
 
     <!--
      * 根据分类 id 查询菜品
-     *
+     * 按照修改时间降序排列，修改时间相同按照 id 降序
      * @return 参数为空，查到所有菜品；参数无效则查询为空
      -->
     <select id="selectDishVOByCategoryId" resultType="com.sky.vo.DishVO">
@@ -128,6 +128,8 @@
      * 批量查询菜品状态 {@link com.sky.entity.Dish}
      * <br>
      * 用于起售套餐时检查有无停售的关联菜品
+     * <br>
+     * 无需排序
      -->
     <select id="selectDishStatusListByIds" resultType="java.lang.Integer">
         SELECT status
@@ -136,6 +138,20 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+    </select>
+
+    <!--
+    根据菜品分类、起售状态查询菜品 VO( <b>不包含菜品口味</b> )
+     * 按照修改时间降序排列，修改时间相同按照 id 降序
+    -->
+    <select id="selectDishVOByCategoryIdAndStatusWithoutFlavors" resultType="com.sky.vo.DishVO">
+        SELECT d.id, d.name, d.category_id, d.price, d.image, d.description, d.status, d.create_time, d.update_time, d.create_user, d.update_user
+                , c.name AS categoryName
+        FROM dish AS d
+        LEFT JOIN category AS c
+        ON d.category_id = c.id
+        WHERE d.category_id = #{categoryId} AND d.status = #{status}
+        ORDER BY d.update_time DESC, d.id DESC
     </select>
 
 </mapper>
