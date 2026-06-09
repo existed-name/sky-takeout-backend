@@ -17,14 +17,19 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.utils.PageUtil;
+import com.sky.utils.RedisKeyHolder;
 import com.sky.vo.DishVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,13 +44,15 @@ public class DishServiceImpl implements DishService {
     private final DishMapper dishMapper;
     private final DishFlavorMapper dishFlavorMapper;
     private final SetmealMapper setmealMapper;
+    private final RedisTemplate< String, Object > redisTemplate;
 
 
     // ==================== 构造器 ====================
-    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper ){
+    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate ){
         this.dishMapper = dishMapper;
         this.dishFlavorMapper = dishFlavorMapper;
         this.setmealMapper = setmealMapper;
+        this.redisTemplate = redisTemplate;
     }
 
 
@@ -67,6 +74,18 @@ public class DishServiceImpl implements DishService {
         // 注意 Mapper 是否保存了所有内容: 实体类对象所有属性( DTO 属性 + 审计字段 ) + 关联内容 = 表数据
         // 新增菜品时 dishDTO.getId() 为 null，应该用主键回填后的 dish.getId()
         saveDishFlavors( dish.getId(), dishDTO.getFlavors() );
+
+        /*
+            想法 1: 把修改的内容写进 Redis, 下次查询展示出来
+                - 要手动确保写入内容是否完整(拼装完整对象)
+                - 需要约束写入对象类型(VO/DTO/entity)
+            想法 2: 直接全删、下次查询重新缓存
+                - 操作、管理简单
+                - 多费点性能
+            * 不过才想起来, redisTemplate / ops 都是删除选中的 RedisKey, 不算全删
+                - 这样就需要单独记录有哪些 RedisKey
+         */
+        redisTemplate.delete( RedisKeyHolder.Dish.getRedisKeySet() );
     }
 
     @Transactional( readOnly = true )
@@ -142,6 +161,8 @@ public class DishServiceImpl implements DishService {
         // 先删子表，后删主表
         dishFlavorMapper.deleteBatchByDishIds( ids );
         dishMapper.deleteBatch( ids );
+
+        redisTemplate.delete( RedisKeyHolder.Dish.getRedisKeySet() );
     }
 
     @Transactional( readOnly = true )
@@ -175,6 +196,8 @@ public class DishServiceImpl implements DishService {
         // 关联的子表 DishFlavor 删了重装更方便
         dishFlavorMapper.deleteBatchByDishIds( List.of( dishDTO.getId() ) );
         saveDishFlavors( dishDTO.getId(), dishDTO.getFlavors() );
+
+        redisTemplate.delete( RedisKeyHolder.Dish.getRedisKeySet() );
     }
 
     @Transactional( rollbackFor = Exception.class )
@@ -218,6 +241,8 @@ public class DishServiceImpl implements DishService {
             } );
             setmealMapper.updateBatchStatusByIds( setmealList );
         }
+
+        redisTemplate.delete( RedisKeyHolder.Dish.getRedisKeySet() );
     }
 
     @Transactional( readOnly = true )
@@ -230,8 +255,36 @@ public class DishServiceImpl implements DishService {
     @Transactional( readOnly = true )
     @Override
     public List< DishVO > listEnabledByCategoryId( Long categoryId ){
+        /*
+            先看缓存有无该分类的菜品, 无则缓存菜品
+            分类 id -> [ 菜品 id -> Dish 对象 ]
+            RedisKey -> [ Field/HashKey -> Value/HashValue ]
+            于是看 RedisKey 有没有对应的 HashKeys
+         */
+        HashOperations< String, String, Object > hashOperations = redisTemplate.opsForHash();
+        String redisKey = categoryId.toString();
+        // 我的想法: 专门的工具来存放用到的 RedisKey
+        RedisKeyHolder.Dish.addIfNotExists( redisKey );
+        Set< String > hashKeys = hashOperations.keys( redisKey );
+        if ( ! ( hashKeys == null || hashKeys.isEmpty() ) ){
+            List< DishVO > dishVOList = new ArrayList<>();
+            for ( String hashKey : hashKeys ){
+                // 序列化器是 JSON 格式, 应该可以强转为对象
+                Object object = hashOperations.get( redisKey, hashKey );
+                if ( object == null ){
+                    continue;
+                }
+                dishVOList.add( ( DishVO ) object );
+            }
+            return dishVOList;
+        }
+
         List< DishVO > enabled = dishMapper.selectDishVOByCategoryIdAndStatusWithoutFlavors( categoryId, StatusConstant.ENABLE );
-        return setFlavorsToDishVOList( enabled );
+        enabled = setFlavorsToDishVOList( enabled );
+        // categoryId -> ( dishId -> dishVO )
+        enabled.forEach( dishVO -> hashOperations.put( redisKey, dishVO.getId().toString(), dishVO ) );
+
+        return enabled;
     }
 
 
