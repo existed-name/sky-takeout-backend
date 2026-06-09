@@ -224,42 +224,14 @@ public class DishServiceImpl implements DishService {
     @Override
     public List< DishVO > listByCategoryId( Long categoryId ){
         List< DishVO > dishVOList = dishMapper.selectDishVOByCategoryId( categoryId );
-        if ( dishVOList == null || dishVOList.isEmpty() ){
-            // 测试发现 DishFlavorMapper 报错空 in( )，需要提前对 id 链表判空
-            return dishVOList;
-        }
-
-        // 管理端原型只需要展示 name, price, status, 接口文档也只涉及 Dish 属性 + CategoryName，无 DishFlavor
-        // 但是用户端需要全部展示
-        // 而且从业务上来看，应该保持 VO 完整，所以这里还是要设置 DishFlavor
-        List< Long > dishIdList = dishVOList.stream().map( DishVO::getId ).toList();
-        List< DishFlavor > dishFlavors = dishFlavorMapper.selectByDishIdList( dishIdList );
-        Map< Long, List< DishFlavor > > dishIdToFlavorsMap = dishFlavors.stream().collect( Collectors.groupingBy( DishFlavor::getDishId ) );
-        dishVOList.forEach( dishVO -> dishVO.setFlavors(
-                dishIdToFlavorsMap.getOrDefault( dishVO.getId(), dishVO.getFlavors() )
-        ) );
-
-        return dishVOList;
+        return setFlavorsToDishVOList( dishVOList );
     }
 
     @Transactional( readOnly = true )
     @Override
     public List< DishVO > listEnabledByCategoryId( Long categoryId ){
         List< DishVO > enabled = dishMapper.selectDishVOByCategoryIdAndStatusWithoutFlavors( categoryId, StatusConstant.ENABLE );
-        if ( enabled == null || enabled.isEmpty() ){
-            return enabled;
-        }
-
-        List< Long > dishIds = enabled.stream().map( DishVO::getId ).toList();
-        List< DishFlavor > allDishFlavors = dishFlavorMapper.selectByDishIdList( dishIds );
-        Map< Long, List< DishFlavor > > dishIdToFlavorsMap = allDishFlavors.stream().collect( Collectors.groupingBy( DishFlavor::getDishId ) );
-        enabled.forEach(
-                dishVO -> dishVO.setFlavors(
-                        dishIdToFlavorsMap.getOrDefault( dishVO.getId(), dishVO.getFlavors() )
-                )
-        );
-
-        return enabled;
+        return setFlavorsToDishVOList( enabled );
     }
 
 
@@ -278,6 +250,33 @@ public class DishServiceImpl implements DishService {
         // 关联表设置关联字段
         dishFlavors.forEach( dishFlavor -> dishFlavor.setDishId( dishId ) );
         dishFlavorMapper.insertBatch( dishFlavors );
+    }
+
+    /**
+     * 抽取公共逻辑: dishVOList 判空、设置 DishFlavorList
+     * <br>
+     * DishVO = Dish + categoryName + DishFlavorList
+     *
+     * @param dishVOList Mapper 查询好的 VO 列表(不带 DishFlavors )
+     * @return 完整的 VO 列表
+     */
+    private List< DishVO > setFlavorsToDishVOList( List< DishVO > dishVOList ){
+        if ( dishVOList == null || dishVOList.isEmpty() ){
+            // 测试发现 DishFlavorMapper 报错空 in( )，需要提前对 id 链表判空
+            return dishVOList;
+        }
+
+        // 管理端原型只需要展示 name, price, status, 接口文档也只涉及 Dish 属性 + CategoryName，无 DishFlavor
+        // 但是用户端需要全部展示
+        // 而且从业务上来看，应该保持 VO 完整，所以这里还是要设置 DishFlavor
+        List< Long > dishIdList = dishVOList.stream().map( DishVO::getId ).toList();
+        List< DishFlavor > dishFlavors = dishFlavorMapper.selectByDishIdList( dishIdList );
+        Map< Long, List< DishFlavor > > dishIdToFlavorsMap = dishFlavors.stream().collect( Collectors.groupingBy( DishFlavor::getDishId ) );
+        dishVOList.forEach( dishVO -> dishVO.setFlavors(
+                dishIdToFlavorsMap.getOrDefault( dishVO.getId(), dishVO.getFlavors() )
+        ) );
+
+        return dishVOList;
     }
 
 }
