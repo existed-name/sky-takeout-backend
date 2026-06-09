@@ -54,6 +54,8 @@ public interface SetmealService {
 
     /**
      * <b>用户端</b>: 根据套餐分类 id 查询<b>起售的</b>套餐
+     * <p>
+     * SetmealVO = Setmeal + categoryName + SetmealDish, 而这里不需要关联关系 SetmealDish
      */
     List< SetmealVO > listEnabledByCategoryId( Long categoryId );
 

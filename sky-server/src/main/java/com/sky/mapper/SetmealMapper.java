@@ -122,7 +122,7 @@ public interface SetmealMapper {
     /**
      * 根据套餐分类 id、起售状态查询对应的套餐 VO = setmeal + categoryName
      * <p>
-     *     <b>不包含套餐-菜品关联关系, 参数不可为空</b>
+     *     <b>不包含套餐-菜品关联关系、前端用不到的字段, 参数不可为空</b>
      * </p>
      * 按修改时间降序，修改时间相同按照 id 降序
      */

@@ -216,7 +216,9 @@ public class SetmealServiceImpl implements SetmealService {
     @Override
     public List< SetmealVO > listEnabledByCategoryId( Long categoryId ){
         List< SetmealVO > enabled = setmealMapper.selectVOByCategoryIdAndStatusWithoutRelation( categoryId, StatusConstant.ENABLE );
-        return setRelationListToSetmealVOList( enabled );
+        // 这里不需要关联关系
+        // return setRelationListToSetmealVOList( enabled );
+        return enabled;
     }
 
     @Override
