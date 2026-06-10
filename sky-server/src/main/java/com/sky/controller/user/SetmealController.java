@@ -49,7 +49,7 @@ public class SetmealController {
      * 根据套餐分类 id 查询起售的套餐
      */
     @ApiOperation( value = "根据套餐分类 id 查询起售的套餐" )
-    @GetMapping
+    @GetMapping( "/list" )
     public Result< List< SetmealVO > > list(
             @RequestParam( name = "categoryId" ) // 用户端接口文档要求不能为空
             @NotNull( message = "套餐分类 id 不能为空" )

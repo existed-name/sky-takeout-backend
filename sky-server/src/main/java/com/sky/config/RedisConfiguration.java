@@ -10,6 +10,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 @Slf4j
 @Configuration
 public class RedisConfiguration {
@@ -48,7 +52,13 @@ public class RedisConfiguration {
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
 
         // value
-        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+        // GenericJackson2JsonRedisSerializer 默认的 ObjectMapper 没有注册 Java 8 日期时间模块
+        // 自定义 ObjectMapper，注册 Java 8 日期时间模块，解决 LocalDateTime 序列化问题
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule( new JavaTimeModule() );
+        // 禁用日期时间戳格式，使用 ISO-8601 字符串格式（更易读）
+        objectMapper.disable( SerializationFeature.WRITE_DATES_AS_TIMESTAMPS );
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer( objectMapper );
         // ↓ 反序列化时会丢失具体类型（变成 LinkedHashMap）
 //        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
          redisTemplate.setValueSerializer(serializer);
