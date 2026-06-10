@@ -2,6 +2,7 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
+import com.sky.constant.RedisConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.DishDTO;
@@ -17,19 +18,16 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.utils.PageUtil;
-import com.sky.utils.RedisKeyHolder;
 import com.sky.vo.DishVO;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,16 +74,10 @@ public class DishServiceImpl implements DishService {
         saveDishFlavors( dish.getId(), dishDTO.getFlavors() );
 
         /*
-            想法 1: 把修改的内容写进 Redis, 下次查询展示出来
-                - 要手动确保写入内容是否完整(拼装完整对象)
-                - 需要约束写入对象类型(VO/DTO/entity)
-            想法 2: 直接全删、下次查询重新缓存
-                - 操作、管理简单
-                - 多费点性能
-            * 不过才想起来, redisTemplate / ops 都是删除选中的 RedisKey, 不算全删
-                - 这样就需要单独记录有哪些 RedisKey
+            精细修改缓存: 只修改该菜品所在的分类缓存, 也就需要拿到 RedisKey = 业务前缀:分类 id
          */
-        redisTemplate.delete( RedisKeyHolder.Dish.getRedisKeySet() );
+        // categoryId 一定非空
+        deleteRedisKey( dishDTO.getCategoryId() );
     }
 
     @Transactional( readOnly = true )
@@ -158,12 +150,17 @@ public class DishServiceImpl implements DishService {
             throw new DeletionNotAllowedException( MessageConstant.DISH_BE_RELATED_BY_SETMEAL );
         }
 
+        // 精准删除 RedisKey, 需要知道该批菜品的 categoryId
+        List< Dish > dishCategoryIdList = dishMapper.selectCategoryIdsByIds( ids );
+        // WHERE id IN( .. ) 不会返回 null
+        List< Long > categoryIds = dishCategoryIdList.stream().map( Dish::getCategoryId ).toList();
+        deleteRedisKeys( categoryIds );
+
         // 先删子表，后删主表
         dishFlavorMapper.deleteBatchByDishIds( ids );
         dishMapper.deleteBatch( ids );
-
-        redisTemplate.delete( RedisKeyHolder.Dish.getRedisKeySet() );
     }
+
 
     @Transactional( readOnly = true )
     @Override
@@ -180,6 +177,17 @@ public class DishServiceImpl implements DishService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void update( DishDTO dishDTO ){
+        // 清除缓存: 需要知道修改前后的分类 id
+        Long dishId = dishDTO.getId();
+        Dish oldDishCategoryId = dishMapper.selectCategoryIdById( dishId );
+        Long oldCategoryId = oldDishCategoryId.getCategoryId();
+        deleteRedisKey( oldCategoryId );
+        // 受影响的分类都需要清缓存
+        Long newCategoryId = dishDTO.getCategoryId();
+        if ( ! oldCategoryId.equals( newCategoryId ) ){
+            deleteRedisKey( newCategoryId );
+        }
+
         /*
             全面更新 Dish 信息 = Dish( 包含 CategoryId ) + DishFlavors
          */
@@ -194,10 +202,8 @@ public class DishServiceImpl implements DishService {
         }
 
         // 关联的子表 DishFlavor 删了重装更方便
-        dishFlavorMapper.deleteBatchByDishIds( List.of( dishDTO.getId() ) );
-        saveDishFlavors( dishDTO.getId(), dishDTO.getFlavors() );
-
-        redisTemplate.delete( RedisKeyHolder.Dish.getRedisKeySet() );
+        dishFlavorMapper.deleteBatchByDishIds( List.of( dishId ) );
+        saveDishFlavors( dishId, dishDTO.getFlavors() );
     }
 
     @Transactional( rollbackFor = Exception.class )
@@ -242,7 +248,9 @@ public class DishServiceImpl implements DishService {
             setmealMapper.updateBatchStatusByIds( setmealList );
         }
 
-        redisTemplate.delete( RedisKeyHolder.Dish.getRedisKeySet() );
+        // RedisKey = 业务前缀:分类 id, 就需要查到分类 id
+        Dish dishCategoryId = dishMapper.selectCategoryIdById( id ); // 由于之前判断过修改行数，所以这里 dishId 一定有效
+        deleteRedisKey( dishCategoryId.getCategoryId() );
     }
 
     @Transactional( readOnly = true )
@@ -257,32 +265,24 @@ public class DishServiceImpl implements DishService {
     public List< DishVO > listEnabledByCategoryId( Long categoryId ){
         /*
             先看缓存有无该分类的菜品, 无则缓存菜品
-            分类 id -> [ 菜品 id -> Dish 对象 ]
-            RedisKey -> [ Field/HashKey -> Value/HashValue ]
-            于是看 RedisKey 有没有对应的 HashKeys
+            业务前缀:分类 id -> DishVOList 对象
+            RedisKey -> Value
          */
-        HashOperations< String, String, Object > hashOperations = redisTemplate.opsForHash();
-        String redisKey = categoryId.toString();
-        // 我的想法: 专门的工具来存放用到的 RedisKey
-        RedisKeyHolder.Dish.addIfNotExists( redisKey );
-        Set< String > hashKeys = hashOperations.keys( redisKey );
-        if ( ! ( hashKeys == null || hashKeys.isEmpty() ) ){
-            List< DishVO > dishVOList = new ArrayList<>();
-            for ( String hashKey : hashKeys ){
-                // 序列化器是 JSON 格式, 应该可以强转为对象
-                Object object = hashOperations.get( redisKey, hashKey );
-                if ( object == null ){
-                    continue;
-                }
-                dishVOList.add( ( DishVO ) object );
-            }
+        ValueOperations< String, Object > valueOperations = redisTemplate.opsForValue();
+
+        String redisKey = RedisConstant.Dish.formatRedisKey( categoryId );
+        Object object = valueOperations.get( redisKey );
+        List< DishVO > dishVOList = ( List< DishVO > ) object;
+
+        // 备注: 缓存中的空列表说明该分类确实没菜品，也应该返回前端, 无需 isEmpty 判断
+        if ( dishVOList != null ){
             return dishVOList;
         }
 
         List< DishVO > enabled = dishMapper.selectDishVOByCategoryIdAndStatusWithoutFlavors( categoryId, StatusConstant.ENABLE );
         enabled = setFlavorsToDishVOList( enabled );
-        // categoryId -> ( dishId -> dishVO )
-        enabled.forEach( dishVO -> hashOperations.put( redisKey, dishVO.getId().toString(), dishVO ) );
+        // 业务前缀:分类 id -> DishVOList 对象, 同时注意缓存有效时间
+        valueOperations.set( redisKey, enabled, RedisConstant.Dish.CACHE_TTL );
 
         return enabled;
     }
@@ -332,4 +332,25 @@ public class DishServiceImpl implements DishService {
         return dishVOList;
     }
 
+    /**
+     * 删除特定的 RedisKey = 业务前缀:分类 id
+     */
+    private void deleteRedisKey( Long categoryId ){
+        String redisKey = RedisConstant.Dish.formatRedisKey( categoryId );
+        redisTemplate.delete( redisKey );
+    }
+
+    /**
+     * 批量删除特定的 RedisKey = 业务前缀:分类 id
+     */
+    private void deleteRedisKeys( List< Long > dishCategoryIdList ){
+        List< String > categoryIds = dishCategoryIdList.stream()
+//                .distinct() 可以不用去重
+                .map( RedisConstant.Dish::formatRedisKey
+                    // lambda 表达式和方法引用互换
+                    // categoryId -> RedisConstant.Dish.formatRedisKey( categoryId )
+                )
+                .toList();
+        redisTemplate.delete( categoryIds );
+    }
 }

@@ -101,4 +101,23 @@ public interface DishMapper {
      * 按照修改时间降序排列，修改时间相同按照 id 降序
      */
     List< DishVO > selectDishVOByCategoryIdAndStatusWithoutFlavors( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
+
+    /**
+     * 根据 id 查询该菜品的分类 id, 用于组装 RedisKey = 业务前缀:分类 id
+     *
+     * @return 只包含 categoryId 的 Dish
+     */
+    @Select( """
+            SELECT category_id
+            FROM dish
+            WHERE id = #{id}
+            """ )
+    Dish selectCategoryIdById( @Param( "id" ) Long id );
+
+    /**
+     * 根据 id 批量查询菜品分类 id, 用于组装 RedisKey = 业务前缀:分类 id
+     *
+     * @return 只包含 categoryId 的 DishList
+     */
+    List< Dish > selectCategoryIdsByIds( @Param( "ids" ) List< Long > ids );
 }

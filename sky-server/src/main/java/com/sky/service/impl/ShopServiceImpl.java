@@ -3,7 +3,6 @@ package com.sky.service.impl;
 import com.sky.constant.RedisConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.service.ShopService;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -38,7 +37,7 @@ public class ShopServiceImpl implements ShopService {
     public void init(){
         // String -> String
         stringRedisTemplate.opsForValue().setIfAbsent(
-                RedisConstant.Key.SHOP_STATUS,
+                RedisConstant.Shop.SHOP_STATUS,
                 StatusConstant.ShopStatus.DEFAULT.toString()  // 默认营业中 1
         );
     }
@@ -56,14 +55,18 @@ public class ShopServiceImpl implements ShopService {
         // 这里就通过 Redis 操作营业状态字段
         // RedisKey = ShopStatus -> filed = 1 / 0
         ValueOperations< String, String > valueOperations = stringRedisTemplate.opsForValue();
-        valueOperations.set( RedisConstant.Key.SHOP_STATUS, status.toString() );
+        valueOperations.set(
+                RedisConstant.Shop.SHOP_STATUS,
+                status.toString(),
+                RedisConstant.Shop.CACHE_TTL
+        );
         // 由于只调用 1 次，其实不需要创建对象、直接调方法就行
     }
 
     @Transactional( readOnly = true )
     @Override
     public Integer getStatus(){
-        Object status = stringRedisTemplate.opsForValue().get( RedisConstant.Key.SHOP_STATUS );
+        Object status = stringRedisTemplate.opsForValue().get( RedisConstant.Shop.SHOP_STATUS );
         // 注意可能并没有设置默认值，导致查到空值
         return ( status == null ) ?
                 StatusConstant.ShopStatus.DEFAULT :
