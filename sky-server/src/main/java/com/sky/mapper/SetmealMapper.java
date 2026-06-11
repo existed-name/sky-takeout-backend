@@ -78,6 +78,8 @@ public interface SetmealMapper {
 
     /**
      * 批量查询套餐, 用于批量删除套餐之前检查套餐状态
+     * <br>
+     * 返回完整的 Setmeal 对象列表
      */
     List< Setmeal > selectByIds( @Param( "ids" ) List< Long > ids );
 
@@ -136,4 +138,16 @@ public interface SetmealMapper {
      * <b>无排序</b>
      */
     List< DishItemVO > selectDishItemVOListById( @Param( "setmealId" ) Long id );
+
+    /**
+     * 查询改套餐的分类 id, 用于组装 RedisKey
+     *
+     * @return 只包含 categoryId 的 Setmeal
+     */
+    @Select( """
+            SELECT category_id
+            FROM setmeal
+            WHERE id = #{id}
+            """ )
+    Setmeal selectCategoryIdById( @Param( "id" ) Long id );
 }

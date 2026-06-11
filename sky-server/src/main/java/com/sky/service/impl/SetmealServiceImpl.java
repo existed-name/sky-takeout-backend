@@ -2,6 +2,7 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
+import com.sky.constant.RedisConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
@@ -19,6 +20,8 @@ import com.sky.utils.PageUtil;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,13 +41,15 @@ public class SetmealServiceImpl implements SetmealService {
     private final SetmealMapper setmealMapper;
     private final SetmealDishMapper setmealDishMapper;
     private final DishMapper dishMapper;
+    private final RedisTemplate< String, Object > redisTemplate;
 
 
     // ==================== 构造器 ====================
-    public SetmealServiceImpl( SetmealMapper setmealMapper, SetmealDishMapper setmealDishMapper, DishMapper dishMapper ){
+    public SetmealServiceImpl( SetmealMapper setmealMapper, SetmealDishMapper setmealDishMapper, DishMapper dishMapper, RedisTemplate< String, Object > redisTemplate ){
         this.setmealMapper = setmealMapper;
         this.setmealDishMapper = setmealDishMapper;
         this.dishMapper = dishMapper;
+        this.redisTemplate = redisTemplate;
     }
 
 
@@ -66,7 +71,19 @@ public class SetmealServiceImpl implements SetmealService {
         }
         setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( setmeal.getId() ) );
         setmealDishMapper.insertBatch( setmealDishes );
+
+        /*
+                增删改对缓存的影响 -> 只看有缓存的那端(用户端)
+            * 套餐缓存 RedisKey = setmeal:category:{categoryId}
+              - 该分类内容发生变化，就需要删除缓存
+            * 套餐关联菜品缓存 RedisKey = setmeal:dish:{setmealId}
+              - 该套餐发生变化，就需要删除缓存
+              - 并且由于分类在最上游，修改该套餐分类 -> 删除该分类的套餐缓存 -> 删除该套餐的菜品缓存
+            * 还要注意: 由于是新增，刚开始并没有 setmealId 需要主键回填后才能拿到 id
+         */
+        deleteRedisKey( setmealDTO.getCategoryId(), setmeal.getId() );
     }
+
 
     @Transactional( readOnly = true )
     @Override
@@ -130,7 +147,13 @@ public class SetmealServiceImpl implements SetmealService {
         // 先删除关联内容(子表)，后删主表
         setmealDishMapper.deleteBySetmealIds( ids );
         setmealMapper.deleteByIds( ids );
+
+        // 清除目标分类、套餐关联菜品缓存
+        // TODO: 如果 setmealMapper.selectByIds 改为只查套餐状态而不是完整对象，那这里需要再单独查 categoryId
+        List< Long > categoryIds = setmealList.stream().map( Setmeal::getCategoryId ).toList();
+        deleteRedisKey( categoryIds, ids );
     }
+
 
     @Transactional( readOnly = true )
     @Override
@@ -153,18 +176,36 @@ public class SetmealServiceImpl implements SetmealService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void update( SetmealDTO setmealDTO ){
+        // 删除缓存, 由于是修改信息操作，需要注意修改前后 redisKey 的组成部分 categoryId 有无变化
+        Long setmealId = setmealDTO.getId();
+        Setmeal setmealCategoryId = setmealMapper.selectCategoryIdById( setmealId );
+        if ( setmealCategoryId == null ){
+            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
+        }
+        Long oldCategoryId = setmealCategoryId.getCategoryId();
+        // 之前的 categoryId
+        deleteRedisKey( oldCategoryId, setmealId );
+        // 修改后的
+        Long newCategoryId = setmealDTO.getCategoryId();
+        if ( ! oldCategoryId.equals( newCategoryId ) ){
+            // 虽然说这里重复删了 setmealId
+            deleteRedisKey( newCategoryId, setmealId );
+        }
+
         // SetmealDTO = Setmeal + 关联关系 SetmealDish
         Setmeal setmeal = new Setmeal();
         BeanUtils.copyProperties( setmealDTO, setmeal );
 
         int updateRow = setmealMapper.update( setmeal );
+        /*
+            前面组装 RedisKey 使用 id 查了对象，已经判断了对象存在
         if ( updateRow <= 0 ){
             throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
         }
+         */
 
         // 关联子表内容删了重装
         // 本来应该分开单独写方法，但是这里的批量删除方法大概率不会改，所以就复用了
-        Long setmealId = setmealDTO.getId();
         setmealDishMapper.deleteBySetmealIds( List.of( setmealId ) );
         List< SetmealDish > setmealDishes = setmealDTO.getSetmealDishes();
         if ( setmealDishes == null || setmealDishes.isEmpty() ){
@@ -203,6 +244,10 @@ public class SetmealServiceImpl implements SetmealService {
         if ( updateRow <= 0 ){
             throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
         }
+
+        // 精确删除缓存需要查到 categoryId
+        Setmeal setmealCategoryId = setmealMapper.selectCategoryIdById( id );
+        deleteRedisKey( setmealCategoryId.getCategoryId(), id );
     }
 
     @Transactional( readOnly = true )
@@ -215,7 +260,20 @@ public class SetmealServiceImpl implements SetmealService {
     @Transactional( readOnly = true )
     @Override
     public List< SetmealVO > listEnabledByCategoryId( Long categoryId ){
+        /*
+            缓存操作: 确定 RedisKey -> 查看是否已缓存对应的值 -> 有则直接返回，否则查数据库
+            不过这里的缺点是 SetmealVO 跟关联菜品分开的，不过也可以分开缓存
+         */
+        String redisKey = RedisConstant.Setmeal.formatRedisKey( categoryId );
+        ValueOperations< String, Object > valueOperations = redisTemplate.opsForValue();
+        List< SetmealVO > setmealVOList = ( List< SetmealVO > ) valueOperations.get( redisKey );
+        if ( setmealVOList != null ){
+            // 空列表也算缓存内容
+            return setmealVOList;
+        }
+
         List< SetmealVO > enabled = setmealMapper.selectVOByCategoryIdAndStatusWithoutRelation( categoryId, StatusConstant.ENABLE );
+        valueOperations.set( redisKey, enabled, RedisConstant.Setmeal.CACHE_TTL );
         // 这里不需要关联关系
         // return setRelationListToSetmealVOList( enabled );
         return enabled;
@@ -223,7 +281,17 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Override
     public List< DishItemVO > listDishItemVOById( Long id ){
-        List< DishItemVO > dishItemVOList = setmealMapper.selectDishItemVOListById( id );
+        // 业务模块: 套餐 - 改套餐关联的所有菜品，setmealId -> dishItemVoList
+        // 业务前缀: setmeal:dish: 来区分
+        String redisKey = RedisConstant.Setmeal.formatDishRedisKey( id );
+        ValueOperations< String, Object > valueOperations = redisTemplate.opsForValue();
+        List< DishItemVO > dishItemVOList = ( List< DishItemVO > ) valueOperations.get( redisKey );
+        if ( dishItemVOList != null ){
+            return dishItemVOList;
+        }
+
+        dishItemVOList = setmealMapper.selectDishItemVOListById( id );
+        valueOperations.set( redisKey, dishItemVOList, RedisConstant.Setmeal.DISH_CACHE_TTL );
         return dishItemVOList;
     }
 
@@ -257,4 +325,36 @@ public class SetmealServiceImpl implements SetmealService {
         return setmealVOList;
     }
 
+    /**
+     * 提取删除套餐、套餐关联菜品缓存的逻辑
+     *
+     * @param categoryId 套餐分类 id
+     * @param setmealId 套餐 id
+     */
+    private void deleteRedisKey(  Long categoryId, Long setmealId ){
+        String setmealRedisKey = RedisConstant.Setmeal.formatRedisKey( categoryId );
+        redisTemplate.delete( setmealRedisKey );
+        String setmealDishRedisKey = RedisConstant.Setmeal.formatDishRedisKey( setmealId );
+        redisTemplate.delete( setmealDishRedisKey );
+    }
+
+    /**
+     * 提取删除套餐、套餐关联菜品缓存的逻辑
+     * <p>
+     *     <b>由调用方保证参数正确性</b>
+     * </p>
+     *
+     * @param categoryIds 套餐分类 id
+     * @param setmealIds 套餐 id
+     */
+    private void deleteRedisKey( List< Long > categoryIds, List< Long > setmealIds ){
+        List< String > categoryIdList = categoryIds.stream()
+                .map( RedisConstant.Setmeal::formatRedisKey )
+                .toList();
+        redisTemplate.delete( categoryIdList );
+        List< String > setmealIdList = setmealIds.stream()
+                .map( RedisConstant.Setmeal::formatDishRedisKey )
+                .toList();
+        redisTemplate.delete( setmealIdList );
+    }
 }
