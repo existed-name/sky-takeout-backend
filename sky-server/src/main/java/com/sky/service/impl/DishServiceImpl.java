@@ -17,8 +17,8 @@ import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
+import com.sky.utils.DishCacheManager;
 import com.sky.utils.PageUtil;
-import com.sky.utils.RedisCacheCleaner;
 import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishVO;
 import org.springframework.beans.BeanUtils;
@@ -45,18 +45,18 @@ public class DishServiceImpl implements DishService {
     private final DishFlavorMapper dishFlavorMapper;
     private final SetmealMapper setmealMapper;
     private final RedisTemplate< String, Object > redisTemplate;
-    private final RedisCacheCleaner redisCacheCleaner;
     private final SetmealCacheManager setmealCacheManager;
+    private final DishCacheManager dishCacheManager;
 
 
     // ==================== 构造器 ====================
-    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, RedisCacheCleaner redisCacheCleaner, SetmealCacheManager setmealCacheManager ){
+    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, SetmealCacheManager setmealCacheManager, DishCacheManager dishCacheManager ){
         this.dishMapper = dishMapper;
         this.dishFlavorMapper = dishFlavorMapper;
         this.setmealMapper = setmealMapper;
         this.redisTemplate = redisTemplate;
-        this.redisCacheCleaner = redisCacheCleaner;
         this.setmealCacheManager = setmealCacheManager;
+        this.dishCacheManager = dishCacheManager;
     }
 
 
@@ -83,7 +83,7 @@ public class DishServiceImpl implements DishService {
             精细修改缓存: 只修改该菜品所在的分类缓存, 也就需要拿到 RedisKey = 业务前缀:分类 id
          */
         // categoryId 一定非空
-        deleteRedisKey( dishDTO.getCategoryId() );
+        dishCacheManager.deleteRedisKey( dishDTO.getCategoryId() );
     }
 
     @Transactional( readOnly = true )
@@ -160,7 +160,7 @@ public class DishServiceImpl implements DishService {
         List< Dish > dishCategoryIdList = dishMapper.selectCategoryIdsByIds( ids );
         // WHERE id IN( .. ) 不会返回 null
         List< Long > categoryIds = dishCategoryIdList.stream().map( Dish::getCategoryId ).toList();
-        deleteRedisKeys( categoryIds );
+        dishCacheManager.deleteRedisKeys( categoryIds );
 
         // 先删子表，后删主表
         dishFlavorMapper.deleteBatchByDishIds( ids );
@@ -187,11 +187,11 @@ public class DishServiceImpl implements DishService {
         Long dishId = dishDTO.getId();
         Dish oldDishCategoryId = dishMapper.selectCategoryIdById( dishId );
         Long oldCategoryId = oldDishCategoryId.getCategoryId();
-        deleteRedisKey( oldCategoryId );
+        dishCacheManager.deleteRedisKey( oldCategoryId );
         // 受影响的分类都需要清缓存
         Long newCategoryId = dishDTO.getCategoryId();
         if ( ! oldCategoryId.equals( newCategoryId ) ){
-            deleteRedisKey( newCategoryId );
+            dishCacheManager.deleteRedisKey( newCategoryId );
         }
 
         /*
@@ -228,12 +228,12 @@ public class DishServiceImpl implements DishService {
         // RedisKey = 业务前缀:分类 id, 就需要查到分类 id
         // 由于下面对 setmealList 判空、return，放到最后可能清不了缓存
         Dish dishCategoryId = dishMapper.selectCategoryIdById( id ); // 由于之前判断过修改行数，所以这里 dishId 一定有效
-        deleteRedisKey( dishCategoryId.getCategoryId() );
+        dishCacheManager.deleteRedisKey( dishCategoryId.getCategoryId() );
 
         // 还要注意业务约束: 如果是禁用菜品，那也要禁用包含此菜品的套餐
         if ( StatusConstant.isDisable( status ) ){
             /*
-            // 思路 1: 直接传 setmeal 对象，修改 stauts
+            // 思路 1: 直接传 setmeal 对象，修改 status
             // 但是发现它没有 dishId 属性
             // 而且 1 个 dishId 对应多个 setmeal
             Setmeal setmeal = new Setmeal();
@@ -350,23 +350,7 @@ public class DishServiceImpl implements DishService {
         return dishVOList;
     }
 
-    /**
-     * 删除特定的菜品 RedisKey = 业务前缀:分类 id
-     */
-    private void deleteRedisKey( Long categoryId ){
-        redisCacheCleaner.generateAndDeleteKey(
-                RedisConstant.Dish::formatRedisKey,
-                categoryId
-        );
-    }
 
-    /**
-     * 批量删除特定的菜品 RedisKey = 业务前缀:分类 id
-     */
-    private void deleteRedisKeys( List< Long > categoryIdList ){
-        redisCacheCleaner.generateAndDeleteKeys(
-                RedisConstant.Dish::formatRedisKey,
-                categoryIdList
-        );
-    }
+
+
 }

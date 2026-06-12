@@ -28,12 +28,8 @@ public class RedisCacheCleaner {
     private final RedisTemplate< String, Object > redisTemplate;
 
 
-
     // ==================== 构造器 ====================
-    public RedisCacheCleaner( RedisTemplate< String, Object > redisTemplate ){
-        this.redisTemplate = redisTemplate;
-    }
-
+    public RedisCacheCleaner( RedisTemplate< String, Object > redisTemplate ){this.redisTemplate = redisTemplate;}
 
     // ==================== 公有方法 ====================
     /**
