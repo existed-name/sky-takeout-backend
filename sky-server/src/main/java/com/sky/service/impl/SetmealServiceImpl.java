@@ -17,7 +17,7 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.SetmealService;
 import com.sky.utils.PageUtil;
-import com.sky.utils.RedisCacheCleaner;
+import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.springframework.beans.BeanUtils;
@@ -43,16 +43,16 @@ public class SetmealServiceImpl implements SetmealService {
     private final SetmealDishMapper setmealDishMapper;
     private final DishMapper dishMapper;
     private final RedisTemplate< String, Object > redisTemplate;
-    private final RedisCacheCleaner redisCacheCleaner;
+    private final SetmealCacheManager setmealCacheManager;
 
 
     // ==================== 构造器 ====================
-    public SetmealServiceImpl( SetmealMapper setmealMapper, SetmealDishMapper setmealDishMapper, DishMapper dishMapper, RedisTemplate< String, Object > redisTemplate, RedisCacheCleaner redisCacheCleaner ){
+    public SetmealServiceImpl( SetmealMapper setmealMapper, SetmealDishMapper setmealDishMapper, DishMapper dishMapper, RedisTemplate< String, Object > redisTemplate, SetmealCacheManager setmealCacheManager ){
         this.setmealMapper = setmealMapper;
         this.setmealDishMapper = setmealDishMapper;
         this.dishMapper = dishMapper;
         this.redisTemplate = redisTemplate;
-        this.redisCacheCleaner = redisCacheCleaner;
+        this.setmealCacheManager = setmealCacheManager;
     }
 
 
@@ -84,7 +84,7 @@ public class SetmealServiceImpl implements SetmealService {
               - 并且由于分类在最上游，修改该套餐分类 -> 删除该分类的套餐缓存 -> 删除该套餐的菜品缓存
             * 还要注意: 由于是新增，刚开始并没有 setmealId 需要主键回填后才能拿到 id
          */
-        deleteRedisKey( setmealDTO.getCategoryId(), setmeal.getId() );
+        setmealCacheManager.deleteRedisKey( setmealDTO.getCategoryId(), setmeal.getId() );
     }
 
 
@@ -154,7 +154,7 @@ public class SetmealServiceImpl implements SetmealService {
         // 清除目标分类、套餐关联菜品缓存
         // TODO: 如果 setmealMapper.selectByIds 改为只查套餐状态而不是完整对象，那这里需要再单独查 categoryId
         List< Long > categoryIds = setmealList.stream().map( Setmeal::getCategoryId ).toList();
-        deleteRedisKeys( categoryIds, ids );
+        setmealCacheManager.deleteRedisKeys( categoryIds, ids );
     }
 
 
@@ -187,12 +187,12 @@ public class SetmealServiceImpl implements SetmealService {
         }
         Long oldCategoryId = setmealCategoryId.getCategoryId();
         // 之前的 categoryId
-        deleteRedisKey( oldCategoryId, setmealId );
+        setmealCacheManager.deleteRedisKey( oldCategoryId, setmealId );
         // 修改后的
         Long newCategoryId = setmealDTO.getCategoryId();
         if ( ! oldCategoryId.equals( newCategoryId ) ){
             // 虽然说这里重复删了 setmealId
-            deleteRedisKey( newCategoryId, setmealId );
+            setmealCacheManager.deleteRedisKey( newCategoryId, setmealId );
         }
 
         // SetmealDTO = Setmeal + 关联关系 SetmealDish
@@ -250,7 +250,7 @@ public class SetmealServiceImpl implements SetmealService {
 
         // 精确删除缓存需要查到 categoryId
         Setmeal setmealCategoryId = setmealMapper.selectCategoryIdById( id );
-        deleteRedisKey( setmealCategoryId.getCategoryId(), id );
+        setmealCacheManager.deleteRedisKey( setmealCategoryId.getCategoryId(), id );
     }
 
     @Transactional( readOnly = true )
@@ -328,40 +328,4 @@ public class SetmealServiceImpl implements SetmealService {
         return setmealVOList;
     }
 
-    /**
-     * 提取删除套餐、套餐关联菜品缓存的逻辑
-     *
-     * @param categoryId 套餐分类 id
-     * @param setmealId 套餐 id
-     */
-    private void deleteRedisKey( Long categoryId, Long setmealId ){
-        redisCacheCleaner.generateAndDeleteKey(
-                RedisConstant.Setmeal::formatRedisKey,
-                categoryId
-        );
-        redisCacheCleaner.generateAndDeleteKey(
-                RedisConstant.Setmeal::formatDishRedisKey,
-                setmealId
-        );
-    }
-
-    /**
-     * 提取删除套餐、套餐关联菜品缓存的逻辑
-     * <p>
-     *     <b>由调用方保证参数正确性</b>
-     * </p>
-     *
-     * @param categoryIds 套餐分类 id
-     * @param setmealIds 套餐 id
-     */
-    private void deleteRedisKeys( List< Long > categoryIds, List< Long > setmealIds ){
-        redisCacheCleaner.generateAndDeleteKeys(
-                RedisConstant.Setmeal::formatRedisKey,
-                categoryIds
-        );
-        redisCacheCleaner.generateAndDeleteKeys(
-                RedisConstant.Setmeal::formatDishRedisKey,
-                setmealIds
-        );
-    }
 }

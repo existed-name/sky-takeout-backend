@@ -19,6 +19,7 @@ import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.utils.PageUtil;
 import com.sky.utils.RedisCacheCleaner;
+import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -45,15 +46,17 @@ public class DishServiceImpl implements DishService {
     private final SetmealMapper setmealMapper;
     private final RedisTemplate< String, Object > redisTemplate;
     private final RedisCacheCleaner redisCacheCleaner;
+    private final SetmealCacheManager setmealCacheManager;
 
 
     // ==================== 构造器 ====================
-    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, RedisCacheCleaner redisCacheCleaner ){
+    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, RedisCacheCleaner redisCacheCleaner, SetmealCacheManager setmealCacheManager ){
         this.dishMapper = dishMapper;
         this.dishFlavorMapper = dishFlavorMapper;
         this.setmealMapper = setmealMapper;
         this.redisTemplate = redisTemplate;
         this.redisCacheCleaner = redisCacheCleaner;
+        this.setmealCacheManager = setmealCacheManager;
     }
 
 
@@ -263,8 +266,8 @@ public class DishServiceImpl implements DishService {
             List< Long > categoryIds = setmealList.stream().map( Setmeal::getCategoryId ).toList();
             List< Long > setmealIds = setmealList.stream().map( Setmeal::getId ).toList();
             // 调 SetmealServiceImpl 的 private / default 清除缓存方法 | 内部再写重复方法 | 放入 RedisConstant
-            // 选择制作工具类
-            deleteSetmealRedisKey( categoryIds, setmealIds );
+            // 最终提取业务工具类
+            setmealCacheManager.deleteRedisKeys( categoryIds, setmealIds );
         }
     }
 
@@ -365,19 +368,5 @@ public class DishServiceImpl implements DishService {
                 RedisConstant.Dish::formatRedisKey,
                 categoryIdList
         );
-    }
-
-    /**
-     * 提取删除套餐、套餐关联菜品缓存的逻辑
-     * <p>
-     *     <b>由调用方保证参数正确性</b>
-     * </p>
-     *
-     * @param categoryIds 套餐分类 id
-     * @param setmealIds 套餐 id
-     */
-    private void deleteSetmealRedisKey( List< Long > categoryIds, List< Long > setmealIds ){
-        redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatRedisKey, categoryIds );
-        redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatDishRedisKey, setmealIds );
     }
 }
