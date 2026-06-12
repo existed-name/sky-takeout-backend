@@ -18,6 +18,7 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.utils.PageUtil;
+import com.sky.utils.RedisCacheCleaner;
 import com.sky.vo.DishVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -43,14 +44,16 @@ public class DishServiceImpl implements DishService {
     private final DishFlavorMapper dishFlavorMapper;
     private final SetmealMapper setmealMapper;
     private final RedisTemplate< String, Object > redisTemplate;
+    private final RedisCacheCleaner redisCacheCleaner;
 
 
     // ==================== 构造器 ====================
-    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate ){
+    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, RedisCacheCleaner redisCacheCleaner ){
         this.dishMapper = dishMapper;
         this.dishFlavorMapper = dishFlavorMapper;
         this.setmealMapper = setmealMapper;
         this.redisTemplate = redisTemplate;
+        this.redisCacheCleaner = redisCacheCleaner;
     }
 
 
@@ -246,6 +249,18 @@ public class DishServiceImpl implements DishService {
                 // 不过我觉得也可以修改 AOP，让它支持链表批量修改审计字段
             } );
             setmealMapper.updateBatchStatusByIds( setmealList );
+
+            /*
+                注意关联缓存:
+                * 禁用菜品 -> 禁用套餐 -> 修改套餐状态 -> 需要拿到 categoryId, setmealId
+             */
+            // TODO: 如果 setmealMapper.selectByDishId 返回不完整的 setmeal 对象，这里需要调整
+            List< Long > categoryIds = setmealList.stream().map( Setmeal::getCategoryId ).toList();
+            List< Long > setmealIds = setmealList.stream().map( Setmeal::getId ).toList();
+            // 调 SetmealServiceImpl 的 private / default 清除缓存方法 | 内部再写重复方法 | 放入 RedisConstant
+            // 选择制作工具类
+            redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatRedisKey, categoryIds );
+            redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatDishRedisKey, setmealIds );
         }
 
         // RedisKey = 业务前缀:分类 id, 就需要查到分类 id
