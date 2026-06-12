@@ -264,8 +264,7 @@ public class DishServiceImpl implements DishService {
             List< Long > setmealIds = setmealList.stream().map( Setmeal::getId ).toList();
             // 调 SetmealServiceImpl 的 private / default 清除缓存方法 | 内部再写重复方法 | 放入 RedisConstant
             // 选择制作工具类
-            redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatRedisKey, categoryIds );
-            redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatDishRedisKey, setmealIds );
+            deleteSetmealRedisKey( categoryIds, setmealIds );
         }
     }
 
@@ -349,24 +348,36 @@ public class DishServiceImpl implements DishService {
     }
 
     /**
-     * 删除特定的 RedisKey = 业务前缀:分类 id
+     * 删除特定的菜品 RedisKey = 业务前缀:分类 id
      */
     private void deleteRedisKey( Long categoryId ){
-        String redisKey = RedisConstant.Dish.formatRedisKey( categoryId );
-        redisTemplate.delete( redisKey );
+        redisCacheCleaner.generateAndDeleteKey(
+                RedisConstant.Dish::formatRedisKey,
+                categoryId
+        );
     }
 
     /**
-     * 批量删除特定的 RedisKey = 业务前缀:分类 id
+     * 批量删除特定的菜品 RedisKey = 业务前缀:分类 id
      */
-    private void deleteRedisKeys( List< Long > dishCategoryIdList ){
-        List< String > categoryIds = dishCategoryIdList.stream()
-//                .distinct() 可以不用去重
-                .map( RedisConstant.Dish::formatRedisKey
-                    // lambda 表达式和方法引用互换
-                    // categoryId -> RedisConstant.Dish.formatRedisKey( categoryId )
-                )
-                .toList();
-        redisTemplate.delete( categoryIds );
+    private void deleteRedisKeys( List< Long > categoryIdList ){
+        redisCacheCleaner.generateAndDeleteKeys(
+                RedisConstant.Dish::formatRedisKey,
+                categoryIdList
+        );
+    }
+
+    /**
+     * 提取删除套餐、套餐关联菜品缓存的逻辑
+     * <p>
+     *     <b>由调用方保证参数正确性</b>
+     * </p>
+     *
+     * @param categoryIds 套餐分类 id
+     * @param setmealIds 套餐 id
+     */
+    private void deleteSetmealRedisKey( List< Long > categoryIds, List< Long > setmealIds ){
+        redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatRedisKey, categoryIds );
+        redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatDishRedisKey, setmealIds );
     }
 }
