@@ -222,6 +222,11 @@ public class DishServiceImpl implements DishService {
             throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
         }
 
+        // RedisKey = 业务前缀:分类 id, 就需要查到分类 id
+        // 由于下面对 setmealList 判空、return，放到最后可能清不了缓存
+        Dish dishCategoryId = dishMapper.selectCategoryIdById( id ); // 由于之前判断过修改行数，所以这里 dishId 一定有效
+        deleteRedisKey( dishCategoryId.getCategoryId() );
+
         // 还要注意业务约束: 如果是禁用菜品，那也要禁用包含此菜品的套餐
         if ( StatusConstant.isDisable( status ) ){
             /*
@@ -262,10 +267,6 @@ public class DishServiceImpl implements DishService {
             redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatRedisKey, categoryIds );
             redisCacheCleaner.generateAndDeleteKeys( RedisConstant.Setmeal::formatDishRedisKey, setmealIds );
         }
-
-        // RedisKey = 业务前缀:分类 id, 就需要查到分类 id
-        Dish dishCategoryId = dishMapper.selectCategoryIdById( id ); // 由于之前判断过修改行数，所以这里 dishId 一定有效
-        deleteRedisKey( dishCategoryId.getCategoryId() );
     }
 
     @Transactional( readOnly = true )

@@ -1,6 +1,5 @@
 package com.sky.utils;
 
-import com.sky.exception.IllegalParameterException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +49,7 @@ public class RedisCacheCleaner {
     }
 
     /**
-     * 删除多个 key
+     * 删除多个 key, 内部会对 key 列表去重，减少网络开销
      *
      * @param redisKeys 由调用方确保正确性
      */
@@ -58,6 +57,7 @@ public class RedisCacheCleaner {
         if ( redisKeys == null || redisKeys.isEmpty() ){
             return;
         }
+        redisKeys = redisKeys.stream().distinct().toList();
         redisTemplate.delete( redisKeys );
     }
 
@@ -88,6 +88,9 @@ public class RedisCacheCleaner {
 
     /**
      * 调用方指定生成 Key 的方法、多份原始材料，该方法批量组装 Key 后删除
+     * <p>
+     *     内部会对 key 列表去重，减少网络开销
+     * </p>
      *
      * @param redisKeyGenerator 方法引用，主要来自{@link com.sky.constant.RedisConstant}的组装 Key 方法
      *                          <br>
@@ -101,7 +104,10 @@ public class RedisCacheCleaner {
             return;
         }
 
-        List< String > redisKeys = ids.stream().map( redisKeyGenerator ).toList();
+        List< String > redisKeys = ids.stream()
+                .map( redisKeyGenerator )
+                .distinct()
+                .toList();
         redisTemplate.delete( redisKeys );
     }
 
@@ -121,7 +127,8 @@ public class RedisCacheCleaner {
         // 我觉得方法引用应该单出来判断，因为用来生成 key 的材料可为空(不删就是)，但是方法引用一定要准确
         if ( redisKeyGenerator == null ){
             // 不过作为 common 的工具类，我在想应该抛业务异常还是 Java 原生异常
-            throw new IllegalParameterException( "方法引用 redisKeyGenerator 不能为空" );
+            // AI: common 工具类抛出标准异常，不污染业务异常体系
+            throw new IllegalArgumentException( "方法引用 redisKeyGenerator 不能为空" );
         }
     }
 }
