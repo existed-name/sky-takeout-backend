@@ -21,6 +21,9 @@ import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -57,6 +60,18 @@ public class SetmealServiceImpl implements SetmealService {
 
 
     // ==================== 公有方法 ====================
+//    @CachePut( cacheNames = RedisConstant.Setmeal.SETMEAL_CACHE_NAME )
+    // 由于缓存单位是整个列表,这里不能把单个对象塞进列表，只能先删该列表 <- categoryId
+    @CacheEvict(
+        // 注意删除套餐 + 套餐关联菜品的缓存(分 2 次注解，因为 1 次只能 1 种 key)
+        cacheNames = RedisConstant.Setmeal.SETMEAL_CACHE_NAME,
+        key = "#setmealDTO.categoryId" // setmeal:category::{categoryId} -> List< SetmealVO >
+    )
+    @CacheEvict(
+            cacheNames = RedisConstant.Setmeal.SETMEAL_DISH_CACHE_NAME,
+            key = ""  // setmeal:dish::{setmealId} -> List< DishItemVO >
+            // 然而注解这里拿不到 setmealId, 因为新增套餐 dto 没有 id
+    )
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void saveWithRelation( SetmealDTO setmealDTO ){
@@ -64,6 +79,19 @@ public class SetmealServiceImpl implements SetmealService {
         Setmeal setmeal = new Setmeal();
         BeanUtils.copyProperties( setmealDTO, setmeal );
         setmealMapper.insert( setmeal );
+
+        /*
+                增删改对缓存的影响 -> 只看有缓存的那端(用户端)
+            * 套餐缓存 RedisKey = setmeal:category:{categoryId}
+              - 该分类内容发生变化，就需要删除缓存
+            * 套餐关联菜品缓存 RedisKey = setmeal:dish:{setmealId}
+              - 该套餐发生变化，就需要删除缓存
+              - 并且由于分类在最上游，修改该套餐分类 -> 删除该分类的套餐缓存 -> 删除该套餐的菜品缓存
+            * 还要注意:
+              - 由于是新增，刚开始并没有 setmealId 需要主键回填后才能拿到 id
+              - 清除缓存时机: 必须放在 return 之前
+         */
+        setmealCacheManager.deleteRedisKey( setmealDTO.getCategoryId(), setmeal.getId() );
 
         // 唉，忽略了 SetmealDish 的 setmealId 并不是前端自带的，而是绑定当前套餐
         // 于是需要从当前套餐拿到 id
@@ -74,17 +102,6 @@ public class SetmealServiceImpl implements SetmealService {
         }
         setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( setmeal.getId() ) );
         setmealDishMapper.insertBatch( setmealDishes );
-
-        /*
-                增删改对缓存的影响 -> 只看有缓存的那端(用户端)
-            * 套餐缓存 RedisKey = setmeal:category:{categoryId}
-              - 该分类内容发生变化，就需要删除缓存
-            * 套餐关联菜品缓存 RedisKey = setmeal:dish:{setmealId}
-              - 该套餐发生变化，就需要删除缓存
-              - 并且由于分类在最上游，修改该套餐分类 -> 删除该分类的套餐缓存 -> 删除该套餐的菜品缓存
-            * 还要注意: 由于是新增，刚开始并没有 setmealId 需要主键回填后才能拿到 id
-         */
-        setmealCacheManager.deleteRedisKey( setmealDTO.getCategoryId(), setmeal.getId() );
     }
 
 
@@ -128,6 +145,11 @@ public class SetmealServiceImpl implements SetmealService {
         return PageUtil.buildPageResult( setmealVOPageTotal, setmealVOPage );
     }
 
+    // 这里批量删除，方法参数拿不到 categoryId, key 只能全删，不能精确删除
+    @CacheEvict(
+            cacheNames = RedisConstant.Setmeal.SETMEAL_CACHE_NAME,
+            allEntries = true
+    )
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void deleteBatch( List< Long > ids ){
@@ -176,6 +198,14 @@ public class SetmealServiceImpl implements SetmealService {
         return setmealVO;
     }
 
+    @CacheEvict(
+            cacheNames = RedisConstant.Setmeal.SETMEAL_CACHE_NAME,
+            key = "#setmealDTO.categoryId"
+    )
+    @CacheEvict(
+            cacheNames = RedisConstant.Setmeal.SETMEAL_DISH_CACHE_NAME,
+            key = "#setmealDTO.id"
+    )
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void update( SetmealDTO setmealDTO ){
@@ -219,6 +249,14 @@ public class SetmealServiceImpl implements SetmealService {
         setmealDishMapper.insertBatch( setmealDishes );
     }
 
+    @CacheEvict(
+            cacheNames = RedisConstant.Setmeal.SETMEAL_CACHE_NAME,
+            allEntries = true
+    )
+    @CacheEvict(
+            cacheNames = RedisConstant.Setmeal.SETMEAL_DISH_CACHE_NAME,
+            allEntries = true
+    )
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void updateStatusById( Long id, Integer status ){
@@ -260,6 +298,10 @@ public class SetmealServiceImpl implements SetmealService {
         return setRelationListToSetmealVOList( setmealVOList );
     }
 
+    @Cacheable(
+            cacheNames = RedisConstant.Setmeal.SETMEAL_CACHE_NAME,
+            key = "#categoryId"
+    )
     @Transactional( readOnly = true )
     @Override
     public List< SetmealVO > listEnabledByCategoryId( Long categoryId ){
@@ -282,6 +324,10 @@ public class SetmealServiceImpl implements SetmealService {
         return enabled;
     }
 
+    @Cacheable(
+            cacheNames = RedisConstant.Setmeal.SETMEAL_DISH_CACHE_NAME,
+            key = "#id"
+    )
     @Override
     public List< DishItemVO > listDishItemVOById( Long id ){
         // 业务模块: 套餐 - 改套餐关联的所有菜品，setmealId -> dishItemVoList
