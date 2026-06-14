@@ -4,6 +4,28 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sky.mapper.ShoppingCartMapper">
 
-
+    <!--
+    查询用户购物车已存在的某条内容，
+    查询条件: 用户 id(必须)、菜品 id、菜品口味、套餐 id,
+    可用于判断用户是否加购了某种 food
+    只查一条数据，需要确保用户下单后清除该用户购物车
+    Returns:    完整字段的对象
+    -->
+    <select id="selectExistingItemByQuery" resultType="com.sky.entity.ShoppingCart">
+        SELECT id, name, image, user_id, dish_id, setmeal_id, dish_flavor, number, amount, create_time
+        FROM shopping_cart
+        <where>
+            user_id = #{dto.userId}
+            <if test="dto.dishId != null">
+                AND dish_id = #{dto.dishId}
+            </if>
+            <if test="dto.dishFlavor != null">
+                AND dish_flavor = #{dto.dishFlavor}
+            </if>
+            <if test="dto.setmealId != null">
+                AND setmeal_id = #{dto.setmealId}
+            </if>
+        </where>
+    </select>
 
 </mapper>

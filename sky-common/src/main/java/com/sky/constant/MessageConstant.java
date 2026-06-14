@@ -45,4 +45,5 @@ public class MessageConstant {
     public static final String PARSE_TOKEN_FAILED = "登录状态解析失败, 请重新登录";
     public static final String NOT_LOGIN = "您还没有登录哦~";
     public static final String TOKEN_INVALID = "登录参数错误, 请重新登录";
+    public static final String SHOPPING_CART_ADD_NULL = "购物车添加内容不能为空";
 }

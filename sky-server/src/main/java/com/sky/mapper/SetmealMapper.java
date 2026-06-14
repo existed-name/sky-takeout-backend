@@ -150,4 +150,24 @@ public interface SetmealMapper {
             WHERE id = #{id}
             """ )
     Setmeal selectCategoryIdById( @Param( "id" ) Long id );
+
+    /**
+     * 判断该 id 对应的对象是否存在，如果存在返回 1，否则 0
+     */
+    @Select( """
+            SELECT count( * )
+            FROM setmeal
+            WHERE id = #{id}
+            """ )
+    long countById( @Param( "id" ) Long setmealId );
+
+    /**
+     * 查询完整的 Setmeal 对象
+     */
+    @Select( """
+            SELECT id, category_id, name, price, status, description, image, create_time, update_time, create_user, update_user
+            FROM setmeal
+            WHERE id = #{id}
+            """ )
+    Setmeal selectById( @Param( "id" ) Long setmealId );
 }

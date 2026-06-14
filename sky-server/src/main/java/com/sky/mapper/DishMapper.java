@@ -120,4 +120,24 @@ public interface DishMapper {
      * @return 只包含 categoryId 的 DishList
      */
     List< Dish > selectCategoryIdsByIds( @Param( "ids" ) List< Long > ids );
+
+    /**
+     * 判断该 id 对应的对象是否存在，如果存在返回 1，否则 0
+     */
+    @Select( """
+            SELECT count( * )
+            FROM dish
+            WHERE id = #{id}
+            """ )
+    long countById( @Param( "id" ) Long dishId );
+
+    /**
+     * 查询完整的 Dish 对象
+     */
+    @Select( """
+            SELECT id, name, category_id, price, image, description, status, create_time, update_time, create_user, update_user
+            FROM dish
+            WHERE id = #{id}
+            """ )
+    Dish selectById( @Param( "id" ) Long dishId );
 }
