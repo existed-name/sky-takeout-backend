@@ -48,4 +48,5 @@ public class MessageConstant {
     public static final String SHOPPING_CART_ADD_NULL = "购物车添加内容不能为空";
     public static final String INVALID_DATABASE_DATA = "数据库数据无效";
     public static final String SHOPPING_CART_NOT_FOUND = "购物车数据不存在";
+    public static final String SHOPPING_CART_USER_NOT_MATCH = "该购物车数据不属于当前用户";
 }

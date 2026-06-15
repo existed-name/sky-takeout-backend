@@ -27,14 +27,14 @@ public class FoodCopiesConstant {
      * 自增 1
      */
     public static int increment( int number ){
-        return ++number;
+        return number + 1;
     }
 
     /**
      * 自减 1
      */
     public static int decrement( int number ){
-        return --number;
+        return number - 1;
     }
 
 

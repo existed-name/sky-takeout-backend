@@ -11,6 +11,7 @@ import com.sky.entity.ShoppingCart;
 import com.sky.exception.IllegalParameterException;
 import com.sky.exception.InvalidDataBaseDataException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.ShoppingCartUserNotMatchException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
@@ -172,23 +173,18 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             throw new NotFoundException( MessageConstant.SHOPPING_CART_NOT_FOUND );
         }
 
+        // AI 提醒: 由于使用 id 定位，需要确保 userId 相同
+        if ( ! userId.equals( shoppingCart.getUserId() ) ){
+            throw new ShoppingCartUserNotMatchException( MessageConstant.SHOPPING_CART_USER_NOT_MATCH );
+        }
+
         // 数量为 1 -> 减为 0 -> 删除，否则只是减一
         Integer number = shoppingCart.getNumber();
         if ( number > 1 ){
-            if ( shoppingCart.isDish() ){
-                shoppingCartMapper.updateNumberByUserIdAndDishIdAndFlavor(
-                        FoodCopiesConstant.decrement( shoppingCart.getNumber() ),
-                        userId,
-                        shoppingCart.getDishId(),
-                        shoppingCart.getDishFlavor()
-                );
-            } else {
-                shoppingCartMapper.updateNumberByUserIdAndSetmealId(
-                        FoodCopiesConstant.decrement( shoppingCart.getNumber() ),
-                        userId,
-                        shoppingCart.getSetmealId()
-                );
-            }
+            // 既然有了准确 id，就不需要 dishId, setmealId 定位了
+            shoppingCartMapper.updateNumberById(
+                    id, FoodCopiesConstant.decrement( shoppingCart.getNumber() )
+            );
         } else if ( number == 1 ){
             int row = shoppingCartMapper.deleteById( id );
         } else { // null, 非正数, 无效数据

@@ -80,7 +80,7 @@ public interface ShoppingCartMapper {
             WHERE user_id = #{userId}
             ORDER BY create_time DESC, id DESC
             """ )
-    List< ShoppingCartItemVO > selectItemVOByUserId( Long userId );
+    List< ShoppingCartItemVO > selectItemVOByUserId( @Param( "userId" ) Long userId );
 
     /**
      * 清空该用户的购物车
@@ -94,11 +94,11 @@ public interface ShoppingCartMapper {
     /**
      * 根据 id 查询购物车某条数据
      * <p>
-     *     只包含: dishId, dishFlavor, setmealId, number
+     *     <b>只包含用到的字段</b>: userId, dishId, dishFlavor, setmealId, number
      * </p>
      */
     @Select( """
-            SELECT dish_id, setmeal_id, dish_flavor, number
+            SELECT user_id, dish_id, setmeal_id, dish_flavor, number
             FROM shopping_cart
             WHERE id = #{id}
             """ )
@@ -112,4 +112,14 @@ public interface ShoppingCartMapper {
             WHERE id = #{id}
             """ )
     int deleteById( @Param( "id" ) Long id );
+
+    /**
+     * 根据主键 id 修改商品份数
+     */
+    @Update( """
+            UPDATE shopping_cart
+            SET number = #{number}
+            WHERE id = #{id}
+            """ )
+    int updateNumberById( @Param( "id" ) Long id, @Param( "number" ) int newNumber );
 }
