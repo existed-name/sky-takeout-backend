@@ -2,8 +2,7 @@ package com.sky.mapper;
 
 import com.sky.dto.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
-import com.sky.vo.ShoppingCartDishVO;
-import com.sky.vo.ShoppingCartSetmealVO;
+import com.sky.vo.ShoppingCartItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -68,32 +67,17 @@ public interface ShoppingCartMapper {
             @Param( "setmealId" ) Long setmealId );
 
     /**
-     * 查询该用户加购的菜品信息
+     * 查询该用户加购的所有菜品、套餐信息
      * <p>
-     * <code>ShoppingCartDishVO = name + image + number + price</code>
+     *     <b>按照加购时间倒序排列</b>，时间相同按照 id 倒序排列
      * </p>
+     * <b>单价是加购时的单价，而不是实时单价</b>( dish / setmeal 表为实时单价)
      */
     @Select( """
-            SELECT sc.number, d.name, d.image, d.price
-            FROM shopping_cart AS sc
-            LEFT JOIN dish AS d
-            ON sc.dish_id = d.id
-            WHERE sc.user_id = #{userId}
+            SELECT id, name, image, dish_id, setmeal_id, dish_flavor, number, amount, create_time
+            FROM shopping_cart
+            WHERE user_id = #{userId}
+            ORDER BY create_time DESC, id DESC
             """ )
-    List< ShoppingCartDishVO > selectDishVOByUserId( @Param( "userId" ) Long userId );
-
-    /**
-     * 查询该用户加购的套餐信息
-     * <p>
-     * <code>ShoppingCartSetmealVO = name + image + number + price</code>
-     * </p>
-     */
-    @Select( """
-            SELECT sc.number, s.name, s.image, s.price
-            FROM shopping_cart AS sc
-            LEFT JOIN setmeal AS s
-            ON sc.setmeal_id = s.id
-            WHERE sc.user_id = #{userId}
-            """ )
-    List< ShoppingCartSetmealVO> selectSetmealVOByUserId( @Param( "userId" ) Long userId );
+    List< ShoppingCartItemVO > selectItemVOByUserId( Long userId );
 }

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /** 购物车视图对象 VO */
@@ -24,13 +25,9 @@ public class ShoppingCartVO {
 
 
     // ==================== 实例变量 ====================
-    /** 购物车中包含的所有菜品信息 */
-    @ApiModelProperty(value = "购物车中包含的所有菜品信息")
-    private List<ShoppingCartDishVO> shoppingCartDishVOList = null;
-
-    /** 购物车中包含的所有套餐信息 */
-    @ApiModelProperty(value = "购物车中包含的所有套餐信息")
-    private List<ShoppingCartSetmealVO> shoppingCartSetmealVOList = null;
+    /** 购物车中包含的所有菜品、套餐信息 */
+    @ApiModelProperty(value = "购物车中包含的所有菜品、套餐信息")
+    private List< ShoppingCartItemVO > shoppingCartItemVOList = new ArrayList<>();
 
     /** 购物车总金额 */
     @ApiModelProperty(value = "购物车总金额", example = "128.50")

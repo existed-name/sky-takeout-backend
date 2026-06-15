@@ -3,7 +3,6 @@ package com.sky.controller.user;
 import com.sky.dto.ShoppingCartDTO;
 import com.sky.result.Result;
 import com.sky.service.impl.ShoppingCartServiceImpl;
-import com.sky.vo.ShoppingCartDishVO;
 import com.sky.vo.ShoppingCartVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
