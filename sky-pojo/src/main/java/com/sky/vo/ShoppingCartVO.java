@@ -1,0 +1,48 @@
+package com.sky.vo;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+/** 购物车视图对象 VO */
+@ApiModel(description = "购物车视图对象 VO")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ShoppingCartVO {
+    // ==================== 常量 ====================
+
+
+    // ==================== 静态变量 ====================
+
+
+    // ==================== 实例变量 ====================
+    /** 购物车中包含的所有菜品信息 */
+    @ApiModelProperty(value = "购物车中包含的所有菜品信息")
+    private List<ShoppingCartDishVO> shoppingCartDishVOList = null;
+
+    /** 购物车中包含的所有套餐信息 */
+    @ApiModelProperty(value = "购物车中包含的所有套餐信息")
+    private List<ShoppingCartSetmealVO> shoppingCartSetmealVOList = null;
+
+    /** 购物车总金额 */
+    @ApiModelProperty(value = "购物车总金额", example = "128.50")
+    private BigDecimal totalAmount;
+
+
+    // ==================== 构造器 ====================
+
+
+    // ==================== 公有方法 ====================
+
+
+    // ==================== 私有辅助方法 ====================
+
+}

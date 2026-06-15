@@ -107,3 +107,8 @@
   - 但是教程是 Controller new Dish, 设置 status 然后传给 Service 筛选 status、categoryId，也是 Controller 涉及业务操作
   - 我觉得应该单独设置查询起售状态的 Service 方法，Controller 直接往 Service 传 categoryId 就行
   - 不过 AI 评价最终还是把状态筛选交给 Mapper 而不是 Service
+
+
+### 购物车接口
+* `份数` 不统一啊，DishItemVO、setmeal_dish 是 copies, shopping_cart 就是 number
+

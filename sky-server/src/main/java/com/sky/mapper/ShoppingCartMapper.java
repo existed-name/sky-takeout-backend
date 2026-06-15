@@ -2,11 +2,15 @@ package com.sky.mapper;
 
 import com.sky.dto.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
+import com.sky.vo.ShoppingCartDishVO;
+import com.sky.vo.ShoppingCartSetmealVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+
+import java.util.List;
 
 @Mapper
 public interface ShoppingCartMapper {
@@ -62,4 +66,34 @@ public interface ShoppingCartMapper {
             @Param( "number" ) int number,
             @Param( "userId" ) Long userId,
             @Param( "setmealId" ) Long setmealId );
+
+    /**
+     * 查询该用户加购的菜品信息
+     * <p>
+     * <code>ShoppingCartDishVO = name + image + number + price</code>
+     * </p>
+     */
+    @Select( """
+            SELECT sc.number, d.name, d.image, d.price
+            FROM shopping_cart AS sc
+            LEFT JOIN dish AS d
+            ON sc.dish_id = d.id
+            WHERE sc.user_id = #{userId}
+            """ )
+    List< ShoppingCartDishVO > selectDishVOByUserId( @Param( "userId" ) Long userId );
+
+    /**
+     * 查询该用户加购的套餐信息
+     * <p>
+     * <code>ShoppingCartSetmealVO = name + image + number + price</code>
+     * </p>
+     */
+    @Select( """
+            SELECT sc.number, s.name, s.image, s.price
+            FROM shopping_cart AS sc
+            LEFT JOIN setmeal AS s
+            ON sc.setmeal_id = s.id
+            WHERE sc.user_id = #{userId}
+            """ )
+    List< ShoppingCartSetmealVO> selectSetmealVOByUserId( @Param( "userId" ) Long userId );
 }

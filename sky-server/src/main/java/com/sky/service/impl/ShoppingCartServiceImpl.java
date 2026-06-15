@@ -14,9 +14,15 @@ import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.service.ShoppingCartService;
+import com.sky.vo.ShoppingCartDishVO;
+import com.sky.vo.ShoppingCartSetmealVO;
+import com.sky.vo.ShoppingCartVO;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ShoppingCartServiceImpl implements ShoppingCartService {
@@ -130,7 +136,58 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
     }
 
+    @Override
+    public ShoppingCartVO list(){
+        /*
+            ShoppingCartVO = List< ShoppingCartDishVO > + List< ShoppingCartSetmealVO > + totalAmount(总价)
+            于是有几种查法
+              - 查全库，拿到所有数据，直接把 Object 拿给前端: shoppingCartMapper.selectByUserId
+              - 查全库，List< Object > 在 Service 里面自己组装 VO、统计数据
+              - 分出专用方法，
+                - selectDish/SetmealVOByUserId( dish_id IS NOT NULL )查对象
+                - 需要联表 shopping_cart + dish / setmeal
+                - 然后 Service 整理 totalAmount
+         */
+        Long userId = BaseContext.getCurrentId();
+        List< ShoppingCartDishVO > shoppingCartDishVOList = shoppingCartMapper.selectDishVOByUserId( userId );
+        List< ShoppingCartSetmealVO > shoppingCartSetmealVOList = shoppingCartMapper.selectSetmealVOByUserId( userId );
+        BigDecimal totalAmount = calculateTotalAmount( shoppingCartDishVOList, shoppingCartSetmealVOList );
+
+        return ShoppingCartVO.builder()
+                .shoppingCartDishVOList( shoppingCartDishVOList )
+                .shoppingCartSetmealVOList( shoppingCartSetmealVOList )
+                .totalAmount( totalAmount )
+                .build();
+    }
+
+
 
     // ==================== 私有辅助方法 ====================
+
+    /**
+     * 计算总金额
+     *
+     * @param shoppingCartDishVOList 用户购物车的所有信息
+     * @param shoppingCartSetmealVOList 用户购物车的所有套餐信息
+     */
+    private BigDecimal calculateTotalAmount( List< ShoppingCartDishVO> shoppingCartDishVOList, List< ShoppingCartSetmealVO> shoppingCartSetmealVOList ){
+        BigDecimal totalAmount = BigDecimal.valueOf( 0 );
+        for ( ShoppingCartDishVO dishVO : shoppingCartDishVOList ){
+            // totalAmount += price * number
+            totalAmount = totalAmount.add(
+                    dishVO.getPrice().multiply(
+                            BigDecimal.valueOf( dishVO.getNumber() )
+                    )
+            );
+        }
+        for ( ShoppingCartSetmealVO setmealVO : shoppingCartSetmealVOList ){
+            totalAmount = totalAmount.add(
+                    setmealVO.getPrice().multiply(
+                            BigDecimal.valueOf( setmealVO.getNumber() )
+                    )
+            );
+        }
+        return totalAmount;
+    }
 
 }
