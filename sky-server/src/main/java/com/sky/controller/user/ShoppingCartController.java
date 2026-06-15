@@ -7,6 +7,7 @@ import com.sky.vo.ShoppingCartVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,6 +62,17 @@ public class ShoppingCartController {
         log.info( "查看购物车所有内容" );
         ShoppingCartVO shoppingCartVO = shoppingCartService.list();
         return Result.success( shoppingCartVO );
+    }
+
+    /**
+     * 清空购物车
+     */
+    @ApiOperation( "清空购物车" )
+    @DeleteMapping( "/clean" )
+    public Result< Void > clean(){
+        log.info( "清空购物车" );
+        shoppingCartService.clean();
+        return Result.success();
     }
 
 

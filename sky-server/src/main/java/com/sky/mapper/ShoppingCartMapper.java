@@ -3,6 +3,7 @@ package com.sky.mapper;
 import com.sky.dto.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
 import com.sky.vo.ShoppingCartItemVO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -80,4 +81,13 @@ public interface ShoppingCartMapper {
             ORDER BY create_time DESC, id DESC
             """ )
     List< ShoppingCartItemVO > selectItemVOByUserId( Long userId );
+
+    /**
+     * 清空该用户的购物车
+     */
+    @Delete( """
+            DELETE FROM shopping_cart
+            WHERE user_id = #{userId}
+            """ )
+    int deleteByUserId( @Param( "userId" ) Long userId );
 }
