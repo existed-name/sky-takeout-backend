@@ -6,6 +6,7 @@ import com.sky.vo.ShoppingCartItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -17,6 +18,7 @@ public interface ShoppingCartMapper {
     /**
      * 新增购物车内容(菜品/套餐)
      */
+    @Options( useGeneratedKeys = true, keyProperty = "id" )
     @Insert( """
             INSERT INTO shopping_cart
                 ( name, image, user_id, dish_id, setmeal_id, dish_flavor, number, amount, create_time )
@@ -35,37 +37,7 @@ public interface ShoppingCartMapper {
      *
      * @return 完整字段的对象
      */
-    ShoppingCart selectExistingItemByQuery( @Param( "dto" ) ShoppingCartQueryDTO dto );
-
-    /**
-     * 修改购物车的某种菜品份数, 注意用 <b>dishId + flavor 定位</b>菜品
-     */
-    @Update( """
-            UPDATE shopping_cart
-            SET number = #{number}
-            WHERE user_id = #{userId}
-              AND dish_id = #{dish_id}
-              AND dish_flavor = #{flavor}
-            """ )
-    int updateNumberByUserIdAndDishIdAndFlavor(
-            @Param( "number" ) int newNumber,
-            @Param( "userId" ) Long userId,
-            @Param( "dishId" ) Long dishId,
-            @Param( "flavor" ) String dishFlavor );
-
-    /**
-     * 修改购物车的某种套餐份数, 注意用 <b>setmealId 定位</b>套餐
-     */
-    @Update( """
-            UPDATE shopping_cart
-            SET number = #{number}
-            WHERE user_id = #{userId}
-              AND setmeal_id = #{setmealId}
-            """ )
-    int updateNumberByUserIdAndSetmealId(
-            @Param( "number" ) int number,
-            @Param( "userId" ) Long userId,
-            @Param( "setmealId" ) Long setmealId );
+    ShoppingCart selectByQuery( @Param( "dto" ) ShoppingCartQueryDTO dto );
 
     /**
      * 查询该用户加购的所有菜品、套餐信息

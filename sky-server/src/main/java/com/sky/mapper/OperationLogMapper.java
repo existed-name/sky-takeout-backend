@@ -3,6 +3,7 @@ package com.sky.mapper;
 import com.sky.entity.OperationLog;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -18,6 +19,7 @@ public interface OperationLogMapper {
      * <br>
      * 由调用方填写所有字段
      */
+    @Options( useGeneratedKeys = true, keyProperty = "id" )
     @Insert( """
             INSERT INTO operation_log
             ( operator_id, operation_type, description, method_name, request_params, status, error_msg, cost_time, create_time )

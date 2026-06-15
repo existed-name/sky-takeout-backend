@@ -68,7 +68,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         // 只看这个用户的购物车，并且由于不同菜品在一个用户的订单里面是唯一的，所以用 userId, dishId 定位
         // 而且还要注意菜品要用 flavor 定位
         // 但是必须确保每回完成订餐，就清除该用户购物车内容，否则会影响之后的查询(查出来多条数据,也就是以前的旧数据)
-        ShoppingCart shoppingCart = shoppingCartMapper.selectExistingItemByQuery(
+        ShoppingCart shoppingCart = shoppingCartMapper.selectByQuery(
                 ShoppingCartQueryDTO.builder()
                         .userId( userId )
                         .dishId( dishId )
@@ -77,62 +77,59 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                         .build()
         );
 
-        // 检查菜品
-        if ( shoppingCartDTO.hasDish() ){
-            if ( dishMapper.countById( dishId ) != 1L ){
-                // count 默认返回 bigint, 就用 long 来接了
-                throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
+        // 该商品还不存在，新创建购物车数据，就不需要 if-else 分支重复创建、只需要设置各自的字段
+        boolean isInDatabase = true; // 标记数据库是否存在该数据，用于判断是否需要设置各自的字段
+        if ( shoppingCart == null ){
+            isInDatabase = false;
+            shoppingCart = ShoppingCart.builder()
+//                        .id()
+//                    .name(  )
+                    .userId( userId )
+                    .dishId( dishId )
+                    .setmealId( setmealId )
+                    .dishFlavor( dishFlavor )
+                    .number( FoodCopiesConstant.BASE_COPIES )
+//                    .amount(  )
+//                    .image(  )
+                    .createTime( LocalDateTime.now() )
+                    .build();
+        }
+
+        // 数据库已存在，直接增加数量
+        if ( isInDatabase ){
+            Integer number = shoppingCart.getNumber();
+            if ( number == null || number < 0 ){
+                // null, 非正数, 无效数据
+                throw new InvalidDataBaseDataException( MessageConstant.INVALID_DATABASE_DATA + ": 购物车商品数量 = " + number );
+            }
+            shoppingCartMapper.updateNumberById(
+                    shoppingCart.getId(),
+                    FoodCopiesConstant.increment( number )
+            );
+        } else {
+            // 数据库中不存在，新建
+            // 最终需要补填的字段就是 name, amount, image
+            String name = null;
+            BigDecimal amount = null;
+            String image = null;
+
+            // 于是需要查到对应 dish/setmeal 的信息
+            if ( shoppingCartDTO.hasDish() ){ // shoppingCart.isDish
+                Dish dish = dishMapper.selectById( dishId );
+                name = dish.getName();
+                amount = dish.getPrice();
+                image = dish.getImage();
+            } else { // shoppingCart.isSetmeal
+                Setmeal setmeal = setmealMapper.selectById( setmealId );
+                name = setmeal.getName();
+                amount = setmeal.getPrice();
+                image = setmeal.getImage();
             }
 
-            // 暂无数据
-            if ( shoppingCart == null ){
-                Dish dish = dishMapper.selectById( dishId );
-                ShoppingCart build = ShoppingCart.builder()
-//                        .id()
-                        .name( dish.getName() )
-                        .userId( userId )
-                        .dishId( dishId )
-//                        .setmealId()
-                        .dishFlavor( dishFlavor )
-                        .number( FoodCopiesConstant.BASE_COPIES )
-                        .amount( dish.getPrice() )
-                        .image( dish.getImage() )
-                        .createTime( LocalDateTime.now() )
-                        .build();
-                shoppingCartMapper.insert( build );
-            } else {
-                // 已有数据
-                shoppingCartMapper.updateNumberByUserIdAndDishIdAndFlavor(
-                        FoodCopiesConstant.increment( shoppingCart.getNumber() ),
-                        userId, dishId, dishFlavor
-                );
-            }
-        } else { // 检查套餐
-            if ( setmealMapper.countById( setmealId ) != 1L ){
-                throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
-            }
-            // 新增套餐内容
-            if ( shoppingCart == null ){
-                Setmeal setmeal = setmealMapper.selectById( setmealId );
-                ShoppingCart build = ShoppingCart.builder()
-//                        .id()
-                        .name( setmeal.getName() )
-                        .userId( userId )
-//                        .dishId(  )
-                        .setmealId( setmealId )
-//                        .dishFlavor(  )
-                        .number( FoodCopiesConstant.BASE_COPIES )
-                        .amount( setmeal.getPrice() )
-                        .image( setmeal.getImage() )
-                        .createTime( LocalDateTime.now() )
-                        .build();
-                shoppingCartMapper.insert( build );
-            } else { // 修改套餐份数
-                shoppingCartMapper.updateNumberByUserIdAndSetmealId(
-                        FoodCopiesConstant.increment( shoppingCart.getNumber() ),
-                        userId, setmealId
-                );
-            }
+            shoppingCart.setName( name );
+            shoppingCart.setAmount( amount );
+            shoppingCart.setImage( image );
+            shoppingCartMapper.insert( shoppingCart );
         }
     }
 

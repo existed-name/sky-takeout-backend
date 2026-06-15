@@ -6,6 +6,7 @@ import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -27,6 +28,7 @@ public interface EmployeeMapper {
     /**
      * 新增员工
      */
+    @Options( useGeneratedKeys = true, keyProperty = "id" )
     @Insert( """
             INSERT INTO employee
             ( name, username, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user )

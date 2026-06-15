@@ -11,7 +11,7 @@
     只查一条数据，需要确保用户下单后清除该用户购物车
     Returns:    完整字段的对象
     -->
-    <select id="selectExistingItemByQuery" resultType="com.sky.entity.ShoppingCart">
+    <select id="selectByQuery" resultType="com.sky.entity.ShoppingCart">
         SELECT id, name, image, user_id, dish_id, setmeal_id, dish_flavor, number, amount, create_time
         FROM shopping_cart
         <where>
