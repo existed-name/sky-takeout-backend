@@ -18,4 +18,9 @@ public interface ShoppingCartService {
      * 清空购物车
      */
     void clean();
+
+    /**
+     * 减少加购的商品数量
+     */
+    void decrementById( Long id );
 }

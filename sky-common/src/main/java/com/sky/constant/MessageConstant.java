@@ -46,4 +46,6 @@ public class MessageConstant {
     public static final String NOT_LOGIN = "您还没有登录哦~";
     public static final String TOKEN_INVALID = "登录参数错误, 请重新登录";
     public static final String SHOPPING_CART_ADD_NULL = "购物车添加内容不能为空";
+    public static final String INVALID_DATABASE_DATA = "数据库数据无效";
+    public static final String SHOPPING_CART_NOT_FOUND = "购物车数据不存在";
 }

@@ -90,4 +90,26 @@ public interface ShoppingCartMapper {
             WHERE user_id = #{userId}
             """ )
     int deleteByUserId( @Param( "userId" ) Long userId );
+
+    /**
+     * 根据 id 查询购物车某条数据
+     * <p>
+     *     只包含: dishId, dishFlavor, setmealId, number
+     * </p>
+     */
+    @Select( """
+            SELECT dish_id, setmeal_id, dish_flavor, number
+            FROM shopping_cart
+            WHERE id = #{id}
+            """ )
+    ShoppingCart selectById( @Param( "id" ) Long id );
+
+    /**
+     * 删除某条购物车数据
+     */
+    @Delete( """
+            DELETE FROM shopping_cart
+            WHERE id = #{id}
+            """ )
+    int deleteById( @Param( "id" ) Long id );
 }

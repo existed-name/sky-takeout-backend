@@ -9,6 +9,7 @@ import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.ShoppingCart;
 import com.sky.exception.IllegalParameterException;
+import com.sky.exception.InvalidDataBaseDataException;
 import com.sky.exception.NotFoundException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -160,6 +161,39 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public void clean(){
         Long userId = BaseContext.getCurrentId();
         shoppingCartMapper.deleteByUserId( userId );
+    }
+
+    @Override
+    public void decrementById( Long id ){
+        Long userId = BaseContext.getCurrentId();
+        // id 完全可定位该条数据，就不需要再添 userId 之类的了
+        ShoppingCart shoppingCart = shoppingCartMapper.selectById( id );
+        if ( shoppingCart == null ){
+            throw new NotFoundException( MessageConstant.SHOPPING_CART_NOT_FOUND );
+        }
+
+        // 数量为 1 -> 减为 0 -> 删除，否则只是减一
+        Integer number = shoppingCart.getNumber();
+        if ( number > 1 ){
+            if ( shoppingCart.isDish() ){
+                shoppingCartMapper.updateNumberByUserIdAndDishIdAndFlavor(
+                        FoodCopiesConstant.decrement( shoppingCart.getNumber() ),
+                        userId,
+                        shoppingCart.getDishId(),
+                        shoppingCart.getDishFlavor()
+                );
+            } else {
+                shoppingCartMapper.updateNumberByUserIdAndSetmealId(
+                        FoodCopiesConstant.decrement( shoppingCart.getNumber() ),
+                        userId,
+                        shoppingCart.getSetmealId()
+                );
+            }
+        } else if ( number == 1 ){
+            int row = shoppingCartMapper.deleteById( id );
+        } else { // null, 非正数, 无效数据
+            throw new InvalidDataBaseDataException( MessageConstant.INVALID_DATABASE_DATA + ": 购物车商品数量 = " + number );
+        }
     }
 
 

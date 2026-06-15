@@ -30,6 +30,13 @@ public class FoodCopiesConstant {
         return ++number;
     }
 
+    /**
+     * 自减 1
+     */
+    public static int decrement( int number ){
+        return --number;
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

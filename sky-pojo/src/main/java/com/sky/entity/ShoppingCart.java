@@ -55,4 +55,14 @@ public class ShoppingCart implements Serializable {
 
     /** 创建时间 */
     private LocalDateTime createTime;
+
+    /** 该条购物车数据是不是菜品 */
+    public boolean isDish(){
+        return dishId != null;
+    }
+
+    /** 该条购物车数据是不是套餐 */
+    public boolean isSetmeal(){
+        return setmealId != null;
+    }
 }
