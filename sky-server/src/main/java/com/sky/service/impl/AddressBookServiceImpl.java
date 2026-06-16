@@ -33,11 +33,8 @@ public class AddressBookServiceImpl implements AddressBookService {
 
     // ==================== 公有方法 ====================
     @Override
-    public List< AddressBookVO > listByUserId(){
-        Long userId = BaseContext.getCurrentId();
-        List< AddressBook > addressBookList = addressBookMapper.selectByUserId( userId );
-        addressBookList.forEach( AddressBook::concatAddress );
-        List< AddressBookVO > addressBookVOList = addressBookConvertor.toVOList( addressBookList );
+    public List< AddressBookVO > listByUserId( Long userId ){
+        List< AddressBookVO > addressBookVOList = addressBookMapper.selectVOByUserId( userId );
         return addressBookVOList;
     }
 

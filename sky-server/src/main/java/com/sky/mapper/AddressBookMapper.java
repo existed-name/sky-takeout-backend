@@ -1,6 +1,7 @@
 package com.sky.mapper;
 
 import com.sky.entity.AddressBook;
+import com.sky.vo.AddressBookVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -22,5 +23,16 @@ public interface AddressBookMapper {
             """ )
     List< AddressBook > selectByUserId( @Param( "userId" ) Long userId );
 
-
+    /**
+     * 查看该用户的所有收货地址, 按照 id(创建次序) 降序排列
+     *
+     * @return 不包括 userId、其他字段完整的 VO 列表
+     */
+    @Select( """
+            SELECT id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default
+            FROM address_book
+            WHERE user_id = #{userId}
+            ORDER BY id DESC
+            """ )
+    List< AddressBookVO > selectVOByUserId( Long userId );
 }

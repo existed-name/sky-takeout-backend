@@ -8,5 +8,5 @@ public interface AddressBookService {
     /**
      * 查看所有收货地址
      */
-    List< AddressBookVO > listByUserId();
+    List< AddressBookVO > listByUserId( Long userId );
 }

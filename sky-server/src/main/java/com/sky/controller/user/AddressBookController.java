@@ -1,5 +1,6 @@
 package com.sky.controller.user;
 
+import com.sky.context.BaseContext;
 import com.sky.vo.AddressBookVO;
 import com.sky.result.Result;
 import com.sky.service.AddressBookService;
@@ -47,7 +48,7 @@ public class AddressBookController {
     @GetMapping( "/list" )
     public Result< List< AddressBookVO > > list(){
         log.info( "查看所有收货地址" );
-        List< AddressBookVO > addressBookVOList = addressBookService.listByUserId();
+        List< AddressBookVO > addressBookVOList = addressBookService.listByUserId( BaseContext.getCurrentId() );
         return Result.success( addressBookVOList );
     }
 
