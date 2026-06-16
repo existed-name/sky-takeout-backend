@@ -108,6 +108,9 @@ public interface AddressBookMapper {
      * <p>
      *     注意: <b>SQL 语句的<code>is_default</code>硬编码，业务变化后需要修改</b>
      * </p>
+     * @return 修改行数: <br>
+     *          * 0 => <b>没有默认地址</b>(排除用户不存在的情况); <br>
+     *          * 1 => 正常
      */
     @Update( """
             UPDATE address_book
@@ -117,12 +120,32 @@ public interface AddressBookMapper {
     int resetDefaultByUserId( @Param( "userId" ) Long userId );
 
     /**
-     * 修改目标地址信息的默认状态
+     * 修改目标地址的默认状态
+     * @return 修改行数: <br>
+     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 1 => 正常
      */
     @Update( """
             UPDATE address_book
             SET is_default = #{isDefault}
+            WHERE id = #{id} AND user_id = #{userId}
+            """ )
+    int updateIsDefaultByIdAndUserId(
+            @Param( "id" ) Long id,
+            @Param( "userId" ) Long userId,
+            @Param( "isDefault" ) Integer isDefault );
+
+    /**
+     * 判断该 id 对应的数据是否存在
+     *
+     * @return 统计数据<br>
+     *          * 0 => <b>该 id 对应的数据不存在</b><br>
+     *          * 1 => 存在
+     */
+    @Select( """
+            SELECT count( * )
+            FROM address_book
             WHERE id = #{id}
             """ )
-    int updateIsDefaultById( @Param( "id" ) Long id, @Param( "isDefault" ) Integer isDefault );
+    int countById( @Param( "id" ) Long id );
 }

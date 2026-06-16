@@ -94,41 +94,25 @@ public class AddressBookServiceImpl implements AddressBookService {
 
     @Override
     public void setDefaultById( Long id, Long userId ){
-        if ( addressBookMapper.countByIdAndUserId( id, userId ) != 1L ){
-            throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
-        }
-
         /*
             * 由于只能有 1 个默认地址，所以需要先把之前的默认地址设为非默认，再设置现在的地址为默认
-            * 撤销之前的默认地址
-              - 可以 SQL 嵌套、一步搞定
-                UPDATE (
-                    SELECT id, is_default
-                    FROM address_book
-                    WHERE user_id = #{userId}
-                        AND is_default = 1
-                ) AS temp
-                SET temp.is_default = 0
-                WHERE temp.id = #{id}
-
-              - 啊，AI 纠正 MySQL Update 必须是真实存在的表
-                UPDATE address_book
-                SET is_default = 0
-                WHERE id = ( SELECT id
-                    FROM address_book
-                    WHERE id = #{id} AND user_id = #{userId}
-                )
-
-              - 但是想复杂了，直接用 userId、is_default = 1 就可以定位
-                UPDATE address_book
-                SET is_default = 0
-                WHERE user_id = #{userId} AND is_default = 1
-
-              - 也可以拆分为先查、再判断要不要改，统一为 updateDefaultFlagById
+            * 撤销之前的默认地址: 直接修改( user_id + is_default = 1 定位 )
+            * 使用 id、userId 2 个参数精准定位 + Mapper 修改行数判断异常，确保数据匹配当前用户
+            * 由于重置默认状态有 WHERE is_default = 1 可能用户不存在默认地址，就会干扰判断
+            * 所以先设置默认地址, 此时只有 WHERE id = #{id}, user_id = #{userId}
+            * 再把其他地址设为非默认
          */
-
+        int row = addressBookMapper.updateIsDefaultByIdAndUserId( id, userId, AddressBookConstant.IS_DEFAULT );
+        if ( row == 0 ){
+            // 理论上 id, userId 定位到同一条数据，然而修改行数为 0
+            // 说明 id 跟 userId 对不上 => id 错误(无效)或者 userId 错误(该数据不属于当前用户)
+            if ( addressBookMapper.countById( id ) == 0 ){
+                throw new NotFoundException( MessageConstant.ADDRESS_BOOK_NOT_FOUND );
+            } else {
+                throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
+            }
+        }
         addressBookMapper.resetDefaultByUserId( userId );
-        addressBookMapper.updateIsDefaultById( id, AddressBookConstant.IS_DEFAULT );
     }
 
 
