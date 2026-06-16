@@ -83,13 +83,17 @@ public interface AddressBookMapper {
     int updateById( @Param( "addressBook" ) AddressBook entity );
 
     /**
-     * 根据 id 删除地址
+     * 删除该用户的某个地址
+     *
+     * @return 修改行数:<br>
+     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 1 => 正常
      */
     @Delete( """
             DELETE FROM address_book
-            WHERE id = #{id}
+            WHERE id = #{id} AND user_id = #{userId}
             """ )
-    int deleteById( @Param( "id" ) Long id );
+    int deleteByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
      * 根据 id 查询地址信息
@@ -147,5 +151,5 @@ public interface AddressBookMapper {
             FROM address_book
             WHERE id = #{id}
             """ )
-    int countById( @Param( "id" ) Long id );
+    long countById( @Param( "id" ) Long id );
 }

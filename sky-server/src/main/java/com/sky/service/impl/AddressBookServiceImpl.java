@@ -79,11 +79,14 @@ public class AddressBookServiceImpl implements AddressBookService {
 
     @Override
     public void deleteById( Long id, Long userId ){
-        if ( addressBookMapper.countByIdAndUserId( id, userId ) != 1L ){
+        // 直接用 id + userId 定位数据，根据修改行数判断是数据不存在、数据不匹配(可见底部 setDefaultById 方法)
+        int row = addressBookMapper.deleteByIdAndUserId( id, userId );
+        if ( row == 0 ){
+            if ( addressBookMapper.countById( id ) == 0L ){
+                throw new NotFoundException( MessageConstant.ADDRESS_BOOK_NOT_FOUND );
+            }
             throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
         }
-
-        addressBookMapper.deleteById( id );
     }
 
     @Override
