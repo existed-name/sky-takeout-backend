@@ -72,6 +72,18 @@ public class AddressBookController {
         return Result.success();
     }
 
+    /**
+     * 查询默认地址
+     */
+    @ApiOperation( "查询默认地址" )
+    @GetMapping( "/default" )
+    public Result< AddressBookVO > getDefault(){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "查看 id = {} 的用户的默认地址", userId );
+        AddressBookVO addressBookVO = addressBookService.getDefaultByUserId( userId );
+        return Result.success( addressBookVO );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

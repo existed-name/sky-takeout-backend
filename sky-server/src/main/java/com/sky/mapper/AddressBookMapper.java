@@ -46,4 +46,17 @@ public interface AddressBookMapper {
             VALUES ( #{addressBook.userId}, #{addressBook.consignee}, #{addressBook.sex}, #{addressBook.phone}, #{addressBook.provinceCode}, #{addressBook.provinceName}, #{addressBook.cityCode}, #{addressBook.cityName}, #{addressBook.districtCode}, #{addressBook.districtName}, #{addressBook.detail}, #{addressBook.label}, #{addressBook.isDefault} )
             """ )
     int insert( @Param( "addressBook" ) AddressBook addressBook );
+
+    /**
+     * 查询默认地址
+     *
+     * @return 不包括 userId、其他字段完整的 VO
+     */
+    @Select( """
+            SELECT id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default
+            FROM address_book
+            WHERE user_id = #{userId}
+            AND is_default = #{isDefault}
+            """ )
+    AddressBookVO selectVOByUserIdAndIsDefault( @Param( "userId" ) Long userId, @Param( "isDefault" ) Integer isDefault );
 }
