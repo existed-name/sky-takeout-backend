@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.sky.entity.AddressBook;
 import com.sky.vo.AddressBookVO;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -34,5 +35,15 @@ public interface AddressBookMapper {
             WHERE user_id = #{userId}
             ORDER BY id DESC
             """ )
-    List< AddressBookVO > selectVOByUserId( Long userId );
+    List< AddressBookVO > selectVOByUserId( @Param( "userId" ) Long userId );
+
+    /**
+     * 新增收货地址
+     */
+    @Insert( """
+            INSERT INTO address_book
+                ( user_id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default )
+            VALUES ( #{addressBook.userId}, #{addressBook.consignee}, #{addressBook.sex}, #{addressBook.phone}, #{addressBook.provinceCode}, #{addressBook.provinceName}, #{addressBook.cityCode}, #{addressBook.cityName}, #{addressBook.districtCode}, #{addressBook.districtName}, #{addressBook.detail}, #{addressBook.label}, #{addressBook.isDefault} )
+            """ )
+    int insert( @Param( "addressBook" ) AddressBook addressBook );
 }

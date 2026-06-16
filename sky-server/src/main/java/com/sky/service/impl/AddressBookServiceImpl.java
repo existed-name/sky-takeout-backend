@@ -2,6 +2,7 @@ package com.sky.service.impl;
 
 import com.sky.context.BaseContext;
 import com.sky.convertor.AddressBookConvertor;
+import com.sky.dto.AddressBookDTO;
 import com.sky.vo.AddressBookVO;
 import com.sky.entity.AddressBook;
 import com.sky.mapper.AddressBookMapper;
@@ -36,6 +37,14 @@ public class AddressBookServiceImpl implements AddressBookService {
     public List< AddressBookVO > listByUserId( Long userId ){
         List< AddressBookVO > addressBookVOList = addressBookMapper.selectVOByUserId( userId );
         return addressBookVOList;
+    }
+
+    @Override
+    public void saveWithUserId( AddressBookDTO addressBookDTO, Long userId ){
+        AddressBook entity = addressBookConvertor.toEntity( addressBookDTO );
+        // DTO、VO 没有 userId 入库前需要手动给 entity 设置 userId
+        entity.setUserId( userId );
+        addressBookMapper.insert( entity );
     }
 
 
