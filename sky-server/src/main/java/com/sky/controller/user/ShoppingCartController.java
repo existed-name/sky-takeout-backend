@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
+/**
+ * 用户端购物车管理接口
+ */
 @Slf4j
 @Api( tags = "用户端购物车管理接口" )
 // 不过 admin 并没有购物车接口，所以这里也可以不用指定 Bean Name

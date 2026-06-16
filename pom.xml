@@ -40,7 +40,9 @@
             <!-- <maven.compiler.source>17</maven.compiler.source> -->
             <!-- <maven.compiler.target>17</maven.compiler.target> -->
 
+        <mapstruct>1.6.3</mapstruct>
     </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -113,6 +115,14 @@
                 <groupId>javax.xml.bind</groupId>
                 <artifactId>jaxb-api</artifactId>
                 <version>${jaxb-api}</version>
+            </dependency>
+
+            <!-- MapStruct -->
+            <!-- Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct}</version>
             </dependency>
 
             <!-- poi -->
