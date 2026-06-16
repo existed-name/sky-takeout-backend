@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -101,4 +102,27 @@ public interface AddressBookMapper {
             WHERE id = #{id}
             """ )
     AddressBookVO selectVOById( @Param( "id" ) Long id );
+
+    /**
+     * 将当前用户的默认地址重置为非默认状态
+     * <p>
+     *     注意: <b>SQL 语句的<code>is_default</code>硬编码，业务变化后需要修改</b>
+     * </p>
+     */
+    @Update( """
+            UPDATE address_book
+            SET is_default = 0
+            WHERE user_id = #{userId} AND is_default = 1
+            """ )
+    int resetDefaultByUserId( @Param( "userId" ) Long userId );
+
+    /**
+     * 修改目标地址信息的默认状态
+     */
+    @Update( """
+            UPDATE address_book
+            SET is_default = #{isDefault}
+            WHERE id = #{id}
+            """ )
+    int updateIsDefaultById( @Param( "id" ) Long id, @Param( "isDefault" ) Integer isDefault );
 }

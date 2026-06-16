@@ -37,4 +37,11 @@ public interface AddressBookService {
      * 根据 id 查询地址信息
      */
     AddressBookVO getById( Long id );
+
+    /**
+     * 设置默认地址
+     *
+     * @param userId 用于检验该条地址数据是否属于当前用户
+     */
+    void setDefaultById( Long id, Long userId );
 }

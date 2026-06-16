@@ -136,6 +136,21 @@ public class AddressBookController {
         return Result.success( addressBookVO );
     }
 
+    /**
+     * 设置默认地址
+     */
+    @ApiOperation( "设置默认地址" )
+    @PutMapping( "/default/{id}" )
+    public Result< Void > setDefault(
+            @PathVariable( name = "id" )
+            @NotNull( message = "收货地址 id 不能为空" )
+            @Positive( message = "收货地址 id 必须是正整数" ) Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "修改地址为默认地址: id = {}, userId = {}", id, userId );
+        addressBookService.setDefaultById( id, userId );
+        return Result.success(  );
+    }
 
 
 

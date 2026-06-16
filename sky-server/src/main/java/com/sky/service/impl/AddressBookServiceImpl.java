@@ -92,6 +92,45 @@ public class AddressBookServiceImpl implements AddressBookService {
         return addressBookVO;
     }
 
+    @Override
+    public void setDefaultById( Long id, Long userId ){
+        if ( addressBookMapper.countByIdAndUserId( id, userId ) != 1L ){
+            throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
+        }
+
+        /*
+            * 由于只能有 1 个默认地址，所以需要先把之前的默认地址设为非默认，再设置现在的地址为默认
+            * 撤销之前的默认地址
+              - 可以 SQL 嵌套、一步搞定
+                UPDATE (
+                    SELECT id, is_default
+                    FROM address_book
+                    WHERE user_id = #{userId}
+                        AND is_default = 1
+                ) AS temp
+                SET temp.is_default = 0
+                WHERE temp.id = #{id}
+
+              - 啊，AI 纠正 MySQL Update 必须是真实存在的表
+                UPDATE address_book
+                SET is_default = 0
+                WHERE id = ( SELECT id
+                    FROM address_book
+                    WHERE id = #{id} AND user_id = #{userId}
+                )
+
+              - 但是想复杂了，直接用 userId、is_default = 1 就可以定位
+                UPDATE address_book
+                SET is_default = 0
+                WHERE user_id = #{userId} AND is_default = 1
+
+              - 也可以拆分为先查、再判断要不要改，统一为 updateDefaultFlagById
+         */
+
+        addressBookMapper.resetDefaultByUserId( userId );
+        addressBookMapper.updateIsDefaultById( id, AddressBookConstant.IS_DEFAULT );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
