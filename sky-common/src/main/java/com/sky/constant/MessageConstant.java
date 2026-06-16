@@ -50,4 +50,5 @@ public class MessageConstant {
     public static final String SHOPPING_CART_NOT_FOUND = "购物车数据不存在";
     public static final String SHOPPING_CART_USER_NOT_MATCH = "该购物车数据不属于当前用户";
     public static final String DEFAULT_ADDRESS_BOOK_NOT_FOUND = "默认地址簿不存在";
+    public static final String ADDRESS_BOOK_USER_NOT_MATCH = "该地址簿数据不属于当前用户";
 }

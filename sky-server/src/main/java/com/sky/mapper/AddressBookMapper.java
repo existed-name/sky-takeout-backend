@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -59,4 +60,24 @@ public interface AddressBookMapper {
             AND is_default = #{isDefault}
             """ )
     AddressBookVO selectVOByUserIdAndIsDefault( @Param( "userId" ) Long userId, @Param( "isDefault" ) Integer isDefault );
+
+    /**
+     * 判断该条地址簿数据是否属于当前用户
+     *
+     * @return 1, 属于；0 不属于
+     */
+    @Select( """
+            SELECT count( * )
+            FROM address_book
+            WHERE id = #{id}
+            AND user_id = #{userId}
+            """ )
+    long countByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+
+    /**
+     * 编辑地址
+     * <br>
+     * <b>不会修改 user_id</b>
+     */
+    void updateById( @Param( "addressBook" ) AddressBook entity );
 }

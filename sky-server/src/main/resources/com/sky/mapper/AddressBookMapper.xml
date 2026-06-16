@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.mapper.AddressBookMapper">
+
+    <!--
+    编辑地址
+    不会修改 user_id
+    -->
+    <update id="updateById">
+        UPDATE address_book
+        <set>
+            <if test="addressBook.consignee != null and addressBook.consignee.trim() != ''">
+                consignee = #{addressBook.consignee},
+            </if>
+            <if test="addressBook.sex != null and addressBook.sex.trim() != ''">
+                sex = #{addressBook.sex},
+            </if>
+            <if test="addressBook.phone != null and addressBook.phone.trim() != ''">
+                phone = #{addressBook.phone},
+            </if>
+            <if test="addressBook.provinceCode != null and addressBook.provinceCode.trim() != ''">
+                province_code = #{addressBook.provinceCode},
+            </if>
+            <if test="addressBook.provinceName != null and addressBook.provinceName.trim() != ''">
+                province_name = #{addressBook.provinceName},
+            </if>
+            <if test="addressBook.cityCode != null and addressBook.cityCode.trim() != ''">
+                city_code = #{addressBook.cityCode},
+            </if>
+            <if test="addressBook.cityName != null and addressBook.cityName.trim() != ''">
+                city_name = #{addressBook.cityName},
+            </if>
+            <if test="addressBook.districtCode != null and addressBook.districtCode.trim() != ''">
+                district_code = #{addressBook.districtCode},
+            </if>
+            <if test="addressBook.districtName != null and addressBook.districtName.trim() != ''">
+                district_name = #{addressBook.districtName},
+            </if>
+            <if test="addressBook.detail != null and addressBook.detail.trim() != ''">
+                detail = #{addressBook.detail},
+            </if>
+            <if test="addressBook.label != null and addressBook.label.trim() != ''">
+                label = #{addressBook.label},
+            </if>
+            <if test="addressBook.isDefault != null">
+                is_default = #{addressBook.isDefault},
+            </if>
+        </set>
+        WHRER id = #{addressBook.id}
+    </update>
+
+</mapper>

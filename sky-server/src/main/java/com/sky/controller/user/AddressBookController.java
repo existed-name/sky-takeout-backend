@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,8 +68,8 @@ public class AddressBookController {
             @Validated( ValidationGroups.Create.class )
                         AddressBookDTO addressBookDTO ){
         Long userId = BaseContext.getCurrentId();
-        log.info( "id  = {} 的用户新增收货地址", userId );
-        addressBookService.saveWithUserId( addressBookDTO, userId );
+        log.info( "id  = {} 的用户新增收货地址: {}", userId, addressBookDTO );
+        addressBookService.saveWithUserId( userId, addressBookDTO );
         return Result.success();
     }
 
@@ -82,6 +83,21 @@ public class AddressBookController {
         log.info( "查看 id = {} 的用户的默认地址", userId );
         AddressBookVO addressBookVO = addressBookService.getDefaultByUserId( userId );
         return Result.success( addressBookVO );
+    }
+
+    /**
+     * 修改地址
+     */
+    @ApiOperation( "修改地址" )
+    @PutMapping
+    public Result< Void > update(
+            @RequestBody @Validated( ValidationGroups.Update.class )
+            AddressBookDTO addressBookDTO
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "id  = {} 的用户修改收货地址: {}", userId, addressBookDTO );
+        addressBookService.updateByUserId( userId, addressBookDTO );
+        return Result.success();
     }
 
 

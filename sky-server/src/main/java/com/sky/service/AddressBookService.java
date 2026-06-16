@@ -14,10 +14,15 @@ public interface AddressBookService {
     /**
      * 新增收货地址
      */
-    void saveWithUserId( AddressBookDTO addressBookDTO, Long userId );
+    void saveWithUserId( Long userId, AddressBookDTO addressBookDTO  );
 
     /**
      * 查询默认地址
      */
     AddressBookVO getDefaultByUserId( Long userId );
+
+    /**
+     * 修改地址
+     */
+    void updateByUserId( Long userId, AddressBookDTO addressBookDTO );
 }
