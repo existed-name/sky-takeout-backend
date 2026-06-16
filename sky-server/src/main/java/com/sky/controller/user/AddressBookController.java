@@ -120,6 +120,24 @@ public class AddressBookController {
         return Result.success();
     }
 
+    /**
+     * 根据 id 查询地址信息 - 点击编辑信息需要查看回显
+     */
+    @ApiOperation( "根据 id 查询地址信息" )
+    @GetMapping( "/{id}" )
+    public Result< AddressBookVO > getInfo(
+            @PathVariable( name = "id" )
+            @NotNull( message = "收货地址 id 不能为空" )
+            @Positive( message = "收货地址 id 必须是正整数" ) Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "查看地址: id = {}, userId = {}", id, userId );
+        AddressBookVO addressBookVO = addressBookService.getById( id );
+        return Result.success( addressBookVO );
+    }
+
+
+
 
     // ==================== 私有辅助方法 ====================
 

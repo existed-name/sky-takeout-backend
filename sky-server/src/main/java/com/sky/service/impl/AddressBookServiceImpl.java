@@ -86,6 +86,12 @@ public class AddressBookServiceImpl implements AddressBookService {
         addressBookMapper.deleteById( id );
     }
 
+    @Override
+    public AddressBookVO getById( Long id ){
+        AddressBookVO addressBookVO = addressBookMapper.selectVOById( id );
+        return addressBookVO;
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

@@ -32,4 +32,9 @@ public interface AddressBookService {
      * @param userId 用于检验该条地址数据是否属于当前用户
      */
     void deleteById( Long id, Long userId );
+
+    /**
+     * 根据 id 查询地址信息
+     */
+    AddressBookVO getById( Long id );
 }

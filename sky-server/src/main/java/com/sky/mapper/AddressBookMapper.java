@@ -89,4 +89,16 @@ public interface AddressBookMapper {
             WHERE id = #{id}
             """ )
     int deleteById( @Param( "id" ) Long id );
+
+    /**
+     * 根据 id 查询地址信息
+     *
+     * @return 不包括 userId、其他字段完整的 VO
+     */
+    @Select( """
+            SELECT id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default
+            FROM address_book
+            WHERE id = #{id}
+            """ )
+    AddressBookVO selectVOById( @Param( "id" ) Long id );
 }
