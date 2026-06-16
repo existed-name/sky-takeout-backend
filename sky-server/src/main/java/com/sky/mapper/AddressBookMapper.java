@@ -2,11 +2,11 @@ package com.sky.mapper;
 
 import com.sky.entity.AddressBook;
 import com.sky.vo.AddressBookVO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -79,5 +79,14 @@ public interface AddressBookMapper {
      * <br>
      * <b>不会修改 user_id</b>
      */
-    void updateById( @Param( "addressBook" ) AddressBook entity );
+    int updateById( @Param( "addressBook" ) AddressBook entity );
+
+    /**
+     * 根据 id 删除地址
+     */
+    @Delete( """
+            DELETE FROM address_book
+            WHERE id = #{id}
+            """ )
+    int deleteById( @Param( "id" ) Long id );
 }

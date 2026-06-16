@@ -25,4 +25,11 @@ public interface AddressBookService {
      * 修改地址
      */
     void updateByUserId( Long userId, AddressBookDTO addressBookDTO );
+
+    /**
+     * 根据 id 删除地址
+     *
+     * @param userId 用于检验该条地址数据是否属于当前用户
+     */
+    void deleteById( Long id, Long userId );
 }

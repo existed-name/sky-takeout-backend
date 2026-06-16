@@ -10,13 +10,17 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -97,6 +101,22 @@ public class AddressBookController {
         Long userId = BaseContext.getCurrentId();
         log.info( "id  = {} 的用户修改收货地址: {}", userId, addressBookDTO );
         addressBookService.updateByUserId( userId, addressBookDTO );
+        return Result.success();
+    }
+
+    /**
+     * 根据 id 删除地址
+     */
+    @ApiOperation( "根据 id 删除地址" )
+    @DeleteMapping( "/{id}" )
+    public Result< Void > delete(
+            @PathVariable( name = "id" )
+            @NotNull( message = "收货地址 id 不能为空" )
+            @Positive( message = "收货地址 id 必须是正整数" ) Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "删除收货地址: id = {}, userId = {}", id, userId );
+        addressBookService.deleteById( id, userId );
         return Result.success();
     }
 

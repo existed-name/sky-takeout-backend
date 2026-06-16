@@ -77,6 +77,15 @@ public class AddressBookServiceImpl implements AddressBookService {
         addressBookMapper.updateById( entity );
     }
 
+    @Override
+    public void deleteById( Long id, Long userId ){
+        if ( addressBookMapper.countByIdAndUserId( id, userId ) != 1L ){
+            throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
+        }
+
+        addressBookMapper.deleteById( id );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
