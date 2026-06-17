@@ -24,24 +24,24 @@ public interface AddressBookService {
     /**
      * 修改地址
      */
-    void updateByUserId( Long userId, AddressBookDTO addressBookDTO );
+    void updateByIdAndUserId( Long userId, AddressBookDTO addressBookDTO );
 
     /**
      * 根据 id 删除地址
      *
      * @param userId 用于检验该条地址数据是否属于当前用户
      */
-    void deleteById( Long id, Long userId );
+    void deleteByIdAndUserId( Long id, Long userId );
 
     /**
      * 根据 id 查询地址信息
      */
-    AddressBookVO getById( Long id );
+    AddressBookVO getByIdAndUserId( Long id, Long userId );
 
     /**
      * 设置默认地址
      *
      * @param userId 用于检验该条地址数据是否属于当前用户
      */
-    void setDefaultById( Long id, Long userId );
+    void setDefaultByIdAndUserId( Long id, Long userId );
 }

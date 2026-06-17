@@ -11,6 +11,7 @@ import com.sky.entity.AddressBook;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.service.AddressBookService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,12 +37,14 @@ public class AddressBookServiceImpl implements AddressBookService {
 
 
     // ==================== 公有方法 ====================
+    @Transactional( readOnly = true )
     @Override
     public List< AddressBookVO > listByUserId( Long userId ){
-        List< AddressBookVO > addressBookVOList = addressBookMapper.selectVOByUserId( userId );
+        List< AddressBookVO > addressBookVOList = addressBookMapper.selectVOListByUserId( userId );
         return addressBookVOList;
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void saveWithUserId( Long userId, AddressBookDTO addressBookDTO ){
         AddressBook entity = addressBookConvertor.toEntity( addressBookDTO );
@@ -50,6 +53,7 @@ public class AddressBookServiceImpl implements AddressBookService {
         addressBookMapper.insert( entity );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public AddressBookVO getDefaultByUserId( Long userId ){
         AddressBookVO addressBookVO = addressBookMapper.selectVOByUserIdAndIsDefault(
@@ -62,41 +66,38 @@ public class AddressBookServiceImpl implements AddressBookService {
         return addressBookVO;
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
-    public void updateByUserId( Long userId, AddressBookDTO addressBookDTO ){
-        // 猛然想起: userId 是 BaseContext，dto 不带 userId 但是有 id, 修改之前应该先看这个 id 是不是当前用户的
-        Long id = addressBookDTO.getId();
-        // DTO 对象已经参数检验过 id 非空
-        // 这里用 id、userId 定位，找得到说明是这个用户的数据
-        if ( addressBookMapper.countByIdAndUserId( id, userId ) != 1L ){
-            throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
-        }
-
+    public void updateByIdAndUserId( Long userId, AddressBookDTO addressBookDTO ){
         AddressBook entity = addressBookConvertor.toEntity( addressBookDTO );
-        // entity.setUserId( userId ); 不需要设置用户 id，因为已经确认该数据属于该用户
-        addressBookMapper.updateById( entity );
+        entity.setUserId( userId );
+        // 猛然想起: userId 是 BaseContext，dto 不带 userId 但是有 id, 修改之前应该先看这个 id 是不是当前用户的
+        // 这里用 id、userId 定位，找得到说明是这个用户的数据
+        int row = addressBookMapper.updateByIdAndUserId( entity );
+        validateUpdatedRowById( entity.getId(), row );
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
-    public void deleteById( Long id, Long userId ){
+    public void deleteByIdAndUserId( Long id, Long userId ){
         // 直接用 id + userId 定位数据，根据修改行数判断是数据不存在、数据不匹配(可见底部 setDefaultById 方法)
         int row = addressBookMapper.deleteByIdAndUserId( id, userId );
-        if ( row == 0 ){
-            if ( addressBookMapper.countById( id ) == 0L ){
-                throw new NotFoundException( MessageConstant.ADDRESS_BOOK_NOT_FOUND );
-            }
-            throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
-        }
+        validateUpdatedRowById( id, row );
     }
 
+    @Transactional( readOnly = true )
     @Override
-    public AddressBookVO getById( Long id ){
-        AddressBookVO addressBookVO = addressBookMapper.selectVOById( id );
+    public AddressBookVO getByIdAndUserId( Long id, Long userId ){
+        AddressBookVO addressBookVO = addressBookMapper.selectVOByIdAndUserId( id, userId );
+        if ( addressBookVO == null ){
+            throwIfNotFoundOrNotMatch( id );
+        }
         return addressBookVO;
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
-    public void setDefaultById( Long id, Long userId ){
+    public void setDefaultByIdAndUserId( Long id, Long userId ){
         /*
             * 由于只能有 1 个默认地址，所以需要先把之前的默认地址设为非默认，再设置现在的地址为默认
             * 撤销之前的默认地址: 直接修改( user_id + is_default = 1 定位 )
@@ -105,20 +106,39 @@ public class AddressBookServiceImpl implements AddressBookService {
             * 所以先设置默认地址, 此时只有 WHERE id = #{id}, user_id = #{userId}
             * 再把其他地址设为非默认
          */
-        int row = addressBookMapper.updateIsDefaultByIdAndUserId( id, userId, AddressBookConstant.IS_DEFAULT );
-        if ( row == 0 ){
-            // 理论上 id, userId 定位到同一条数据，然而修改行数为 0
-            // 说明 id 跟 userId 对不上 => id 错误(无效)或者 userId 错误(该数据不属于当前用户)
-            if ( addressBookMapper.countById( id ) == 0 ){
-                throw new NotFoundException( MessageConstant.ADDRESS_BOOK_NOT_FOUND );
-            } else {
-                throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
-            }
-        }
+        int updatedRow = addressBookMapper.updateIsDefaultByIdAndUserId( id, userId, AddressBookConstant.IS_DEFAULT );
+        validateUpdatedRowById( id, updatedRow );
         addressBookMapper.resetDefaultByUserId( userId );
     }
 
 
+
     // ==================== 私有辅助方法 ====================
+
+    /**
+     * 根据 Mapper 修改行数判断异常: id 对应的数据不存在、或者跟当前用户不匹配
+     *
+     * @param id 数据库表 id
+     * @param updatedRow 修改行数
+     */
+    private void validateUpdatedRowById( Long id, int updatedRow ){
+        if ( updatedRow == 0 ){
+            throwIfNotFoundOrNotMatch( id );
+        }
+    }
+
+    /**
+     * 判断异常: id 对应的数据不存在、或者跟当前用户不匹配
+     *
+     * @param id 数据库表 id
+     */
+    private void throwIfNotFoundOrNotMatch( Long id ){
+        // 理论上 id, userId 定位到同一条数据，然而修改行数为 0
+        // 说明 id 跟 userId 对不上 => id 错误(无效)或者 userId 错误(该数据不属于当前用户)
+        if ( addressBookMapper.countById( id ) == 0 ){
+            throw new NotFoundException( MessageConstant.ADDRESS_BOOK_NOT_FOUND );
+        }
+        throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
+    }
 
 }

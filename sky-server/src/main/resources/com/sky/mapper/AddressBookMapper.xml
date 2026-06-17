@@ -8,7 +8,7 @@
     编辑地址
     不会修改 user_id
     -->
-    <update id="updateById">
+    <update id="updateByIdAndUserId">
         UPDATE address_book
         <set>
             <if test="addressBook.consignee != null and addressBook.consignee.trim() != ''">
@@ -48,7 +48,7 @@
                 is_default = #{addressBook.isDefault},
             </if>
         </set>
-        WHRER id = #{addressBook.id}
+        WHRER id = #{addressBook.id} AND user_id = #{addressBook.userId}
     </update>
 
 </mapper>

@@ -14,17 +14,6 @@ import java.util.List;
 @Mapper
 public interface AddressBookMapper {
 
-    /**
-     * 查看该用户的所有收货地址
-     *
-     * @return 字段完整的实体类对象列表
-     */
-    @Select( """
-            SELECT id, user_id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default
-            FROM address_book
-            WHERE user_id = #{userId}
-            """ )
-    List< AddressBook > selectByUserId( @Param( "userId" ) Long userId );
 
     /**
      * 查看该用户的所有收货地址, 按照 id(创建次序) 降序排列
@@ -37,10 +26,10 @@ public interface AddressBookMapper {
             WHERE user_id = #{userId}
             ORDER BY id DESC
             """ )
-    List< AddressBookVO > selectVOByUserId( @Param( "userId" ) Long userId );
+    List< AddressBookVO > selectVOListByUserId( @Param( "userId" ) Long userId );
 
     /**
-     * 新增收货地址
+     * 新增收货地址, 注意<b>调用方设置 userId</b>
      */
     @Insert( """
             INSERT INTO address_book
@@ -62,25 +51,18 @@ public interface AddressBookMapper {
             """ )
     AddressBookVO selectVOByUserIdAndIsDefault( @Param( "userId" ) Long userId, @Param( "isDefault" ) Integer isDefault );
 
-    /**
-     * 判断该条地址簿数据是否属于当前用户
-     *
-     * @return 1, 属于；0 不属于
-     */
-    @Select( """
-            SELECT count( * )
-            FROM address_book
-            WHERE id = #{id}
-            AND user_id = #{userId}
-            """ )
-    long countByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
      * 编辑地址
      * <br>
      * <b>不会修改 user_id</b>
+     *
+     * @return 修改行数:<br>
+     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 1 => 正常
      */
-    int updateById( @Param( "addressBook" ) AddressBook entity );
+    int updateByIdAndUserId( @Param( "addressBook" ) AddressBook entity );
+
 
     /**
      * 删除该用户的某个地址
@@ -96,16 +78,17 @@ public interface AddressBookMapper {
     int deleteByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
-     * 根据 id 查询地址信息
+     * 根据 id、userId 查询地址信息
      *
-     * @return 不包括 userId、其他字段完整的 VO
+     * @return 不包括 userId、其他字段完整的 VO<br>
+     *          * 假如 null => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况)
      */
     @Select( """
             SELECT id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default
             FROM address_book
-            WHERE id = #{id}
+            WHERE id = #{id} AND user_id = #{userId}
             """ )
-    AddressBookVO selectVOById( @Param( "id" ) Long id );
+    AddressBookVO selectVOByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
      * 将当前用户的默认地址重置为非默认状态

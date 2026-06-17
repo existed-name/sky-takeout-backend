@@ -100,7 +100,7 @@ public class AddressBookController {
     ){
         Long userId = BaseContext.getCurrentId();
         log.info( "id  = {} 的用户修改收货地址: {}", userId, addressBookDTO );
-        addressBookService.updateByUserId( userId, addressBookDTO );
+        addressBookService.updateByIdAndUserId( userId, addressBookDTO );
         return Result.success();
     }
 
@@ -116,7 +116,7 @@ public class AddressBookController {
     ){
         Long userId = BaseContext.getCurrentId();
         log.info( "删除收货地址: id = {}, userId = {}", id, userId );
-        addressBookService.deleteById( id, userId );
+        addressBookService.deleteByIdAndUserId( id, userId );
         return Result.success();
     }
 
@@ -132,7 +132,7 @@ public class AddressBookController {
     ){
         Long userId = BaseContext.getCurrentId();
         log.info( "查看地址: id = {}, userId = {}", id, userId );
-        AddressBookVO addressBookVO = addressBookService.getById( id );
+        AddressBookVO addressBookVO = addressBookService.getByIdAndUserId( id, userId );
         return Result.success( addressBookVO );
     }
 
@@ -148,7 +148,7 @@ public class AddressBookController {
     ){
         Long userId = BaseContext.getCurrentId();
         log.info( "修改地址为默认地址: id = {}, userId = {}", id, userId );
-        addressBookService.setDefaultById( id, userId );
+        addressBookService.setDefaultByIdAndUserId( id, userId );
         return Result.success(  );
     }
 
