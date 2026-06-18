@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
      */
 
     /**
-     * 捕获检验方法<b>单个字段参数</b>时抛出的异常
+     * 捕获检验 Controller 方法<b>单个字段参数</b>抛出的异常
      * <br>
      * <code>@NotNull/NotEmpty/NotBlank/Positive...</code>
      */
@@ -48,15 +48,16 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 捕获检验方法 <b>DTO 参数</b>时抛出的异常
+     * 捕获检验 Controller 方法的 <b>DTO 参数及其字段</b>抛出的异常
      */
     // ValidationException 是它父类，也可以捕获
     @ExceptionHandler( MethodArgumentNotValidException.class )
     public Result< String > handleDtoValidationException( MethodArgumentNotValidException exception ){
-        String message = exception.getMessage();
+        String message = extractMessage( exception );
         log.warn( "DTO 检验未通过: {}", message );
         return Result.error( message );
     }
+
 
     /**
      * 捕获未登录异常
@@ -112,4 +113,54 @@ public class GlobalExceptionHandler {
         return Result.error( MessageConstant.UNKNOWN_SYSTEM_ERROR );
     }
 
+
+    // ================ 私有辅助方法 =====================
+    /**
+     * 提取 DTO 参数检验异常的业务信息
+     *
+     * @param exception 检验 Controller 方法的 DTO 对象及其属性时抛出的参数检验异常
+     * @return 提取异常的业务信息
+     */
+    private String extractMessage( MethodArgumentNotValidException exception ){
+        /*
+            Validation failed for argument [0] in public com.sky.result.Result<java.lang.Void>
+            com.sky.controller.user.AddressBookController.save(com.sky.dto.AddressBookDTO):
+            [
+                Field error in object 'addressBookDTO' on field 'isDefault':
+                    rejected value [null];
+                codes [
+                    NotNull.addressBookDTO.isDefault,
+                    NotNull.isDefault,
+                    NotNull.java.lang.Integer,
+                    NotNull
+                ];
+                arguments [
+                    org.springframework.context.support.DefaultMessageSourceResolvable:
+                    codes [addressBookDTO.isDefault,isDefault];
+                    arguments [];
+                    default message [isDefault]
+                ];
+                default message [默认地址标记不能为空]
+            ]
+
+            注: 换行、tab 是自己加的，实际只有一行
+            Validation failed for argument [0] in public com.sky.result.Result<java.lang.Void> com.sky.controller.user.AddressBookController.save(com.sky.dto.AddressBookDTO): [Field error in object 'addressBookDTO' on field 'isDefault': rejected value [null]; codes [NotNull.addressBookDTO.isDefault,NotNull.isDefault,NotNull.java.lang.Integer,NotNull]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [addressBookDTO.isDefault,isDefault]; arguments []; default message [isDefault]]; default message [默认地址标记不能为空]]
+
+            找规律:
+              - 我们要的信息在第 2 个 / 最后 1 个 default message
+              - 如果是 lastIndexOf( String ) 可以找到字母 d 的起始索引，然后一直找到 `[`,截取,再到 `]`
+              - 或者倒数第 2 个 `]`, 截取到 `[`
+         */
+        String exceptionMessage = exception.getMessage();
+        String defaultMessage = "default message ["; // 这里又补了空格 + 左中括号
+        int defaultMessageIdx = exceptionMessage.lastIndexOf( defaultMessage ); // 字母 d 的下标
+        int inclusiveStartIdx = defaultMessageIdx + defaultMessage.length(); //  第 1 个字的下标
+
+        String endStr = "]]";
+        int exclusiveEndIdx = exceptionMessage.lastIndexOf( endStr ); // 倒数第 2 个 ] 的下标
+        // [ 起始下标, 结束下标 )
+        String message = exceptionMessage.substring( inclusiveStartIdx, exclusiveEndIdx );
+
+        return message;
+    }
 }
