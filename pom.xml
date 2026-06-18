@@ -17,20 +17,21 @@
         <module>sky-pojo</module>
         <module>sky-server</module>
     </modules>
+
     <properties>
-        <mybatis.spring>2.2.0</mybatis.spring>
+        <mybatis.spring.version>2.2.0</mybatis.spring.version>
 <!--        <lombok>1.18.20</lombok>-->
-        <lombok>1.18.46</lombok>
-        <fastjson>1.2.76</fastjson>
-        <commons.lang>2.6</commons.lang>
-        <druid>1.2.1</druid>
-        <pagehelper>1.3.0</pagehelper>
-        <aliyun.sdk.oss>3.10.2</aliyun.sdk.oss>
-        <knife4j>3.0.2</knife4j>
-        <aspectj>1.9.4</aspectj>
-        <jjwt>0.9.1</jjwt>
-        <jaxb-api>2.3.1</jaxb-api>
-        <poi>3.16</poi>
+        <lombok.version>1.18.46</lombok.version>
+        <fastjson.version>1.2.76</fastjson.version>
+        <commons.lang.version>2.6</commons.lang.version>
+        <druid.version>1.2.1</druid.version>
+        <pagehelper.version>1.3.0</pagehelper.version>
+        <aliyun.sdk.oss.version>3.10.2</aliyun.sdk.oss.version>
+        <knife4j.version>3.0.2</knife4j.version>
+        <aspectj.version>1.9.4</aspectj.version>
+        <jjwt.version>0.9.1</jjwt.version>
+        <jaxb-api.version>2.3.1</jaxb-api.version>
+        <poi.version>3.16</poi.version>
 
 <!--        指定编译版本为 17-->
             <!-- Spring Boot 官方属性：控制 JDK 版本、依赖版本等，必须保留 -->
@@ -40,7 +41,12 @@
             <!-- <maven.compiler.source>17</maven.compiler.source> -->
             <!-- <maven.compiler.target>17</maven.compiler.target> -->
 
-        <mapstruct>1.6.3</mapstruct>
+        <wechatpay.version>0.4.8</wechatpay.version>
+        <mapstruct.version>
+            1.6.3
+<!--            1.5.5.Final-->
+        </mapstruct.version>
+
     </properties>
 
     <dependencyManagement>
@@ -48,73 +54,73 @@
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>${mybatis.spring}</version>
+                <version>${mybatis.spring.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>${lombok}</version>
+                <version>${lombok.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>${fastjson}</version>
+                <version>${fastjson.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
-                <version>${commons.lang}</version>
+                <version>${commons.lang.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-starter</artifactId>
-                <version>${druid}</version>
+                <version>${druid.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.github.pagehelper</groupId>
                 <artifactId>pagehelper-spring-boot-starter</artifactId>
-                <version>${pagehelper}</version>
+                <version>${pagehelper.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>knife4j-spring-boot-starter</artifactId>
-                <version>${knife4j}</version>
+                <version>${knife4j.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjrt</artifactId>
-                <version>${aspectj}</version>
+                <version>${aspectj.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
-                <version>${aspectj}</version>
+                <version>${aspectj.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt</artifactId>
-                <version>${jjwt}</version>
+                <version>${jjwt.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.aliyun.oss</groupId>
                 <artifactId>aliyun-sdk-oss</artifactId>
-                <version>${aliyun.sdk.oss}</version>
+                <version>${aliyun.sdk.oss.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>javax.xml.bind</groupId>
                 <artifactId>jaxb-api</artifactId>
-                <version>${jaxb-api}</version>
+                <version>${jaxb-api.version}</version>
             </dependency>
 
             <!-- MapStruct -->
@@ -122,25 +128,25 @@
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
-                <version>${mapstruct}</version>
+                <version>${mapstruct.version}</version>
             </dependency>
 
             <!-- poi -->
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi</artifactId>
-                <version>${poi}</version>
+                <version>${poi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
-                <version>${poi}</version>
+                <version>${poi.version}</version>
             </dependency>
             <!--微信支付-->
             <dependency>
                 <groupId>com.github.wechatpay-apiv3</groupId>
                 <artifactId>wechatpay-apache-httpclient</artifactId>
-                <version>0.4.8</version>
+                <version>${wechatpay.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -167,6 +173,35 @@
                     <source>17</source>
                     <target>17</target>
                     <encoding>UTF-8</encoding>
+
+                    <!--
+                     注解处理器路径：编译期运行，生成代码后进入 target/generated-sources/。
+                     顺序有讲究：Lombok 先处理（生成 getter/setter），MapStruct 后处理（依赖这些字段方法做映射）。
+                    -->
+                    <annotationProcessorPaths>
+                        <!-- MapStruct 处理器：核心。解析 @Mapper 接口，生成 *Impl 实现类 -->
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                        <!-- Lombok 处理器：先执行，确保 MapStruct 能看到完整的字段访问器 -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <!--
+                            Lombok 1.18.30+ 内置了 mapstruct-binding，不需要额外声明。
+                            如果降到 1.18.16~1.18.28，需要加：
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok-mapstruct-binding</artifactId>
+                                <version>0.2.0</version>
+                            </path>
+                        -->
+                    </annotationProcessorPaths>
+
                 </configuration>
             </plugin>
         </plugins>
