@@ -91,6 +91,6 @@ public class AddressBookDTO implements Serializable {
 
     /** 是否默认地址：0 否  1 是 */
     @ApiModelProperty(value = "是否默认地址：0 否  1 是", example = "1")
-    @NotNull( message = "默认地址标记不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
+//    @NotNull( message = "默认地址标记不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private Integer isDefault;
 }
