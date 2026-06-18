@@ -50,6 +50,10 @@ public class AddressBookServiceImpl implements AddressBookService {
         AddressBook entity = addressBookConvertor.toEntity( addressBookDTO );
         // DTO、VO 没有 userId 入库前需要手动给 entity 设置 userId
         entity.setUserId( userId );
+        // 以及其他字段的非空默认值
+        if ( entity.getIsDefault() == null ){
+            entity.setIsDefault( AddressBookConstant.NOT_DEFAULT );
+        }
         addressBookMapper.insert( entity );
     }
 

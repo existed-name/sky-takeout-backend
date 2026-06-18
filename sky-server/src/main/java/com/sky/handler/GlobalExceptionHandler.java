@@ -5,7 +5,10 @@ import com.sky.exception.BusinessException;
 import com.sky.exception.auth.NotLoginException;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,7 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +30,9 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    private final String space = " ";
+
     /*
     异常类型	        HTTP状态码	理由
     参数校验失败	    200	        业务错误，请求本身没问题
@@ -83,25 +89,120 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * <pre>
-     *     处理 SQL 异常
-     *     - 用户名重复
-     *     - 未知异常
-     * </pre>
+     * 捕获数据库重复键异常( unique 字段重复)
      */
-    @ExceptionHandler( value = SQLIntegrityConstraintViolationException.class )
-    public Result< String > handleSqlException( SQLIntegrityConstraintViolationException ex ){
-        log.error( "数据库异常", ex );
-        // Duplicate entry 'zhangsan' for key 'employee.idx_username'
-        String message = ex.getMessage();
-        if ( message.contains( "Duplicate entry" ) ){
-            String[] split = message.split( " " );
-            String username = split[ 2 ];
-            String msg = username + MessageConstant.ALREADY_EXISTS;
-            return Result.error( msg );
+    @ExceptionHandler( value = DuplicateKeyException.class )
+    public Result< String > handleDuplicateKeyException( DuplicateKeyException e ){
+        /*
+            org.springframework.dao.DuplicateKeyException:
+            ### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry 'xiaomei' for key 'employee.idx_username'
+            ### The error may exist in com/sky/mapper/EmployeeMapper.java (best guess)
+            ### The error may involve com.sky.mapper.EmployeeMapper.insert-Inline
+            ### The error occurred while setting parameters
+            ### SQL: INSERT INTO employee ( name, username, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+            ### Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry 'xiaomei' for key 'employee.idx_username'
+         */
+        String message = e.getRootCause().getMessage();
+        // Duplicate entry 'xiaomei' for key 'employee.idx_username'
+        //      0      1       2       3   4   5
+        String[] split = message.split( space );
+        int databaseFiledValueIdx = 2, databaseFiledNameIdx = 5;
+        String filedValue = split[ databaseFiledValueIdx ];
+        String filedName = split[ databaseFiledNameIdx ];
+        log.warn( "数据库字段 {} 不可重复", filedName );
+        return Result.error( filedValue + MessageConstant.ALREADY_EXISTS );
+    }
+
+    /**
+     * 处理数据库字段约束异常(空字段……)
+     */
+    @ExceptionHandler( value = DataIntegrityViolationException.class )
+    public Result< String > handleSqlException( DataIntegrityViolationException ex ){
+        /*
+            测试出来，应该拿到 rootCause 的消息，才是最需要的消息
+            rootCause 是最里层的原始异常
+            👇 原始操作 = org.apache.commons.lang.exception.ExceptionUtils 操作
+            Throwable cause = ex;
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+         */
+        String message = ex.getRootCause().getMessage();
+        String cannotBeNull = "cannot be null";
+        int columnNameIdx = 1;
+        if ( message.contains( cannotBeNull ) ){
+        /*
+            MyBatis/JPA 捕获 DataIntegrityConstraintViolationException，
+            纯 JDBC 才捕获 SQLIntegrityConstraintViolationException，
+            后者被 MyBatis + Spring 包装成了前者，所以捕获不到
+
+            org.springframework.dao.DataIntegrityViolationException:
+            ### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: Column 'is_default' cannot be null
+            ### The error may exist in com/sky/mapper/AddressBookMapper.java (best guess)
+            ### The error may involve com.sky.mapper.AddressBookMapper.insert-Inline
+            ### The error occurred while setting parameters
+            ### SQL: INSERT INTO address_book     ( user_id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+            ### Cause: java.sql.SQLIntegrityConstraintViolationException: Column 'is_default' cannot be null
+         */
+            String[] split = message.split( space );
+            String columnName = split[ columnNameIdx ];
+            // 正常情况参数检验、Service 检验就拦到了，还没拦到说明比较严重，所以这里用 error
+            log.error( "数据库字段 {} 不能为空", columnName );
+            return Result.error( MessageConstant.FIELD_CAN_NOT_BE_NULL );
         } else {
-            return Result.error( MessageConstant.UNKNOWN_DATABASE_ERROR );
+            log.error( "数据库字段约束异常", ex );
+            return Result.error( MessageConstant.UNSATISFIED_FIELD_CONSTRAINT );
         }
+    }
+
+    /**
+     * 处理 SQL 异常(比如代码写错了……)
+     */
+    @ExceptionHandler( value = SQLException.class )
+    public Result< String > handleSQLException( SQLException e ){
+        log.error( "未知 SQL 异常", e );
+        return Result.error( MessageConstant.UNKNOWN_DATABASE_ERROR );
+    }
+
+    /**
+     * 数据库连接异常(没有启动)
+     * <br>
+     * 然而实际上 druid 连接池可能阻塞等待连接 MySQL，只要发送请求、它就一直输出异常日志，同时异常可能没有抛给 Spring 框架(<b>整个全局异常处理器都没捕获到</b>)
+     */
+    /*
+    2026-06-18 16:26:33.554 ERROR 14292 --- [eate-1262969395] com.alibaba.druid.pool.DruidDataSource   : create connection SQLException, url: jdbc:mysql://localhost:3306/sky_take_out?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true, errorCode 0, state 08S01
+
+    com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+    The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+        at com.mysql.cj.jdbc.exceptions.SQLError.createCommunicationsException(SQLError.java:174) ~[mysql-connector-java-8.0.30.jar:8.0.30]
+        at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:64) ~[mysql-connector-java-8.0.30.jar:8.0.30]
+        at com.mysql.cj.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:828) ~[mysql-connector-java-8.0.30.jar:8.0.30]
+        at com.mysql.cj.jdbc.ConnectionImpl.<init>(ConnectionImpl.java:448) ~[mysql-connector-java-8.0.30.jar:8.0.30]
+        at com.mysql.cj.jdbc.ConnectionImpl.getInstance(ConnectionImpl.java:241) ~[mysql-connector-java-8.0.30.jar:8.0.30]
+        at com.mysql.cj.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:198) ~[mysql-connector-java-8.0.30.jar:8.0.30]
+        at com.alibaba.druid.pool.DruidAbstractDataSource.createPhysicalConnection(DruidAbstractDataSource.java:1651) ~[druid-1.2.1.jar:1.2.1]
+        at com.alibaba.druid.pool.DruidAbstractDataSource.createPhysicalConnection(DruidAbstractDataSource.java:1717) ~[druid-1.2.1.jar:1.2.1]
+        at com.alibaba.druid.pool.DruidDataSource$CreateConnectionThread.run(DruidDataSource.java:2785) ~[druid-1.2.1.jar:1.2.1]
+    Caused by: com.mysql.cj.exceptions.CJCommunicationsException: Communications link failure
+
+    Caused by: java.net.ConnectException: Connection refused: connect
+        at java.base/sun.nio.ch.Net.connect0(Native Method) ~[na:na]
+        at java.base/sun.nio.ch.Net.connect(Net.java:589) ~[na:na]
+        at java.base/sun.nio.ch.Net.connect(Net.java:578) ~[na:na]
+        at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:583) ~[na:na]
+        at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327) ~[na:na]
+        at java.base/java.net.Socket.connect(Socket.java:751) ~[na:na]
+        at com.mysql.cj.protocol.StandardSocketFactory.connect(StandardSocketFactory.java:153) ~[mysql-connector-java-8.0.30.jar:8.0.30]
+        at com.mysql.cj.protocol.a.NativeSocketConnection.connect(NativeSocketConnection.java:63) ~[mysql-connector-java-8.0.30.jar:8.0.30]
+        ... 9 common frames omitted
+     */
+    @ExceptionHandler( value = CannotGetJdbcConnectionException.class )
+    public Result< String > handleMySQLConnectionException( CannotGetJdbcConnectionException e ){
+        // 由于没有添加依赖，不能直接用 com.mysql.cj.jdbc.exceptions.CommunicationsException
+        // 不过用 Spring 包装的异常更稳当
+        log.error( "数据库连接失败", e );
+        return Result.error( MessageConstant.DATABASE_LINKED_ERROR );
     }
 
 
