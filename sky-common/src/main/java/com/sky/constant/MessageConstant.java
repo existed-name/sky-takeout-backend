@@ -55,4 +55,5 @@ public class MessageConstant {
     public static final String UNSATISFIED_FIELD_CONSTRAINT = "不满足数据库字段约束, 请重新填写";
     public static final String FIELD_CAN_NOT_BE_NULL = "填写的字段不能为空";
     public static final String DATABASE_LINKED_ERROR = "数据库连接失败，请稍后再试";
+    public static final String REQUEST_METHOD_ERROR = "HTTP 请求方法错误, 可能是系统内部问题";
 }
