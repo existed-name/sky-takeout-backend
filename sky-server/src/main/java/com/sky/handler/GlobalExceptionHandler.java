@@ -6,13 +6,16 @@ import com.sky.exception.auth.NotLoginException;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.stream.Collectors;
 
 /**
  * 全局异常处理器，处理项目中抛出的异常
@@ -40,9 +43,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler( ConstraintViolationException.class ) // ValidationException 是它父类，也可以捕获
     public Result< String > handleFieldValidationException( ConstraintViolationException exception ){
-        String message = exception.getMessage();
-        // getInfo.id: 套餐 id 必须是正整数
-        // 也可以把方法名前缀去掉
+        String message = extractBusinessMessage( exception );
         log.warn( "参数检验未通过: {}", message );
         return Result.error( message );
     }
@@ -53,7 +54,7 @@ public class GlobalExceptionHandler {
     // ValidationException 是它父类，也可以捕获
     @ExceptionHandler( MethodArgumentNotValidException.class )
     public Result< String > handleDtoValidationException( MethodArgumentNotValidException exception ){
-        String message = extractMessage( exception );
+        String message = extractBusinessMessage( exception );
         log.warn( "DTO 检验未通过: {}", message );
         return Result.error( message );
     }
@@ -121,7 +122,7 @@ public class GlobalExceptionHandler {
      * @param exception 检验 Controller 方法的 DTO 对象及其属性时抛出的参数检验异常
      * @return 提取异常的业务信息
      */
-    private String extractMessage( MethodArgumentNotValidException exception ){
+    private String extractBusinessMessage( MethodArgumentNotValidException exception ){
         /*
             Validation failed for argument [0] in public com.sky.result.Result<java.lang.Void>
             com.sky.controller.user.AddressBookController.save(com.sky.dto.AddressBookDTO):
@@ -150,17 +151,35 @@ public class GlobalExceptionHandler {
               - 我们要的信息在第 2 个 / 最后 1 个 default message
               - 如果是 lastIndexOf( String ) 可以找到字母 d 的起始索引，然后一直找到 `[`,截取,再到 `]`
               - 或者倒数第 2 个 `]`, 截取到 `[`
+              - 最后拿到起点、终点，截取字符串
          */
-        String exceptionMessage = exception.getMessage();
-        String defaultMessage = "default message ["; // 这里又补了空格 + 左中括号
-        int defaultMessageIdx = exceptionMessage.lastIndexOf( defaultMessage ); // 字母 d 的下标
-        int inclusiveStartIdx = defaultMessageIdx + defaultMessage.length(); //  第 1 个字的下标
+        /*
+            更通用的: 想办法拿到原参数的注解，就可以拿到 message 了
+            看原异常的信息是怎么拼起来的，倒推回去
+            ……
+            没思路，还是看 AI 的
+         */
+        String delimiter = ", ";
+        String message = exception.getFieldErrors().stream()
+                .map( FieldError::getDefaultMessage )  // 直接取你注解里写的 message
+                // 多个异常信息才会 join 拼接
+                .collect( Collectors.joining( delimiter ) );
+        // 或者只取第 1 个
+//        String message = exception.getFieldErrors().iterator().next().getDefaultMessage();
+        return message;
+    }
 
-        String endStr = "]]";
-        int exclusiveEndIdx = exceptionMessage.lastIndexOf( endStr ); // 倒数第 2 个 ] 的下标
-        // [ 起始下标, 结束下标 )
-        String message = exceptionMessage.substring( inclusiveStartIdx, exclusiveEndIdx );
-
+    /**
+     * 提取方法字段参数检验异常的业务信息
+     *
+     * @param exception 检验 Controller 方法的字段参数时抛出的参数检验异常
+     * @return 提取异常的业务信息
+     */
+    private String extractBusinessMessage( ConstraintViolationException exception ){
+        String delimiter = ", ";
+        String message = exception.getConstraintViolations().stream()
+                .map( ConstraintViolation::getMessage )
+                .collect( Collectors.joining( delimiter ) );
         return message;
     }
 }
