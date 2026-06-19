@@ -28,6 +28,7 @@ import java.util.List;
  *
  * @CreateTime 2026/6/16 6:12
  */
+@Validated
 @Slf4j
 @Api( tags = "用户端地址簿管理接口" )
 @RestController( "userAddressController" )

@@ -1,4 +1,4 @@
-package com.sky.vo;
+package com.sky.vo.order;
 
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;

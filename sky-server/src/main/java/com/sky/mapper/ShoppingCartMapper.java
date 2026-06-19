@@ -52,7 +52,7 @@ public interface ShoppingCartMapper {
             WHERE user_id = #{userId}
             ORDER BY create_time DESC, id DESC
             """ )
-    List< ShoppingCartItemVO > selectItemVOByUserId( @Param( "userId" ) Long userId );
+    List< ShoppingCartItemVO > selectItemVOListByUserId( @Param( "userId" ) Long userId );
 
     /**
      * 清空该用户的购物车

@@ -147,7 +147,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
               - 注意还要时间倒序
          */
         Long userId = BaseContext.getCurrentId();
-        List< ShoppingCartItemVO > shoppingCartItemVOList = shoppingCartMapper.selectItemVOByUserId( userId );
+        List< ShoppingCartItemVO > shoppingCartItemVOList = shoppingCartMapper.selectItemVOListByUserId( userId );
         BigDecimal totalAmount = calculateTotalAmount( shoppingCartItemVOList );
         return ShoppingCartVO.builder()
                 .shoppingCartItemVOList( shoppingCartItemVOList )

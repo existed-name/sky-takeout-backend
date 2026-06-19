@@ -112,3 +112,10 @@
 ### 购物车接口
 * `份数` 不统一啊，DishItemVO、setmeal_dish 是 copies, shopping_cart 就是 number
 
+
+### 地址簿接口
+* day08#1. 导入地址簿功能代码
+    - 设置默认地址，教程 `/user/addressBook/default` + @RequestBody AddressBook
+    - 我觉得改成 @PathVarible Long id 更好
+
+

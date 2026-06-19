@@ -1,4 +1,4 @@
-package com.sky.dto;
+package com.sky.dto.order;
 
 import lombok.Data;
 

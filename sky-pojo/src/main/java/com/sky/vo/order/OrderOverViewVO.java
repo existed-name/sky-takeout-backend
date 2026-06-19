@@ -1,4 +1,4 @@
-package com.sky.vo;
+package com.sky.vo.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
