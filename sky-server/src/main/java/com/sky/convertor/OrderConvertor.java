@@ -36,6 +36,7 @@ public interface OrderConvertor {
     /**
      * 用户购物车数据转为订单明细(记录的内容基本一样)
      */
-    @Mapping( target = "id", ignore = true )  // 注意 id 不一样
-    List< OrderDetail > toDetailList( List< ShoppingCartItemVO> shoppingCartItemVOList );
+    @Mapping( target = "id", ignore = true )  // 注意两者的 id 意义不同, 忽略后交给 Service 补充
+    @Mapping( source = "price", target = "amount" )
+    List< OrderDetail > toDetailList( List< ShoppingCartItemVO > shoppingCartItemVOList );
 }

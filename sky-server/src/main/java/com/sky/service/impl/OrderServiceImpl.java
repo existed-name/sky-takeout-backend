@@ -9,6 +9,7 @@ import com.sky.entity.Orders;
 import com.sky.entity.User;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.shoppingCart.EmptyShoppingCartException;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
@@ -120,9 +121,18 @@ public class OrderServiceImpl implements OrderService {
 
         // 查关联菜品、套餐数据，组装 orderDetail, 设置 orderId 外键
         List< ShoppingCartItemVO > shoppingCartItemVOList = shoppingCartMapper.selectItemVOListByUserId( userId );
+        if ( shoppingCartItemVOList == null || shoppingCartItemVOList.isEmpty() ){
+            throw new EmptyShoppingCartException( MessageConstant.SHOPPING_CART_IS_NULL );
+        }
         List< OrderDetail > orderDetailList = orderConvertor.toDetailList( shoppingCartItemVOList );
         orderDetailList.forEach( orderDetail -> orderDetail.setOrderId( orderId ) );
         orderDetailMapper.insertBatch( orderDetailList );
+
+        /*
+            * 教程在创建订单的时候就清空了用户购物车数据，
+            * 我的想法是支付成功再清除, 暂时保留数据
+            * AI: 教程的做法是简化版，很多真实外卖确实是下单就清（因为下单即锁定库存，购物车商品可能变价/售罄）
+         */
 
         // 转 VO
         return orderConvertor.toVO( entity );
@@ -135,9 +145,11 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 生成订单号
      * <br>
-     *  格式：{业务码}{日期}{6位序列}
+     * 格式：{业务码}{日期}{6位序列}
      * <br>
-     *   示例：TB20250619000001
+     * 示例：TB20250619000001
+     * <br>
+     * 教程用的 System.currentTimeMillis 高并发可能重叠
      */
     private String generateOrderNumber( LocalDateTime now ){
         String businessCode = "CQ"; // "苍穹餐厅";
@@ -153,10 +165,13 @@ public class OrderServiceImpl implements OrderService {
             ++digitCount;
         }
 
-        if ( digitCount < 6 ){
-            for ( int i = 0; i < digitCount; i++ ){
-                orderNumber.append( 0 );
-            }
+        int requiredDigitCount = 6;
+        if ( digitCount < requiredDigitCount ){
+            orderNumber.append( // 编译器提示把 for 循环改成 String.repeat
+                    "0".repeat( Math.max(
+                            0, requiredDigitCount - digitCount )
+                    )
+            );
         }
         orderNumber.append( ++orderCount );
 
