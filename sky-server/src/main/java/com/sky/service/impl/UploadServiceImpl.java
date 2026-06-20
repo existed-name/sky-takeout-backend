@@ -5,7 +5,6 @@ import com.sky.constant.MessageConstant;
 import com.sky.exception.EmptyFileException;
 import com.sky.exception.FileTypeNotSupportedException;
 import com.sky.exception.FileUploadFailedException;
-import com.sky.exception.IllegalParameterException;
 import com.sky.exception.InvalidFileNameException;
 import com.sky.exception.SizeLimitExceededException;
 import com.sky.service.UploadService;
@@ -81,10 +80,11 @@ public class UploadServiceImpl implements UploadService {
      */
     private void validateDir( String dir ){
         if ( dir == null || dir.isBlank() ){
-            throw new IllegalParameterException( MessageConstant.EMPTY_DIR );
+            // 由于是内部指定业务目录，是内部出错，应该用 JDK 系统异常
+            throw new IllegalArgumentException( MessageConstant.EMPTY_DIR );
         }
         if ( ! FileConstant.BusinessDir.VALID_DIRS.contains( dir ) ){
-            throw new IllegalParameterException( MessageConstant.INVALID_DIR );
+            throw new IllegalArgumentException( MessageConstant.INVALID_DIR );
         }
     }
 
@@ -138,12 +138,11 @@ public class UploadServiceImpl implements UploadService {
      * @param extension 文件扩展名，必须包含点号，如 ".jpg"、".png"；不允许为空
      * @return 规范的OSS对象完整路径
      */
-    public static String generateObjectName(String dir, String extension) {
-        if ( dir == null || dir.isBlank() ) {
-            throw new IllegalParameterException("目录前缀(dir)不能为空");
-        }
+    private String generateObjectName(String dir, String extension) {
+        validateDir( dir );
+
         if ( extension == null || extension.isBlank() || ! extension.startsWith(".") ) {
-            throw new IllegalParameterException("扩展名(extension)必须包含点号，如 .jpg");
+            throw new IllegalArgumentException("扩展名(extension)必须包含点号，如 .jpg");
         }
 
         // 按日期分目录，便于后续按时间归档、清理、迁移

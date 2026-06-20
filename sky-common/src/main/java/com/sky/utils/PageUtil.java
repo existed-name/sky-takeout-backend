@@ -3,7 +3,6 @@ package com.sky.utils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.PageConstant;
-import com.sky.exception.IllegalParameterException;
 import com.sky.result.PageResult;
 
 import java.util.List;
@@ -49,7 +48,7 @@ public class PageUtil {
      */
     public static PageResult buildPageResult( List< ? > queryResult ){
         if ( queryResult == null ){
-            throw new IllegalParameterException( "参数 queryResult 不能为 null" );
+            throw new IllegalArgumentException( "参数 queryResult 不能为 null" );
         }
         // 不过 instanceof 对 null 直接 false
         if ( queryResult instanceof Page ){
@@ -57,7 +56,7 @@ public class PageUtil {
             return new PageResult( page.getTotal(), page.getResult() );
         }
         // 普通 List，无法获取 total，需要外部传入
-        throw new IllegalParameterException( "参数 queryResult 不是 Page 对象，请使用 buildPageResult( total, list ) 构建 PageResult" );
+        throw new IllegalArgumentException( "参数 queryResult 不是 Page 对象，请使用 buildPageResult( total, list ) 构建 PageResult" );
     }
 
     /**

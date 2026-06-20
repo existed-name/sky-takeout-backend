@@ -1,7 +1,5 @@
 package com.sky.constant;
 
-import com.sky.exception.IllegalParameterException;
-
 import java.time.Duration;
 
 public class RedisConstant {
@@ -38,7 +36,7 @@ public class RedisConstant {
         /**
          * 组装菜品缓存 RedisKey = {@link com.sky.constant.RedisConstant.Dish#DISH_CACHE_PREFIX} + categoryId
          *
-         * @param categoryId 菜品分类 id, <b>不能为空</b>, 否则抛出异常 {@link com.sky.exception.IllegalParameterException}
+         * @param categoryId 菜品分类 id, <b>不能为空</b>, 否则抛出异常
          * @return {@code dish:category:{categoryId}}
          */
         public static String formatRedisKey( Long categoryId ){
@@ -64,7 +62,7 @@ public class RedisConstant {
         /**
          * 组装套餐缓存 RedisKey = {@link com.sky.constant.RedisConstant.Setmeal#SETMEAL_CACHE_PREFIX} + categoryId
          *
-         * @param categoryId 套餐分类 id, <b>不能为空</b>, 否则抛出异常 {@link com.sky.exception.IllegalParameterException}
+         * @param categoryId 套餐分类 id, <b>不能为空</b>, 否则抛出异常 {@code IllegalArgumentException}
          * @return {@code setmeal:category:{categoryId}}
          */
         public static String formatRedisKey( Long categoryId ){
@@ -74,7 +72,7 @@ public class RedisConstant {
         /**
          * 组装套餐关联菜品的 RedisKey = {@link com.sky.constant.RedisConstant.Setmeal#SETMEAL_DISH_CACHE_PREFIX} + setmealId
          *
-         * @param setmealId 套餐 id, <b>不能为空</b>, 否则抛出异常 {@link com.sky.exception.IllegalParameterException}
+         * @param setmealId 套餐 id, <b>不能为空</b>, 否则抛出异常 {@code IllegalArgumentException}
          * @return {@code setmeal:dish:{setmealId}}
          */
         public static String formatDishRedisKey( Long setmealId ){
@@ -97,12 +95,12 @@ public class RedisConstant {
          * 组装订单数量缓存 RedisKey = {@link com.sky.constant.RedisConstant.OrderNumber#ORDER_COUNT_CACHE_PREFIX} + formatDate
          *
          * @param formatDate 格式化日期字符串，非空，<b>需要调用方确保格式正常</b><br>
-         *                   只要有参数为空就抛出异常 {@link com.sky.exception.IllegalParameterException}
+         *                   只要有参数为空就抛出异常 {@code IllegalArgumentException}
          * @return {@code order:count:{formatDate}}
          */
         public static String formatRedisKey( String formatDate ){
             if ( formatDate == null || formatDate.isBlank() ){
-                throw new IllegalParameterException( MessageConstant.FORMAT_DATE_IS_BLANK );
+                throw new IllegalArgumentException( MessageConstant.FORMAT_DATE_IS_BLANK );
             }
             return ORDER_COUNT_CACHE_PREFIX + formatDate;
         }
@@ -133,12 +131,12 @@ public class RedisConstant {
      * 提取公共组装 RedisKey 逻辑
      *
      * @param cachePrefix 缓存的 RedisKey 业务前缀
-     * @param categoryId 套餐/菜品分类 id, <b>不能为空</b>, 否则抛出异常 {@link com.sky.exception.IllegalParameterException}
+     * @param categoryId 套餐/菜品分类 id, <b>不能为空</b>, 否则抛出异常 {@code IllegalArgumentException}
      * @return cachePrefix:categoryId
      */
     private static String formatRedisKey( String cachePrefix, Long categoryId ){
         if ( categoryId == null ){
-            throw new IllegalParameterException( "分类 id 不能为空" );
+            throw new IllegalArgumentException( "分类 id 不能为空" );
         }
         return cachePrefix + categoryId;
     }

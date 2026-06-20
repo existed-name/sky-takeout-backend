@@ -112,7 +112,7 @@ public class RedisCacheCleaner {
     /**
      * 检验 redisKeyGenerator(判空)
      * <p>
-     *     当方法引用为空时抛出 {@link com.sky.exception.IllegalParameterException}
+     *     当方法引用为空时抛出 {@code IllegalArgumentException}
      *
      * @param redisKeyGenerator 方法引用，主要来自{@link com.sky.constant.RedisConstant}的组装 Key 方法
      *                          <br>

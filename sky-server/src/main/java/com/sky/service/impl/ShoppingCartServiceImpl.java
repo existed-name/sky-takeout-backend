@@ -8,7 +8,6 @@ import com.sky.dto.ShoppingCartQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.ShoppingCart;
-import com.sky.exception.IllegalParameterException;
 import com.sky.exception.InvalidDataBaseDataException;
 import com.sky.exception.NotFoundException;
 import com.sky.exception.shoppingCart.IncompleteShoppingCartException;

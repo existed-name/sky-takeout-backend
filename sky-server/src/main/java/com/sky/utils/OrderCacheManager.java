@@ -3,7 +3,6 @@ package com.sky.utils;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
 import com.sky.constant.RedisConstant;
-import com.sky.exception.IllegalParameterException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -103,7 +102,7 @@ public class OrderCacheManager {
      */
     private void validateFormatDate( String formatDate ){
         if ( formatDate == null || formatDate.isBlank() ){
-            throw new IllegalParameterException( MessageConstant.FORMAT_DATE_IS_BLANK );
+            throw new IllegalArgumentException( MessageConstant.FORMAT_DATE_IS_BLANK );
         }
 
         try {
@@ -111,7 +110,7 @@ public class OrderCacheManager {
                     .ofPattern( OrderConstant.OrderNumber.DATE_PATTERN )
                     .parse( formatDate );
         } catch ( Exception e ){
-            throw new IllegalParameterException( MessageConstant.DATE_FORMAT_PARSE_ERROR );
+            throw new IllegalArgumentException( MessageConstant.DATE_FORMAT_PARSE_ERROR );
         }
     }
 
@@ -120,10 +119,10 @@ public class OrderCacheManager {
      */
     private void validateOrderCount( Long orderCount ){
         if ( orderCount == null ){
-            throw new IllegalParameterException( MessageConstant.ORDER_COUNT_IS_NULL );
+            throw new IllegalArgumentException( MessageConstant.ORDER_COUNT_IS_NULL );
         }
         if ( orderCount < 0L ){
-            throw new IllegalParameterException( MessageConstant.ORDER_COUNT_IS_NEGATIVE );
+            throw new IllegalArgumentException( MessageConstant.ORDER_COUNT_IS_NEGATIVE );
         }
     }
 
