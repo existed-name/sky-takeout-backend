@@ -91,7 +91,7 @@ public interface AddressBookMapper {
     AddressBookVO selectVOByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
-     * 将当前用户的默认地址重置为非默认状态
+     * 将当前用户<b>除了指定 id 的地址</b>以外的默认地址重置为非默认状态(<b>指定 id 的地址是刚设置的默认地址</b>)
      * <p>
      *     注意: <b>SQL 语句的<code>is_default</code>硬编码，业务变化后需要修改</b>
      * </p>
@@ -103,8 +103,9 @@ public interface AddressBookMapper {
             UPDATE address_book
             SET is_default = 0
             WHERE user_id = #{userId} AND is_default = 1
+                AND id != #{id}
             """ )
-    int resetDefaultByUserId( @Param( "userId" ) Long userId );
+    int resetDefaultByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
      * 修改目标地址的默认状态

@@ -4,17 +4,21 @@ import com.sky.context.BaseContext;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
+import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 /**
  * 用户端-订单管理接口
@@ -50,7 +54,11 @@ public class OrderController {
      */
     @ApiOperation( "用户下单并返回订单必要数据" )
     @PostMapping( "/submit" )
-    public Result< OrderSubmitVO > submit( @RequestBody @Validated OrdersSubmitDTO ordersSubmitDTO ){
+    public Result< OrderSubmitVO > submit(
+            @RequestBody @Validated // 虽然 RequestBody 自动判空，但是异常信息不太友好，还是手动 NotNull 判空
+            @NotNull( message = "提交的订单信息不能为空" )
+            OrdersSubmitDTO ordersSubmitDTO
+    ){
         Long userId = BaseContext.getCurrentId();
         log.info( "userId = {} 的用户创建订单: {}", userId, ordersSubmitDTO );
         OrderSubmitVO orderSubmitVO = orderService.createWithUserId( userId, ordersSubmitDTO );

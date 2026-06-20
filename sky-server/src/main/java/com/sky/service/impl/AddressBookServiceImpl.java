@@ -112,7 +112,7 @@ public class AddressBookServiceImpl implements AddressBookService {
          */
         int updatedRow = addressBookMapper.updateIsDefaultByIdAndUserId( id, userId, AddressBookConstant.IS_DEFAULT );
         validateUpdatedRowById( id, updatedRow );
-        addressBookMapper.resetDefaultByUserId( userId );
+        addressBookMapper.resetDefaultByIdAndUserId( id, userId );
     }
 
 
