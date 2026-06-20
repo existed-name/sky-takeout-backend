@@ -11,6 +11,7 @@ import com.sky.entity.ShoppingCart;
 import com.sky.exception.IllegalParameterException;
 import com.sky.exception.InvalidDataBaseDataException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.shoppingCart.IncompleteShoppingCartException;
 import com.sky.exception.shoppingCart.ShoppingCartUserNotMatchException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -57,7 +58,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public void add( ShoppingCartDTO shoppingCartDTO ){
         if ( ! shoppingCartDTO.hasDish() && ! shoppingCartDTO.hasSetmeal() ){
             // 早判断早结束
-            throw new IllegalParameterException( MessageConstant.SHOPPING_CART_ADD_NULL );
+            throw new IncompleteShoppingCartException( MessageConstant.SHOPPING_CART_ADD_NULL );
         }
 
         Long userId = BaseContext.getCurrentId();
@@ -98,9 +99,15 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         // 数据库已存在，直接增加数量
         if ( isInDatabase ){
             Integer number = shoppingCart.getNumber();
-            if ( number == null || number < 0 ){
-                // null, 非正数, 无效数据
-                throw new InvalidDataBaseDataException( MessageConstant.INVALID_DATABASE_DATA + ": 购物车商品数量 = " + number );
+            if ( number == null || number <= 0 ){
+                // null, 非正数, 无效数据, 要么是上次插入非法数据，要嘛是数据库出问题
+                // DTO 不带 number 字段，只能是内部设置的 number, 只能是内部错误
+                // 所以用 JDK 系统异常
+                throw new IllegalStateException(
+                        String.format( "%s: id = %s 的购物车商品数量 = %s",
+                                MessageConstant.INVALID_DATABASE_DATA,
+                                shoppingCart.getId(), number )
+                );
             }
             shoppingCartMapper.updateNumberById(
                     shoppingCart.getId(),
@@ -116,11 +123,17 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             // 于是需要查到对应 dish/setmeal 的信息
             if ( shoppingCartDTO.hasDish() ){ // shoppingCart.isDish
                 Dish dish = dishMapper.selectById( dishId );
+                if ( dish == null ){
+                    throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
+                }
                 name = dish.getName();
                 amount = dish.getPrice();
                 image = dish.getImage();
             } else { // shoppingCart.isSetmeal
                 Setmeal setmeal = setmealMapper.selectById( setmealId );
+                if ( setmeal == null ){
+                    throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
+                }
                 name = setmeal.getName();
                 amount = setmeal.getPrice();
                 image = setmeal.getImage();
