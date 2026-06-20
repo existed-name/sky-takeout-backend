@@ -43,6 +43,37 @@ public class OrderConstant {
         private PayStatus(){}
     }
 
+    /**
+     * 订单号相关常量
+     */
+    public static final class OrderNumber {
+        /**
+         * 订单号的序列号(今日订单数量)需要的位数，这里是 7 位数
+         * <br>
+         * 订单号格式: {业务码}{日期}{7位序列}
+         */
+        public static final Integer SERIAL_NUMBER_DIGIT_COUNT = 7;
+
+        /**
+         * 订单号的序列号(今日订单数量)需要的位数，这里是 7 位数
+         * <br>
+         * 订单号格式: {业务码}{日期}{7位序列}
+         */
+        public static final String BUSINESS_CODE = "CQ"; // "苍穹餐厅";
+
+        /**
+         * 订单号的日期格式
+         * <br>
+         * 订单号格式: {业务码}{日期}{7位序列}
+         */
+        public static final String DATE_PATTERN = "yyyyMMdd";
+
+        /** 暂无用户下单，<b>订单数量 = 0</b> */
+        public static final Integer ORDER_COUNT_ZERO = 0;
+
+        private OrderNumber(){}
+    }
+
 
     // ==================== 静态变量 ====================
 

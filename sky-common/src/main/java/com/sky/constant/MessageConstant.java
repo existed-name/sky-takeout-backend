@@ -58,4 +58,8 @@ public class MessageConstant {
     public static final String REQUEST_METHOD_ERROR = "HTTP 请求方法错误, 可能是系统内部问题";
 
     public static final String USER_NOT_FOUND = "该用户不存在";
+    public static final String FORMAT_DATE_IS_BLANK = "格式化日期字符串不能为空";
+    public static final String DATE_FORMAT_PARSE_ERROR = "格式化日期字符串解析失败，可能是格式不满足要求";
+    public static final String ORDER_COUNT_IS_NULL = "订单数量不能为空";
+    public static final String ORDER_COUNT_IS_NEGATIVE = "订单数量不能为负数";
 }

@@ -16,6 +16,7 @@ import com.sky.mapper.OrderMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.OrderService;
+import com.sky.utils.OrderCacheManager;
 import com.sky.vo.AddressBookVO;
 import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.OrderSubmitVO;
@@ -40,19 +41,19 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final ShoppingCartMapper shoppingCartMapper;
     private final OrderDetailMapper orderDetailMapper;
-    /** 订单数量 */
-    private int orderCount = 0;
+    private final OrderCacheManager orderCacheManager;
 
 
 
     // ==================== 构造器 ====================
-    public OrderServiceImpl( OrderConvertor orderConvertor, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper ){
+    public OrderServiceImpl( OrderConvertor orderConvertor, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager ){
         this.orderConvertor = orderConvertor;
         this.userMapper = userMapper;
         this.addressBookMapper = addressBookMapper;
         this.orderMapper = orderMapper;
         this.shoppingCartMapper = shoppingCartMapper;
         this.orderDetailMapper = orderDetailMapper;
+        this.orderCacheManager = orderCacheManager;
     }
 
 
@@ -145,27 +146,30 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 生成订单号
      * <br>
-     * 格式：{业务码}{日期}{6位序列}
+     * 格式：{业务码}{日期}{7位序列}
      * <br>
-     * 示例：TB20250619000001
+     * 示例：TB20250619000001, CQ202606201234567
      * <br>
      * 教程用的 System.currentTimeMillis 高并发可能重叠
      */
     private String generateOrderNumber( LocalDateTime now ){
-        String businessCode = "CQ"; // "苍穹餐厅";
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern( "yyyyMMdd" );
-        StringBuilder orderNumber = new StringBuilder();
-        orderNumber.append( businessCode )
-                .append( now.format( dateTimeFormatter ) );
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern( OrderConstant.OrderNumber.DATE_PATTERN );
+        String formatDate = now.format( dateTimeFormatter );
 
-        // 由于要凑齐 6 位，所以需要数已有订单数有多少位
+        StringBuilder orderNumber = new StringBuilder();
+        orderNumber.append( OrderConstant.OrderNumber.BUSINESS_CODE )
+                .append( formatDate );
+
+        // 由于要凑齐位数，所以需要数已有订单数有多少位; 选用缓存持久化订单数
+        Integer orderCount = ( Integer ) orderCacheManager.getOrderCount( formatDate );
         int temp = orderCount, digitCount = 0;
         while ( temp > 0 ){
             temp /= 10;
             ++digitCount;
         }
 
-        int requiredDigitCount = 6;
+        int requiredDigitCount = OrderConstant.OrderNumber.SERIAL_NUMBER_DIGIT_COUNT;
+        // TODO: 不过这里有隐藏问题，如果超过需要的位数，会直接拼接，导致序列号多出几位(但只是格式不整齐，不影响功能)
         if ( digitCount < requiredDigitCount ){
             orderNumber.append( // 编译器提示把 for 循环改成 String.repeat
                     "0".repeat( Math.max(
@@ -173,7 +177,9 @@ public class OrderServiceImpl implements OrderService {
                     )
             );
         }
+        // 新增 1 单，所以 orderCount 订单数量 + 1
         orderNumber.append( ++orderCount );
+        orderCacheManager.increment( formatDate );
 
         return orderNumber.toString();
     }

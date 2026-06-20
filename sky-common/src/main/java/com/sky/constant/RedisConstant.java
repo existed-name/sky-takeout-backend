@@ -6,6 +6,9 @@ import java.time.Duration;
 
 public class RedisConstant {
     // ==================== 常量 ====================
+    /** 命名 redisKey 的分隔符, 比如 [模块]:[子模块]:[key] */
+    public static final String DELIMITER = ":";
+
     /**
      * 店铺模块相关的 Redis 常量, 比如店铺状态的 Key
      */
@@ -81,6 +84,32 @@ public class RedisConstant {
         private Setmeal(){}
     }
 
+    /**
+     * 订单号相关的 Redis 常量, 比如 Key 前缀、缓存有效时间
+     */
+    public static final class OrderNumber {
+        /** 缓存订单数量的业务前缀, 拼接日期后组成完整 RedisKey */
+        public static final String ORDER_COUNT_CACHE_PREFIX = "order:count:";
+        /** 订单数量 - 缓存有效时间 3 天，足够时间查看 */
+        public static final Duration CACHE_TTL = Duration.ofDays( 3 );
+
+        /**
+         * 组装订单数量缓存 RedisKey = {@link com.sky.constant.RedisConstant.OrderNumber#ORDER_COUNT_CACHE_PREFIX} + formatDate
+         *
+         * @param formatDate 格式化日期字符串，非空，<b>需要调用方确保格式正常</b><br>
+         *                   只要有参数为空就抛出异常 {@link com.sky.exception.IllegalParameterException}
+         * @return {@code order:count:{formatDate}}
+         */
+        public static String formatRedisKey( String formatDate ){
+            if ( formatDate == null || formatDate.isBlank() ){
+                throw new IllegalParameterException( MessageConstant.FORMAT_DATE_IS_BLANK );
+            }
+            return ORDER_COUNT_CACHE_PREFIX + formatDate;
+        }
+
+
+        private OrderNumber(){}
+    }
 
 
 
@@ -113,4 +142,5 @@ public class RedisConstant {
         }
         return cachePrefix + categoryId;
     }
+
 }
