@@ -15,11 +15,6 @@ import java.time.format.DateTimeFormatter;
  */
 @Component
 public class OrderCacheManager {
-    private final RedisTemplate< Object, Object > redisTemplate;
-
-    public OrderCacheManager( RedisTemplate< Object, Object > redisTemplate ){
-        this.redisTemplate = redisTemplate;
-    }
     // ==================== 常量 ====================
 
 
@@ -27,9 +22,14 @@ public class OrderCacheManager {
 
 
     // ==================== 实例变量 ====================
+    private final RedisTemplate< String, Object > redisTemplate;
+
 
 
     // ==================== 构造器 ====================
+    public OrderCacheManager( RedisTemplate< String, Object > redisTemplate ){
+        this.redisTemplate = redisTemplate;
+    }
 
 
     // ==================== 公有方法 ====================

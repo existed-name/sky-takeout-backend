@@ -1,5 +1,7 @@
 package com.sky.constant;
 
+import java.util.Set;
+
 /**
  * 订单相关常量,
  * <br>
@@ -25,6 +27,18 @@ public class OrderConstant {
         public static final Integer COMPLETED = 5;
         /** 6已取消 */
         public static final Integer CANCELLED = 6;
+        /** 有效订单状态 */
+        public static final Set< Integer > VALID_STATUS = Set.of(
+                PENDING_PAYMENT, TO_BE_CONFIRMED, CONFIRMED, DELIVERY_IN_PROGRESS,
+                COMPLETED, CANCELLED
+        );
+
+        /**
+         * 判断订单状态是否有效
+         */
+        public static boolean isValidStatus( Integer status ){
+            return VALID_STATUS.contains( status );
+        }
 
         private Status(){}
     }
@@ -39,6 +53,17 @@ public class OrderConstant {
         public static final Integer PAID = 1;
         /** 2退款 */
         public static final Integer REFUND = 2;
+        /** 有效支付状态 */
+        public static final Set< Integer > VALID_STATUS = Set.of(
+                UN_PAID, PAID, REFUND
+        );
+
+        /**
+         * 判断支付状态是否有效
+         */
+        public static boolean isValidStatus( Integer status ){
+            return VALID_STATUS.contains( status );
+        }
 
         private PayStatus(){}
     }

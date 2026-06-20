@@ -4,13 +4,13 @@ import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
-import com.sky.exception.FileUploadFailedException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
+import java.lang.IllegalArgumentException;
 
 @Data
 @AllArgsConstructor
@@ -79,7 +79,7 @@ public class AliOssUtil {
      * <p>
      * <b>优化点：</b>
      * <ul>
-     *   <li><b>P0 异常处理：</b>OSS异常直接上抛为 {@link FileUploadFailedException}，由全局异常处理器统一处理，避免返回无效URL</li>
+     *   <li><b>P0 异常处理：</b>OSS异常直接上抛为 {@link IllegalArgumentException}，由全局异常处理器统一处理，避免返回无效URL</li>
      *   <li><b>P1 配置校验：</b>上传前校验核心配置非空，提前暴露配置错误</li>
      *   <li><b>P2 协议兼容：</b>自动适配带/不带协议头的 endpoint 配置</li>
      * </ul>
@@ -87,17 +87,17 @@ public class AliOssUtil {
      * @param bytes      文件字节数组，不允许为空或空数组
      * @param objectName OSS对象完整路径，不允许为空（如：avatar/2026/05/23/a1b2c3d4.jpg）
      * @return 文件公网访问URL，格式：https://BucketName.Endpoint/ObjectName
-     * @throws FileUploadFailedException 当配置非法、OSS服务异常或网络异常时抛出
+     * @throws IllegalArgumentException 当配置非法、OSS服务异常或网络异常时抛出
      */
-    public String upload(byte[] bytes, String objectName) throws FileUploadFailedException {
+    public String upload(byte[] bytes, String objectName) throws IllegalArgumentException {
         // ---------- P1: 配置校验（防御式编程，提前失败） ----------
         validateConfig();
 
         if (bytes == null || bytes.length == 0) {
-            throw new FileUploadFailedException("上传文件内容不能为空");
+            throw new IllegalArgumentException("上传文件内容不能为空");
         }
         if ( objectName == null || objectName.isBlank() ) {
-            throw new FileUploadFailedException("OSS对象路径(objectName)不能为空");
+            throw new IllegalArgumentException("OSS对象路径(objectName)不能为空");
         }
 
         // ---------- 执行上传 ----------
@@ -110,12 +110,12 @@ public class AliOssUtil {
             // OSS服务端异常：请求已到达OSS，但被拒绝（如权限不足、Bucket不存在、文件过大等）
             log.error("OSS服务端异常，ErrorCode={}，RequestId={}，ErrorMessage={}",
                     oe.getErrorCode(), oe.getRequestId(), oe.getErrorMessage());
-            throw new FileUploadFailedException(
+            throw new IllegalArgumentException(
                     String.format("文件上传失败(OSS): %s", oe.getErrorMessage()));
         } catch (ClientException ce) {
             // 客户端异常：网络不通、连接超时、本地配置错误等
             log.error("OSS客户端异常，ErrorMessage={}", ce.getMessage());
-            throw new FileUploadFailedException(
+            throw new IllegalArgumentException(
                     String.format("文件上传失败(网络/客户端): %s", ce.getMessage()));
         } finally {
             // 确保OSSClient资源释放，避免连接泄漏
@@ -151,20 +151,20 @@ public class AliOssUtil {
      * <p>
      * 在构造器或上传前调用，提前暴露配置错误，避免运行时才发现。
      *
-     * @throws FileUploadFailedException 当 endpoint、accessKeyId、accessKeySecret、bucketName 任一为空时抛出
+     * @throws IllegalArgumentException 当 endpoint、accessKeyId、accessKeySecret、bucketName 任一为空时抛出
      */
     private void validateConfig() {
         if (!StringUtils.hasText(endpoint)) {
-            throw new FileUploadFailedException("OSS配置错误：endpoint 不能为空");
+            throw new IllegalArgumentException("OSS配置错误：endpoint 不能为空");
         }
         if (!StringUtils.hasText(accessKeyId)) {
-            throw new FileUploadFailedException("OSS配置错误：accessKeyId 不能为空");
+            throw new IllegalArgumentException("OSS配置错误：accessKeyId 不能为空");
         }
         if (!StringUtils.hasText(accessKeySecret)) {
-            throw new FileUploadFailedException("OSS配置错误：accessKeySecret 不能为空");
+            throw new IllegalArgumentException("OSS配置错误：accessKeySecret 不能为空");
         }
         if (!StringUtils.hasText(bucketName)) {
-            throw new FileUploadFailedException("OSS配置错误：bucketName 不能为空");
+            throw new IllegalArgumentException("OSS配置错误：bucketName 不能为空");
         }
     }
 }

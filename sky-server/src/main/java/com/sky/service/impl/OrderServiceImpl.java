@@ -96,6 +96,7 @@ public class OrderServiceImpl implements OrderService {
         // 设置地址簿信息
         Long addressBookId = ordersSubmitDTO.getAddressBookId();
         AddressBookVO addressBookVO = addressBookMapper.selectVOByIdAndUserId( addressBookId, userId );
+        // TODO: 对了，前端会自动选择默认地址簿???
         // id, userId 双重定位 => id 对应数据不存在 | 数据不匹配该用户
         if ( addressBookVO == null ){
             if ( addressBookMapper.countById( addressBookId ) == 0 ){
@@ -118,7 +119,9 @@ public class OrderServiceImpl implements OrderService {
         // 主键回填
         orderMapper.insert( entity );
         Long orderId = entity.getId();
-//        orderId == null.if
+        if ( orderId == null ){
+            throw new IllegalStateException( "用户下单、Mapper 插入 Order 时主键回填失败" );
+        }
 
         // 查关联菜品、套餐数据，组装 orderDetail, 设置 orderId 外键
         List< ShoppingCartItemVO > shoppingCartItemVOList = shoppingCartMapper.selectItemVOListByUserId( userId );
