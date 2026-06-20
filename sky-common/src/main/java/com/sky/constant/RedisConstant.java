@@ -85,7 +85,7 @@ public class RedisConstant {
     }
 
     /**
-     * 订单号相关的 Redis 常量, 比如 Key 前缀、缓存有效时间
+     * 订单号相关的 Redis 常量, 主要是<b>订单序列号(订单数量)</b>的 Key 前缀、缓存有效时间
      */
     public static final class OrderNumber {
         /** 缓存订单数量的业务前缀, 拼接日期后组成完整 RedisKey */

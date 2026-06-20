@@ -44,7 +44,7 @@ public class OrderCacheManager {
      *          * <b>过期返回 null</b><br>
      *          * 0: 今天暂无用户下单 | 已过期、重置为 0
      */
-    public int getOrderCount( String formatDate ){
+    public long getOrderCount( String formatDate ){
         validateFormatDate( formatDate );
         String redisKey = RedisConstant.OrderNumber.formatRedisKey( formatDate );
         Object object = redisTemplate.opsForValue().get( redisKey );
@@ -55,15 +55,25 @@ public class OrderCacheManager {
     }
 
     /**
-     * <b>指定日期的订单数量</b>自增 1
+     * <b>指定日期的订单数量</b>自增 1, 用于创建订单时获取订单数量
+     * <br>
+     * 未初始化，则自动设为 0，然后自增为 1
      *
      * @param formatDate 格式化日期字符串，见{@link com.sky.constant.OrderConstant.OrderNumber#DATE_PATTERN}
+     * @return 用户下单后的订单总数量
      */
-    public void increment( String formatDate ){
+    public long nextSequence( String formatDate ){
         validateFormatDate( formatDate );
         String redisKey = RedisConstant.OrderNumber.formatRedisKey( formatDate );
         Long afterIncrement = redisTemplate.opsForValue().increment( redisKey );
-//        return afterIncrement;
+        if ( afterIncrement == null ){
+            throw new IllegalStateException( "Redis 自增失败, RedisKey = " + redisKey );
+        }
+        // 初始化，null -> 0 -> 自增成 1，需要设置过期时间，其他时候就不需要设置，避免刷新过期时间(就一直在那里)
+        if ( afterIncrement == 1L ){
+            redisTemplate.expire( redisKey, RedisConstant.OrderNumber.CACHE_TTL );
+        }
+        return afterIncrement;
     }
 
     /**
@@ -72,11 +82,15 @@ public class OrderCacheManager {
      * @param formatDate 格式化日期字符串，见{@link com.sky.constant.OrderConstant.OrderNumber#DATE_PATTERN}
      * @param orderCount 订单数量，不能为空、负数
      */
-    public void setOrderCount( String formatDate, Integer orderCount ){
+    public void setOrderCount( String formatDate, Long orderCount ){
         validateFormatDate( formatDate );
         validateOrderCount( orderCount );
         String redisKey = RedisConstant.OrderNumber.formatRedisKey( formatDate );
-        redisTemplate.opsForValue().set( redisKey, orderCount, RedisConstant.OrderNumber.CACHE_TTL );
+        redisTemplate.opsForValue().set( redisKey, orderCount );
+        // 首次初始化为 0 时设置过期时间，其他时候不设置(会重置过期时间)
+        if ( OrderConstant.OrderNumber.ORDER_COUNT_ZERO.equals( orderCount ) ){
+            redisTemplate.expire( redisKey, RedisConstant.OrderNumber.CACHE_TTL );
+        }
     }
 
 
@@ -104,11 +118,11 @@ public class OrderCacheManager {
     /**
      * 检验订单数量
      */
-    private void validateOrderCount( Integer orderCount ){
+    private void validateOrderCount( Long orderCount ){
         if ( orderCount == null ){
             throw new IllegalParameterException( MessageConstant.ORDER_COUNT_IS_NULL );
         }
-        if ( orderCount < 0 ){
+        if ( orderCount < 0L ){
             throw new IllegalParameterException( MessageConstant.ORDER_COUNT_IS_NEGATIVE );
         }
     }

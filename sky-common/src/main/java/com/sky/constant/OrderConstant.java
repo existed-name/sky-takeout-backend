@@ -69,7 +69,7 @@ public class OrderConstant {
         public static final String DATE_PATTERN = "yyyyMMdd";
 
         /** 暂无用户下单，<b>订单数量 = 0</b> */
-        public static final Integer ORDER_COUNT_ZERO = 0;
+        public static final Long ORDER_COUNT_ZERO = 0L;
 
         private OrderNumber(){}
     }

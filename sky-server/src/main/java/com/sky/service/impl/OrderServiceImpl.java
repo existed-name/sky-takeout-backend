@@ -156,13 +156,15 @@ public class OrderServiceImpl implements OrderService {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern( OrderConstant.OrderNumber.DATE_PATTERN );
         String formatDate = now.format( dateTimeFormatter );
 
-        StringBuilder orderNumber = new StringBuilder();
-        orderNumber.append( OrderConstant.OrderNumber.BUSINESS_CODE )
-                .append( formatDate );
-
-        // 由于要凑齐位数，所以需要数已有订单数有多少位; 选用缓存持久化订单数
-        Integer orderCount = ( Integer ) orderCacheManager.getOrderCount( formatDate );
-        int temp = orderCount, digitCount = 0;
+        /*
+            * 由于要凑齐位数，需要数已有订单数有多少位
+            * 选用缓存持久化订单数
+            * 并且已有订单数应该包含该次的创建订单，也就是在原基础上 + 1
+            * 所以用 increment 自增 + 利用返回值
+         */
+        long orderCount = orderCacheManager.nextSequence( formatDate );
+        long temp = orderCount;
+        int digitCount = 0;
         while ( temp > 0 ){
             temp /= 10;
             ++digitCount;
@@ -170,17 +172,19 @@ public class OrderServiceImpl implements OrderService {
 
         int requiredDigitCount = OrderConstant.OrderNumber.SERIAL_NUMBER_DIGIT_COUNT;
         // TODO: 不过这里有隐藏问题，如果超过需要的位数，会直接拼接，导致序列号多出几位(但只是格式不整齐，不影响功能)
+        String extraSequnceString = "";
         if ( digitCount < requiredDigitCount ){
-            orderNumber.append( // 编译器提示把 for 循环改成 String.repeat
-                    "0".repeat( Math.max(
-                            0, requiredDigitCount - digitCount )
-                    )
+            // 编译器提示把 for 循环改成 String.repeat
+            extraSequnceString = "0".repeat(
+                    Math.max( 0, requiredDigitCount - digitCount )
             );
         }
-        // 新增 1 单，所以 orderCount 订单数量 + 1
-        orderNumber.append( ++orderCount );
-        orderCacheManager.increment( formatDate );
 
+        StringBuilder orderNumber = new StringBuilder();
+        orderNumber.append( OrderConstant.OrderNumber.BUSINESS_CODE )
+                .append( formatDate )
+                .append( extraSequnceString )
+                .append( orderCount );
         return orderNumber.toString();
     }
 
