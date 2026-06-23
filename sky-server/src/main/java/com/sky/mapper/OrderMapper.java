@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface OrderMapper {
@@ -18,4 +19,40 @@ public interface OrderMapper {
             """ )
     @Options( useGeneratedKeys = true, keyProperty = "id" )
     int insert( @Param( "order" ) Orders order );
+
+
+
+    /**
+     * 根据 id、userId 修改订单信息, 修改前会对传入对象的字段判空
+     * <br>
+     * 不会修改:
+     *      <pre>
+     *      - 标识符: number, user_id, user_name
+     *      - 部分审计字段: order_time
+     *      - 支付信息: amount, pay_method, pack_amount
+     *      - 收货地址(虽然说快递可以改,外卖以后也可以支持换地址): address_book_id, phone, address, consignee
+     *      - 用户备注:
+     *        * remark
+     *        * 餐具 tableware_number, tableware_status
+     *        * 送达时间 estimated_delivery_time, delivery_status
+     *      </pre>
+     * @return 修改行数: <br>
+     *          * 0 => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 1 => 正常
+     */
+    int updateByIdAndUserId( @Param( "order" ) Orders order );
+
+    /**
+     * 判断该 id 对应的数据是否存在
+     *
+     * @return 统计数据<br>
+     *          * 0 => <b>该 id 对应的数据不存在</b><br>
+     *          * 1 => 存在
+     */
+    @Select( """
+            SELECT count( * )
+            FROM orders
+            WHERE id = #{id}
+            """ )
+    int countById( @Param( "id" ) Long id );
 }

@@ -1,6 +1,7 @@
 package com.sky.controller.user;
 
 import com.sky.context.BaseContext;
+import com.sky.dto.order.OrdersPaymentDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
@@ -64,6 +65,60 @@ public class OrderController {
         OrderSubmitVO orderSubmitVO = orderService.createWithUserId( userId, ordersSubmitDTO );
         return Result.success( orderSubmitVO );
     }
+
+    /**
+     * 支付订单，返回 prepay_id 给前端，前端调微信 API，微信收到后再推送消息给后端
+     *
+     * <pre>
+     *   点击结账 → 后端生成订单
+     *     ↓
+     *   点击支付 → 调用微信支付API → 拿到 prepay_id（预支付交易会话标识）
+     *     ↓
+     *   后端把支付参数返回给前端
+     *     ↓
+     *   前端调起微信支付SDK（弹出微信收银台）
+     *     ↓
+     *   用户在微信里完成支付
+     *     ↓
+     *   微信服务器 → 异步通知后端（支付结果） ← 这里需要内网穿透，暴露到公网(比如 cploar 工具)
+     *     ↓
+     *   后端更新订单状态
+     * </pre>
+     *
+     */
+    @ApiOperation( "支付订单" )
+    @PostMapping( "/pay/{id}" )
+    public Result< OrderPaymentVO > pay(
+            @PathVariable( name = "id" )
+            @NotNull( message = "订单 id 不能为空" )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "userId = {} 的用户正在支付 id = {} 的订单", userId, id );
+        OrderPaymentVO orderPaymentVO = orderService.payWithIdAndUserId( id, userId );
+        return Result.success( orderPaymentVO );
+    }
+
+    /**
+     * 支付回调通知: 前端调用第三方 API 完成支付，第三方通知后端
+     * <br>
+     * 本来该专门放到 PayNotifyController，然后暴露到公网上，但是这里简化
+     */
+    @ApiOperation( "支付回调通知" )
+    @PostMapping( "/pay/success/{id}" )
+    public Result< Void > paySuccess(
+            @PathVariable( name = "id" )
+            @NotNull( message = "订单 id 不能为空" )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "userId = {} 的用户成功支付 id = {} 的订单", userId, id );
+        orderService.paySuccessfullyWithIdAndUserId( id, userId );
+        return Result.success(  );
+    }
+
 
 
     // ==================== 私有辅助方法 ====================

@@ -62,4 +62,5 @@ public class MessageConstant {
     public static final String DATE_FORMAT_PARSE_ERROR = "格式化日期字符串解析失败，可能是格式不满足要求";
     public static final String ORDER_COUNT_IS_NULL = "订单数量不能为空";
     public static final String ORDER_COUNT_IS_NEGATIVE = "订单数量不能为负数";
+    public static final String ORDER_USER_NOT_MATCH = "该订单不属于当前用户";
 }

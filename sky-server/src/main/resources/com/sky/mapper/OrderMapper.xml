@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.mapper.OrderMapper">
+
+    <update id="updateByIdAndUserId">
+        <!--
+        从所有的字段
+            number, status, user_id, address_book_id, order_time, checkout_time,
+            pay_method, pay_status, amount, remark, phone, address, user_name,
+            consignee, cancel_reason, rejection_reason, cancel_time,
+            estimated_delivery_time, delivery_status, delivery_time, pack_amount,
+            tableware_number, tableware_status
+
+        挑选出
+            status, checkout_time, pay_status, cancel_reason,
+            rejection_reason, cancel_time, delivery_time
+        -->
+        UPDATE orders
+        <set>
+            <if test="order.cancelReason != null and order.cancelReason.trim() !='' ">
+                cancel_reason = #{order.cancelReason},
+            </if>
+            <if test="order.rejectionReason != null and order.rejectionReason.trim() !='' ">
+                rejection_reason = #{order.rejectionReason},
+            </if>
+            <if test="order.cancelTime != null">
+                cancel_time = #{order.cancelTime},
+            </if>
+            <if test="order.payStatus != null">
+                pay_status = #{order.payStatus},
+            </if>
+            <if test="order.payMethod != null">
+                pay_method = #{order.payMethod},
+            </if>
+            <if test="order.checkoutTime != null">
+                checkout_time = #{order.checkoutTime},
+            </if>
+            <if test="order.status != null">
+                status = #{order.status},
+            </if>
+            <if test="order.deliveryTime != null">
+                delivery_time = #{order.deliveryTime}
+            </if>
+        </set>
+        WHERE id = #{order.id} AND user_id = #{order.userId}
+    </update>
+
+</mapper>

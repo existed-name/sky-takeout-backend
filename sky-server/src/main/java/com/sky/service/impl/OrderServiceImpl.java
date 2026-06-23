@@ -9,6 +9,7 @@ import com.sky.entity.Orders;
 import com.sky.entity.User;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.order.OrderUserNotMatchException;
 import com.sky.exception.shoppingCart.EmptyShoppingCartException;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.OrderDetailMapper;
@@ -19,8 +20,10 @@ import com.sky.service.OrderService;
 import com.sky.utils.OrderCacheManager;
 import com.sky.vo.AddressBookVO;
 import com.sky.vo.ShoppingCartItemVO;
+import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -58,6 +61,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     // ==================== 公有方法 ====================
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public OrderSubmitVO createWithUserId( Long userId, OrdersSubmitDTO ordersSubmitDTO ){
         /*
@@ -142,6 +146,40 @@ public class OrderServiceImpl implements OrderService {
         return orderConvertor.toVO( entity );
     }
 
+//    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public OrderPaymentVO payWithIdAndUserId( Long id, Long userId ){
+        /*
+            * 用户点击支付 → 后端调微信支付 API → 后端拿到预支付标识 prepay_id 等等参数
+              → 拿给前端 → 前端调微信 JSAPI 确认支付 → 后端把某个路径暴露到公网 → 收到微信通知
+            * 本来想模拟支付参数传给前端，前端收到参数，然后模拟一个确认支付界面，再通知后端
+            * 但是不知道该传什么参数(OrderPaymentVO 是教程自带的),就略过，直接前端调该接口 → 确认支付 → 通知后端
+         */
+        return new OrderPaymentVO();
+    }
+
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void paySuccessfullyWithIdAndUserId( Long id, Long userId ){
+        // 支付成功 → 修改订单信息(status,payStatus,checkoutTime) → 删除该用户所有购物车数据
+        Orders build = Orders.builder()
+                .id( id )
+                .userId( userId )
+                .status( OrderConstant.Status.TO_BE_CONFIRMED )
+                .payStatus( OrderConstant.PayStatus.PAID )
+                .checkoutTime( LocalDateTime.now() )
+                .build();
+        int row = orderMapper.updateByIdAndUserId( build );
+        // id, userId 定位 → 修改行数为 0 → 数据不存在 | 数据不属于该用户
+        if ( row == 0 ){
+            if ( orderMapper.countById( id ) == 0 ){
+                throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
+            }
+            throw new OrderUserNotMatchException( MessageConstant.ORDER_USER_NOT_MATCH );
+        }
+
+        shoppingCartMapper.deleteByUserId( userId );
+    }
 
 
     // ==================== 私有辅助方法 ====================
