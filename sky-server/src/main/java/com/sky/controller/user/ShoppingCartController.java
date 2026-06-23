@@ -7,6 +7,7 @@ import com.sky.vo.ShoppingCartVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,7 @@ import javax.validation.constraints.Positive;
 /**
  * 用户端购物车管理接口
  */
+@Validated
 @Slf4j
 @Api( tags = "用户端购物车管理接口" )
 // 不过 admin 并没有购物车接口，所以这里也可以不用指定 Bean Name
@@ -54,7 +56,10 @@ public class ShoppingCartController {
      */
     @ApiOperation( "购物车添加菜品/套餐" )
     @PostMapping( "/add" )
-    public Result< Void > add( @RequestBody ShoppingCartDTO shoppingCartDTO ){
+    public Result< Void > add(
+            @RequestBody
+            @NotNull( message = "购物车添加数据不能为空" )
+            ShoppingCartDTO shoppingCartDTO ){
         // 由于 DTO 的菜品/套餐是选一个，而又不晓得用户会选哪个，所以不好用注解进行参数检验
         log.info( "用户购物车添加菜品/套餐: {}", shoppingCartDTO );
         shoppingCartService.add( shoppingCartDTO );

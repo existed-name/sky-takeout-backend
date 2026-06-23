@@ -31,7 +31,7 @@ public class ShoppingCartVO {
 
     /** 购物车总金额 */
     @ApiModelProperty(value = "购物车总金额", example = "128.50")
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
 
     // ==================== 构造器 ====================

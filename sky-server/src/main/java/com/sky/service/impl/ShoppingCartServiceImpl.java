@@ -160,6 +160,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
          */
         Long userId = BaseContext.getCurrentId();
         List< ShoppingCartItemVO > shoppingCartItemVOList = shoppingCartMapper.selectItemVOListByUserId( userId );
+        if ( shoppingCartItemVOList == null || shoppingCartItemVOList.isEmpty() ){
+            // new ShoppingCartVo 时就初始化了属性，这里判空就可以直接返回对象
+            return new ShoppingCartVO();
+        }
         BigDecimal totalAmount = calculateTotalAmount( shoppingCartItemVOList );
         return ShoppingCartVO.builder()
                 .shoppingCartItemVOList( shoppingCartItemVOList )
@@ -212,7 +216,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         BigDecimal totalAmount = BigDecimal.ZERO;
         for ( ShoppingCartItemVO itemVO : shoppingCartItemVOList ){
             totalAmount = totalAmount.add(
-                    itemVO.getPrice().multiply(
+                    itemVO.getAmount().multiply(
                             BigDecimal.valueOf( itemVO.getNumber() )
                     )
             );

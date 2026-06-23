@@ -56,7 +56,7 @@ public class ShoppingCartItemVO {
 
     /** 套餐/菜品单价 */
     @ApiModelProperty(value = "套餐/菜品单价", example = "88.00")
-    private BigDecimal price;
+    private BigDecimal amount;
 
     /** 菜品口味(展示菜品会用) */
     @ApiModelProperty(value = "菜品口味", example = "微辣")
