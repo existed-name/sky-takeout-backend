@@ -55,4 +55,19 @@ public interface OrderMapper {
             WHERE id = #{id}
             """ )
     int countById( @Param( "id" ) Long id );
+
+    /**
+     * 判断该订单是否为特定的支付状态(比如已支付)
+     *
+     * @param payStatus 支付状态,{@link com.sky.constant.OrderConstant.PayStatus}
+     * @return 统计数据<br>
+     *          * 0 => <b>该订单支付状态 ≠ 指定的支付状态</b>(比如不是已支付)<br>
+     *          * 1 => 该订单支付状态 = 指定的支付状态(比如已支付)
+     */
+    @Select( """
+            SELECT count( * )
+            FROM orders
+            WHERE id = #{id} AND pay_status = #{payStatus}
+            """ )
+    long countByIdAndPayStatus( @Param( "id" ) Long id, @Param( "payStatus" ) Integer payStatus );
 }

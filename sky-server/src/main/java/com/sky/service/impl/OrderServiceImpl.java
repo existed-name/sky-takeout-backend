@@ -161,6 +161,12 @@ public class OrderServiceImpl implements OrderService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void paySuccessfullyWithIdAndUserId( Long id, Long userId ){
+        // AI 提醒: 避免重复修改，已经支付的就不需要修改了
+        // 检查 payStatus、status, TODO: 这里只看是不是已支付，可能还需要补充额外判断
+        if ( orderMapper.countByIdAndPayStatus( id, OrderConstant.PayStatus.PAID ) == 1L ){
+            return;
+        }
+
         // 支付成功 → 修改订单信息(status,payStatus,checkoutTime) → 删除该用户所有购物车数据
         Orders build = Orders.builder()
                 .id( id )
