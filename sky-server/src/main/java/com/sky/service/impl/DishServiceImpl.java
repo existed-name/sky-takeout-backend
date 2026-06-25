@@ -89,7 +89,7 @@ public class DishServiceImpl implements DishService {
     @Transactional( readOnly = true )
     @Override
     public PageResult pageQuery( DishPageQueryDTO dishPageQueryDTO ){
-        PageUtil.validateParameterAndStartPage( dishPageQueryDTO.getPage(), dishPageQueryDTO.getPageSize() );
+        PageUtil.validateParamsAndStartPage( dishPageQueryDTO.getPage(), dishPageQueryDTO.getPageSize() );
 
         /*
          * 思路 1 改进: 分 2 次查询 Dish + CategoryName、DishFlavorList，然后拼装 DishVO

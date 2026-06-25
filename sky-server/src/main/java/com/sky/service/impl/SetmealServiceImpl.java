@@ -93,7 +93,7 @@ public class SetmealServiceImpl implements SetmealService {
     @Transactional( readOnly = true )
     @Override
     public PageResult page( SetmealPageQueryDTO setmealPageQueryDTO ){
-        PageUtil.validateParameterAndStartPage( setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize() );
+        PageUtil.validateParamsAndStartPage( setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize() );
         // SetmealVO = Setmeal + CategoryName + 关联关系 SetmealDish
         // 先联表查 Setmeal + CategoryName
         List< SetmealVO > setmealVOList = // null; 测试

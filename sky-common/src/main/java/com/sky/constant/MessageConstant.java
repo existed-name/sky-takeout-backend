@@ -63,4 +63,5 @@ public class MessageConstant {
     public static final String ORDER_COUNT_IS_NULL = "订单数量不能为空";
     public static final String ORDER_COUNT_IS_NEGATIVE = "订单数量不能为负数";
     public static final String ORDER_USER_NOT_MATCH = "该订单不属于当前用户";
+    public static final String INVALID_ORDER_STATUS = "查询的订单状态无效";
 }

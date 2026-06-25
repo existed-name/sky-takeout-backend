@@ -1,14 +1,17 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
 import com.sky.convertor.OrderConvertor;
 import com.sky.dto.order.OrdersSubmitDTO;
+import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.User;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.order.InvalidOrderStatusException;
 import com.sky.exception.order.OrderUserNotMatchException;
 import com.sky.exception.shoppingCart.EmptyShoppingCartException;
 import com.sky.mapper.AddressBookMapper;
@@ -16,19 +19,27 @@ import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.mapper.UserMapper;
+import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.OrderCacheManager;
+import com.sky.utils.PageUtil;
 import com.sky.vo.AddressBookVO;
 import com.sky.vo.ShoppingCartItemVO;
+import com.sky.vo.order.OrderHistoryItemVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
     // ==================== 常量 ====================
@@ -185,6 +196,57 @@ public class OrderServiceImpl implements OrderService {
         }
 
         shoppingCartMapper.deleteByUserId( userId );
+    }
+
+    @Override
+    public PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO ){
+        // TODO: 如果用户端查询条件拓展，这里可能还要补充参数检验、提取检验方法
+        if ( ! OrderConstant.Status.isValidStatus( userOrderPageQueryDTO.getStatus() ) ){
+            throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
+        }
+
+        // 只对 1 次 SQL 查询有效
+        PageUtil.validateParamsAndStartPage(
+                userOrderPageQueryDTO.getPage(), userOrderPageQueryDTO.getPageSize()
+        );
+        // TODO: MyBatis 返回列表理论上不会 null, 但可以补充判空，难点在处理 Page.total
+        List< OrderHistoryItemVO > orderHistoryItemVOList = orderMapper.selectByUserIdAndQuery( userId, userOrderPageQueryDTO );
+
+        // 转 Page 是为了拿到 total 数据库里面总共的数据条数
+        Page< OrderHistoryItemVO > orderHistoryItemVOPage = ( Page< OrderHistoryItemVO > ) orderHistoryItemVOList;
+        long total = orderHistoryItemVOPage.getTotal();
+
+        // 目标订单不存在
+        if ( orderHistoryItemVOList.isEmpty() ){
+            // 不可能是 user 不存在的情况, 因为用户成功登录 + ThreadLocal 拿到 userId
+            return PageUtil.buildPageResult( total, orderHistoryItemVOList );
+        }
+
+        List< Long > ids = orderHistoryItemVOList.stream().map( OrderHistoryItemVO::getId ).toList();
+        List< OrderDetail > allOrderDetails = orderDetailMapper.selectByOrderIds( ids );
+        if ( allOrderDetails == null || allOrderDetails.isEmpty() ){
+            // 理论上说，订单必须有东西才可以下单放到数据库，所以 orderDetail 为空
+            // 说明 orderDetail 的逻辑外键设置错 | 之前下了空订单 | 由于 id 是从查出的对象拿到的，id 一定是有效的
+            // 但是为了不影响用户体验，不该抛异常，只再后台记录日志
+            log.error( "ids = {} 的订单列表，对应的 orderDetail 为空, 可能是之前下了空订单，或者 orderDetail 的逻辑外键设置错",
+                    ids ); // lombok 重写 toString
+            return PageUtil.buildPageResult( total, orderHistoryItemVOList );
+        }
+
+        // 分组、组装
+        Map< Long, List< OrderDetail > > orderIdToDetailsMap = allOrderDetails.stream().collect( Collectors.groupingBy( OrderDetail::getOrderId ) );
+        for ( OrderHistoryItemVO vo : orderHistoryItemVOList ){
+            Long id = vo.getId();
+            // 每个订单的 orderDetailList 不应该为空, 为空则手动 new 链表、记录日志
+            List< OrderDetail > orderDetailList = orderIdToDetailsMap.getOrDefault( id, new ArrayList<>() );
+            if ( orderDetailList.isEmpty() ){
+                log.error( "id = {} 的订单，对应的 orderDetail 为空, 可能是之前下了空订单，或者 orderDetail 的逻辑外键设置错", id );
+            }
+            vo.setOrderDetailList( orderDetailList );
+        }
+
+        // 我自定义的 VO 之前想设置 totalNumber 每个订单的商品总数，但有点多余，就封装方法直接拿列表长度了
+        return PageUtil.buildPageResult( total, orderHistoryItemVOList );
     }
 
 

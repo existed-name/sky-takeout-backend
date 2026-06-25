@@ -28,11 +28,13 @@ public class PageUtil {
 
     /**
      * 检验分页参数并开启 PageHelper
+     * <br>
+     * <b>注意只对第 1 次 SQL 查询有效</b>
      *
      * @param page 页码 - 从第 page 页开始
      * @param pageSize 需要查询的页数
      */
-    public static void validateParameterAndStartPage( Integer page, Integer pageSize ){
+    public static void validateParamsAndStartPage( Integer page, Integer pageSize ){
         page = ( page == null || page < 1 ) ? PageConstant.DEFAULT_PAGE : page;
         pageSize = ( pageSize == null || pageSize < 1 ) ? PageConstant.DEFAULT_PAGE_SIZE : pageSize;
         PageHelper.startPage( page, pageSize );

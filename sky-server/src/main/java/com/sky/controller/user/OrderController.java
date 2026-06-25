@@ -1,8 +1,9 @@
 package com.sky.controller.user;
 
 import com.sky.context.BaseContext;
-import com.sky.dto.order.OrdersPaymentDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
+import com.sky.dto.order.UserOrderPageQueryDTO;
+import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.order.OrderPaymentVO;
@@ -11,13 +12,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
@@ -119,6 +120,18 @@ public class OrderController {
         return Result.success(  );
     }
 
+    /**
+     * 分页查询指定状态的历史订单
+     */
+    @ApiOperation( "分页查询指定状态的历史订单" )
+    @GetMapping( "/historyOrders" )
+    public Result< PageResult > pageQuery( // ?page=x&pageSize=y&status=
+               @Validated UserOrderPageQueryDTO userOrderPageQueryDTO ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "userId = {} 的用户查询历史订单，查询参数: {}", userId, userOrderPageQueryDTO );
+        PageResult pageResult = orderService.pageByUserIdAndQuery( userId, userOrderPageQueryDTO );
+        return Result.success( pageResult );
+    }
 
 
     // ==================== 私有辅助方法 ====================

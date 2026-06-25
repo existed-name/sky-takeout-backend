@@ -1,11 +1,10 @@
 package com.sky.service;
 
 import com.sky.dto.order.OrdersSubmitDTO;
+import com.sky.dto.order.UserOrderPageQueryDTO;
+import com.sky.result.PageResult;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 
 public interface OrderService {
     /**
@@ -22,7 +21,6 @@ public interface OrderService {
      *
      * @param userId 用户 id
      * @param id 订单 id
-     * @return
      */
     OrderPaymentVO payWithIdAndUserId( Long id, Long userId );
 
@@ -30,4 +28,11 @@ public interface OrderService {
      * 支付成功，修改订单信息、删除购物车数据
      */
     void paySuccessfullyWithIdAndUserId( Long id, Long userId );
+
+    /**
+     * 用户端-分页查询指定状态的历史订单
+     *
+     * @return 分页查询结果
+     */
+    PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO );
 }

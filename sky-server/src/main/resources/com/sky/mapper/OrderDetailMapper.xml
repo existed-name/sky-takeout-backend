@@ -16,4 +16,16 @@
             </foreach>
     </insert>
 
+    <!--
+    查询多个订单的关联数据
+    -->
+    <select id="selectByOrderIds" resultType="com.sky.entity.OrderDetail">
+        SELECT id, name, image, order_id, dish_id, setmeal_id, dish_flavor, number, amount
+        FROM order_detail
+        WHERE id IN
+                <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                    id
+                </foreach>
+    </select>
+
 </mapper>

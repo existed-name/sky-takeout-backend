@@ -1,11 +1,15 @@
 package com.sky.mapper;
 
+import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.vo.order.OrderHistoryItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 @Mapper
 public interface OrderMapper {
@@ -70,4 +74,17 @@ public interface OrderMapper {
             WHERE id = #{id} AND pay_status = #{payStatus}
             """ )
     long countByIdAndPayStatus( @Param( "id" ) Long id, @Param( "payStatus" ) Integer payStatus );
+
+    /**
+     * 条件查询该用户的历史订单 VO, 分页操作由{@link com.sky.utils.PageUtil}完成
+     * <br>
+     * TODO: 修改查询参数后，SQL 也需要修改
+     */
+    @Select( """
+            SELECT id, status, order_time, amount
+            FROM orders
+            WHERE user_id = #{userId}
+                AND status = #{query.status}
+            """ )
+    List< OrderHistoryItemVO > selectByUserIdAndQuery( @Param( "userId" ) Long userId, @Param( "query" ) UserOrderPageQueryDTO userOrderPageQueryDTO );
 }
