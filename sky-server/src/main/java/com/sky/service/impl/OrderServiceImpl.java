@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -198,6 +199,7 @@ public class OrderServiceImpl implements OrderService {
         shoppingCartMapper.deleteByUserId( userId );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO ){
         // TODO: 如果用户端查询条件拓展，这里可能还要补充参数检验、提取检验方法
@@ -238,7 +240,9 @@ public class OrderServiceImpl implements OrderService {
         for ( OrderHistoryItemVO vo : orderHistoryItemVOList ){
             Long id = vo.getId();
             // 每个订单的 orderDetailList 不应该为空, 为空则手动 new 链表、记录日志
-            List< OrderDetail > orderDetailList = orderIdToDetailsMap.getOrDefault( id, new ArrayList<>() );
+            List< OrderDetail > orderDetailList = orderIdToDetailsMap.getOrDefault( id,
+                    Collections.emptyList() // 更省内存（返回不可变单例，不需要创建新对象）
+            );
             if ( orderDetailList.isEmpty() ){
                 log.error( "id = {} 的订单，对应的 orderDetail 为空, 可能是之前下了空订单，或者 orderDetail 的逻辑外键设置错", id );
             }
