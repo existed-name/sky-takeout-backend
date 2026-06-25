@@ -22,9 +22,9 @@
     <select id="selectByOrderIds" resultType="com.sky.entity.OrderDetail">
         SELECT id, name, image, order_id, dish_id, setmeal_id, dish_flavor, number, amount
         FROM order_detail
-        WHERE id IN
-                <foreach collection="ids" item="id" open="(" close=")" separator=",">
-                    id
+        WHERE order_id IN
+                <foreach collection="orderIds" item="orderId" open="(" close=")" separator=",">
+                    #{orderId}
                 </foreach>
     </select>
 

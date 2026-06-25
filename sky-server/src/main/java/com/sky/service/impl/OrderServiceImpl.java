@@ -201,7 +201,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO ){
         // TODO: 如果用户端查询条件拓展，这里可能还要补充参数检验、提取检验方法
-        if ( ! OrderConstant.Status.isValidStatus( userOrderPageQueryDTO.getStatus() ) ){
+        if ( userOrderPageQueryDTO.hasStatus() && ! OrderConstant.Status.isValidStatus( userOrderPageQueryDTO.getStatus() ) ){
             throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
         }
 

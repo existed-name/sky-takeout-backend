@@ -18,5 +18,5 @@ public interface OrderDetailMapper {
     /**
      * 查询多个订单的关联数据
      */
-    List< OrderDetail > selectByOrderIds( @Param( "ids" ) List< Long > ids );
+    List< OrderDetail > selectByOrderIds( @Param( "orderIds" ) List< Long > orderIds );
 }

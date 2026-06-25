@@ -43,6 +43,16 @@ public class UserOrderPageQueryDTO {
 
     // ==================== 公有方法 ====================
 
+    /**
+     * 判断{@link #status}是否存在(不为 null)
+     *
+     * @return true, 存在 => <b>需要检查是否为有效状态</b>, 作为查询条件<br>
+     *          false, 不存在 => <b>无需检查是否为有效状态</b>, 不会作为查询条件
+     */
+    public boolean hasStatus(){
+        return status != null;
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
