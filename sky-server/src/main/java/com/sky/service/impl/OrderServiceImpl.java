@@ -246,6 +246,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 我自定义的 VO 之前想设置 totalNumber 每个订单的商品总数，但有点多余，就封装方法直接拿列表长度了
+        // TODO: 当前是前端调 VO 自带方法计算 totalNumber，后续看情况修改为字段 + 业务类设置字段
         return PageUtil.buildPageResult( total, orderHistoryItemVOList );
     }
 

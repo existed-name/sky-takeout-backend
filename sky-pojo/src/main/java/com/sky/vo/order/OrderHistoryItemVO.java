@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 查询历史订单，展示的<b>单个订单</b>信息(根据原型选择性展示字段)
@@ -66,14 +67,14 @@ public class OrderHistoryItemVO {
      * @return 单个订单包含的商品总数量
      */
     public Integer getTotalNumber() {
+        // 理论上 orderDetailList 不会为空
         if ( orderDetailList == null || orderDetailList.isEmpty() ){
             return 0;
         }
-        int totalNumber = 0;
-        for ( OrderDetail orderDetail : orderDetailList ){
-            totalNumber += orderDetail.getNumber();
-        }
-        return totalNumber;
+        // sum / average 数值计算只能用于元素类型是基本数据类型的 stream
+        return orderDetailList.stream()
+                .mapToInt( OrderDetail::getNumber )
+                .sum();
     }
 
 
