@@ -12,14 +12,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 用户端订单详情展示对象，用于查询特定订单时展示所有信息
+ * 用户端订单详情展示对象，用于查询特定订单时展示所有信息, 注意<b>修改该对象字段需要同步修改 OrderMapper 查询字段</b>
  * <p>
  * 教程设计是所有查询订单都用 OrderVO，会有很多无用字段，所以我单独拿出来<code>根据 id 查询订单</code>
  * </p>
+ * <p>
  * 本来想把地址信息的几个字段包成 OrderAddressBookVO, 然后发现如果替换，
  * 那数据库查 orders 的字段就不能直接赋给嵌套 VO，就需要再单独查,
  * 所以要么 VO 一堆字段，要么嵌套 VO + 多开几个数据库表
- *
+ * </p>
  * @CreateTime 2026/6/25 20:24
  */
 @Data
@@ -57,6 +58,10 @@ public class OrderInfoVO {
     /** 支付方式：1 微信  2 支付宝 */
     @ApiModelProperty( value = "支付方式：1 微信 2 支付宝", example = "1" )
     private Integer payMethod;
+
+    /** 支付状态：0 未支付  1 已支付  2 退款 */
+    @ApiModelProperty( value = "支付状态：0 未支付 1 已支付 2 退款", example = "1" )
+    private Integer payStatus;
 
     /** 实收金额 */
     @ApiModelProperty( value = "实收金额", example = "99.99" )
@@ -116,10 +121,6 @@ public class OrderInfoVO {
 //    /** 结账时间 */
 //    @ApiModelProperty( value = "结账时间", example = "2024-01-01 12:05:00" )
 //    private LocalDateTime checkoutTime;2
-//
-//    /** 支付状态：0 未支付  1 已支付  2 退款 */
-//    @ApiModelProperty( value = "支付状态：0 未支付 1 已支付 2 退款", example = "1" )
-//    private Integer payStatus;3
 //
 //    /** 用户名 */
 //    @ApiModelProperty( value = "用户名", example = "张三" )

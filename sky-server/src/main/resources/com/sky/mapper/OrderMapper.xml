@@ -5,18 +5,21 @@
 <mapper namespace="com.sky.mapper.OrderMapper">
 
     <!--
+    所有字段，可复用到查完整 order 对象
+    -->
+    <sql id="BaseColumns">
+        id, number, status, user_id, address_book_id, order_time, checkout_time,
+        pay_method, pay_status, amount, remark, user_name, phone, address, consignee,
+        cancel_reason, rejection_reason, cancel_time, estimated_delivery_time,
+        delivery_status, delivery_time, pack_amount, tableware_number, tableware_status
+    </sql>
+
+    <!--
     根据 id、userId 修改订单信息, 修改前会对传入对象的字段判空
     -->
     <update id="updateByIdAndUserId">
         <!--
-        从所有的字段
-            number, status, user_id, address_book_id, order_time, checkout_time,
-            pay_method, pay_status, amount, remark, phone, address, user_name,
-            consignee, cancel_reason, rejection_reason, cancel_time,
-            estimated_delivery_time, delivery_status, delivery_time, pack_amount,
-            tableware_number, tableware_status
-
-        挑选出
+        从所有的字段挑选出
             status, checkout_time, pay_status, cancel_reason,
             rejection_reason, cancel_time, delivery_time
         -->
