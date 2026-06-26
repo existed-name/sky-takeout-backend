@@ -35,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -156,7 +155,7 @@ public class OrderServiceImpl implements OrderService {
          */
 
         // 转 VO
-        return orderConvertor.toVO( entity );
+        return orderConvertor.toSubmitVO( entity );
     }
 
 //    @Transactional( rollbackFor = Exception.class )
@@ -256,11 +255,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderInfoVO getByIdAndUserId( Long id, Long userId ){
         // orderInfoVO = order 部分字段 + orderDetailList, 1 + 1 查询
-        OrderInfoVO orderInfoVO = orderMapper.selectInfoVOByIdAndUserId( id, userId );
-        if ( orderInfoVO == null ){
+        Orders order = orderMapper.selectByIdAndUserId( id, userId );
+        if ( order == null ){
             throwIfNotExistsOrNotMatches( id );
         }
 
+        OrderInfoVO orderInfoVO = orderConvertor.toInfoVO( order );
         List< OrderDetail > orderDetailList = orderDetailMapper.selectByOrderId( id );
         // 这里不会空指针，因为前面判空时已经抛了异常
         orderInfoVO.setOrderDetailList( orderDetailList );

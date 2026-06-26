@@ -139,10 +139,6 @@ public class OrderInfoVO {
 //    private LocalDateTime cancelTime;7
 
 
-
-
-
-
     // ==================== 构造器 ====================
 
 

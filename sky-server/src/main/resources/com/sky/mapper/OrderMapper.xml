@@ -69,4 +69,13 @@
         ORDER BY order_time DESC, id DESC
     </select>
 
+    <!--
+    查询完整订单实体类
+    -->
+    <select id="selectByIdAndUserId" resultType="com.sky.entity.Orders">
+        SELECT <include refid="BaseColumns" />
+        FROM orders
+        WHERE id = #{id} AND user_id = #{userId}
+    </select>
+
 </mapper>
