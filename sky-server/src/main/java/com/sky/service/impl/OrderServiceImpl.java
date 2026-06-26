@@ -286,7 +286,7 @@ public class OrderServiceImpl implements OrderService {
         if ( OrderConstant.Status.PENDING_PAYMENT.equals( status ) ||
                 OrderConstant.Status.TO_BE_CONFIRMED.equals( status ) ){
             String cancelReason = orderCancelDTO.getCancelReason();
-            // 取消 => 修改订单状态、支付状态(但是还没退款,交给管理端修改)、取消原因(可选)、取消时间
+            // 取消 => 修改订单状态、支付状态(如果付款则退款)、取消原因(可选)、取消时间
             Orders build = Orders.builder()
                     .id( id )
                     .status( OrderConstant.Status.CANCELLED )
@@ -295,6 +295,14 @@ public class OrderServiceImpl implements OrderService {
                     .cancelReason( cancelReason )
                     .cancelTime( LocalDateTime.now() )
                     .build();
+
+            // 待接单 => 已付款 => 取消订单后退款
+            if ( OrderConstant.Status.TO_BE_CONFIRMED.equals( status ) ){
+                // 由于并没有写商户支付功能，让前端模拟一个退款
+                // TODO: 调微信支付接口退款
+                build.setPayStatus( OrderConstant.PayStatus.REFUND );
+            }
+
             // 由于最开始查询订单状态时已经判断了数据不存在/不匹配，所以这里不需要再判断
             orderMapper.updateByIdAndUserId( build );
             // 修改完成就结束了
