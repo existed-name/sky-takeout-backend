@@ -3,6 +3,7 @@ package com.sky.mapper;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Orders;
 import com.sky.vo.order.OrderHistoryItemVO;
+import com.sky.vo.order.OrderInfoVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -83,4 +84,19 @@ public interface OrderMapper {
      * TODO: 修改查询参数后，SQL 也需要修改
      */
     List< OrderHistoryItemVO > selectByUserIdAndQuery( @Param( "userId" ) Long userId, @Param( "query" ) UserOrderPageQueryDTO userOrderPageQueryDTO );
+
+    /**
+     * 用户端-查询订单详情
+     * <br>
+     * 排序规则: 单个对象无需排序
+     *
+     * @return order 的部分字段，<b>orderDetailList 需要调用方单独查询组装</b><br>
+     *          如果返回 null => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况)
+     */
+    @Select( """
+            SELECT id, number, status, address_book_id, order_time, checkout_time, pay_method, amount, remark, phone, address, consignee, estimated_delivery_time, delivery_status, delivery_time, pack_amount, tableware_number, tableware_status
+            FROM orders
+            WHERE id = #{id} AND user_id = #{userId}
+            """ )
+    OrderInfoVO selectInfoVOByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 }

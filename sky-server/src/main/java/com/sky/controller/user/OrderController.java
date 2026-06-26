@@ -6,8 +6,10 @@ import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
+import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
+import com.sky.vo.order.OrderVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -131,6 +133,23 @@ public class OrderController {
         log.info( "userId = {} 的用户查询历史订单，查询参数: {}", userId, userOrderPageQueryDTO );
         PageResult pageResult = orderService.pageByUserIdAndQuery( userId, userOrderPageQueryDTO );
         return Result.success( pageResult );
+    }
+
+    /**
+     * 查询订单详情
+     */
+    @ApiOperation( "查询订单详情" )
+    @GetMapping( "/orderDetail/{id}" )
+    public Result< OrderInfoVO > getInfo(
+            @PathVariable( name = "id" )
+            @NotNull( message = "订单 id 不能为空" )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "userId = {} 的用户查询 id = {} 的订单信息", userId, id );
+        OrderInfoVO orderInfoVO = orderService.getByIdAndUserId( id, userId );
+        return Result.success( orderInfoVO );
     }
 
 

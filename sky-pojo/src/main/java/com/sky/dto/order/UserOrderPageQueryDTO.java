@@ -1,5 +1,7 @@
 package com.sky.dto.order;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,7 @@ import javax.validation.constraints.Positive;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ApiModel( description = "用户端 - 条件分页查询订单的参数 DTO" )
 public class UserOrderPageQueryDTO {
     // ==================== 常量 ====================
 
@@ -26,16 +29,19 @@ public class UserOrderPageQueryDTO {
     /** 起始页码 */
     @NotNull( message = "起始页码不能为空" )
     @Positive( message = "起始页码必须是正整数" )
+    @ApiModelProperty( value = "起始页码", example = "1", required = true )
     private int page;
     /** 查询数据条数 */
     @NotNull( message = "查询数据条数不能为空" )
     @Positive( message = "查询数据条数必须是正整数" )
+    @ApiModelProperty( value = "查询数据条数", example = "10", required = true )
     private int pageSize;
     /**
      * 订单状态：1 待付款  2 待接单  3 已接单  4 派送中  5 已完成  6 已取消  7 退款
      * <br>
      * {@link com.sky.constant.OrderConstant.Status}
      */
+    @ApiModelProperty( value = "订单状态：1 待付款 2 待接单 3 已接单 4 派送中 5 已完成 6 已取消 7 退款", example = "5" )
     private Integer status;
 
     // ==================== 构造器 ====================

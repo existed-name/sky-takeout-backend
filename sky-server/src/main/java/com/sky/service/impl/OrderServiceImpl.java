@@ -26,6 +26,7 @@ import com.sky.utils.PageUtil;
 import com.sky.vo.AddressBookVO;
 import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.OrderHistoryItemVO;
+import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
 import lombok.extern.slf4j.Slf4j;
@@ -190,10 +191,7 @@ public class OrderServiceImpl implements OrderService {
         int row = orderMapper.updateByIdAndUserId( build );
         // id, userId 定位 → 修改行数为 0 → 数据不存在 | 数据不属于该用户
         if ( row == 0 ){
-            if ( orderMapper.countById( id ) == 0 ){
-                throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
-            }
-            throw new OrderUserNotMatchException( MessageConstant.ORDER_USER_NOT_MATCH );
+            throwIfNotExistsOrNotMatches( id );
         }
 
         shoppingCartMapper.deleteByUserId( userId );
@@ -254,6 +252,21 @@ public class OrderServiceImpl implements OrderService {
         return PageUtil.buildPageResult( total, orderHistoryItemVOList );
     }
 
+    @Transactional( readOnly = true )
+    @Override
+    public OrderInfoVO getByIdAndUserId( Long id, Long userId ){
+        // orderInfoVO = order 部分字段 + orderDetailList, 1 + 1 查询
+        OrderInfoVO orderInfoVO = orderMapper.selectInfoVOByIdAndUserId( id, userId );
+        if ( orderInfoVO == null ){
+            throwIfNotExistsOrNotMatches( id );
+        }
+
+        List< OrderDetail > orderDetailList = orderDetailMapper.selectByOrderId( id );
+        // 这里不会空指针，因为前面判空时已经抛了异常
+        orderInfoVO.setOrderDetailList( orderDetailList );
+        return orderInfoVO;
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
@@ -300,6 +313,20 @@ public class OrderServiceImpl implements OrderService {
                 .append( extraSequnceString )
                 .append( orderCount );
         return orderNumber.toString();
+    }
+
+    /**
+     * <b>仅用于 orderMapper id, userId 双重定位失败的情况</b> => 修改行数为 0 | 查出对象为空
+     * <br>
+     * 此时如果 id 对应的数据不存在，则抛出{@link NotFoundException}, 否则不做判断、直接抛{@link OrderUserNotMatchException}
+     *
+     * @param orderId 订单 id
+     */
+    private void throwIfNotExistsOrNotMatches( Long orderId ){
+        if ( orderMapper.countById( orderId ) == 0 ){
+            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
+        }
+        throw new OrderUserNotMatchException( MessageConstant.ORDER_USER_NOT_MATCH );
     }
 
 
