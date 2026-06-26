@@ -91,4 +91,17 @@ public interface OrderMapper {
      *          如果返回 null => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况)
      */
     Orders selectByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+
+    /**
+     * 查询订单状态
+     *
+     * @return <b>只含 status 字段</b>的 order<br>
+     *          如果返回 null => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况)
+     */
+    @Select( """
+            SELECT status
+            FROM orders
+            WHERE id = #{id} AND user_id = #{userId}
+            """ )
+    Orders selectStatusByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 }

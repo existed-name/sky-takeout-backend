@@ -21,31 +21,30 @@
         <!--
         从所有的字段挑选出
             status, checkout_time, pay_status, cancel_reason,
-            rejection_reason, cancel_time, delivery_time
+            cancel_time, rejection_reason, delivery_time
+        可多处复用
         -->
         UPDATE orders
         <set>
-            <if test="order.cancelReason != null and order.cancelReason.trim() !='' ">
-                cancel_reason = #{order.cancelReason},
-            </if>
-            <if test="order.rejectionReason != null and order.rejectionReason.trim() !='' ">
-                rejection_reason = #{order.rejectionReason},
-            </if>
-            <if test="order.cancelTime != null">
-                cancel_time = #{order.cancelTime},
-            </if>
-            <if test="order.payStatus != null">
-                pay_status = #{order.payStatus},
-            </if>
-            <if test="order.payMethod != null">
-                pay_method = #{order.payMethod},
+            <if test="order.status != null">
+                status = #{order.status},
             </if>
             <if test="order.checkoutTime != null">
                 checkout_time = #{order.checkoutTime},
             </if>
-            <if test="order.status != null">
-                status = #{order.status},
+            <if test="order.payStatus != null">
+                pay_status = #{order.payStatus},
             </if>
+            <if test="order.cancelReason != null and order.cancelReason.trim() !='' ">
+                cancel_reason = #{order.cancelReason},
+            </if>
+            <if test="order.cancelTime != null">
+                cancel_time = #{order.cancelTime},
+            </if>
+            <if test="order.rejectionReason != null and order.rejectionReason.trim() !='' ">
+                rejection_reason = #{order.rejectionReason},
+            </if>
+            <!-- 之前多写了 pay_method 已删 -->
             <if test="order.deliveryTime != null">
                 delivery_time = #{order.deliveryTime}
             </if>

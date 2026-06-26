@@ -1,11 +1,14 @@
 package com.sky.service;
 
+import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
+
+import javax.validation.constraints.NotNull;
 
 public interface OrderService {
     /**
@@ -48,4 +51,12 @@ public interface OrderService {
      * @return 订单详情 = order 部分展示字段 + orderDetail
      */
     OrderInfoVO getByIdAndUserId( Long id, Long userId );
+
+    /**
+     * 用户端-取消订单
+     *
+     * @param userId 用户 id
+     * @param orderCancelDTO 用户取消订单的相关信息
+     */
+    void cancelWithUserId( Long userId, OrderCancelDTO orderCancelDTO );
 }

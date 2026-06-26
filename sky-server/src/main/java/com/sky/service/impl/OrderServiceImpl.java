@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
 import com.sky.convertor.OrderConvertor;
+import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.OrderDetail;
@@ -11,7 +12,10 @@ import com.sky.entity.Orders;
 import com.sky.entity.User;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.order.CompletedOrderCannotCancelException;
 import com.sky.exception.order.InvalidOrderStatusException;
+import com.sky.exception.order.OrderCannotCancelException;
+import com.sky.exception.order.OrderHasCanceledException;
 import com.sky.exception.order.OrderUserNotMatchException;
 import com.sky.exception.shoppingCart.EmptyShoppingCartException;
 import com.sky.mapper.AddressBookMapper;
@@ -267,6 +271,40 @@ public class OrderServiceImpl implements OrderService {
         return orderInfoVO;
     }
 
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void cancelWithUserId( Long userId, OrderCancelDTO orderCancelDTO ){
+        // 前置判断: 查看订单状态，未付款/待接单(已付款) => 可以直接取消，已接单/派送中 => 不可直接取消、需要联系商家
+        Long id = orderCancelDTO.getId();
+        Orders orderStatus = orderMapper.selectStatusByIdAndUserId( id, userId );
+        if ( orderStatus == null ){
+            throwIfNotExistsOrNotMatches( id );
+        }
+
+        Integer status = orderStatus.getStatus();
+        // 待付款/待接单: 可直接取消
+        if ( OrderConstant.Status.PENDING_PAYMENT.equals( status ) ||
+                OrderConstant.Status.TO_BE_CONFIRMED.equals( status ) ){
+            String cancelReason = orderCancelDTO.getCancelReason();
+            // 取消 => 修改订单状态、支付状态(但是还没退款,交给管理端修改)、取消原因(可选)、取消时间
+            Orders build = Orders.builder()
+                    .id( id )
+                    .status( OrderConstant.Status.CANCELLED )
+                    .userId( userId )
+//                    .payStatus()
+                    .cancelReason( cancelReason )
+                    .cancelTime( LocalDateTime.now() )
+                    .build();
+            // 由于最开始查询订单状态时已经判断了数据不存在/不匹配，所以这里不需要再判断
+            orderMapper.updateByIdAndUserId( build );
+            // 修改完成就结束了
+            return;
+        }
+
+        // 其他订单状态无法直接取消, 抛异常
+        handleOrderStatusIfOrderNotCanceled( id, userId, status );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
@@ -327,6 +365,36 @@ public class OrderServiceImpl implements OrderService {
             throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
         }
         throw new OrderUserNotMatchException( MessageConstant.ORDER_USER_NOT_MATCH );
+    }
+
+    /**
+     * 用于{@link #cancelWithUserId}方法检验订单状态是否满足取消订单的要求，不满足要求则抛出异常
+     *
+     * @param id 订单 id
+     * @param userId 用户 id
+     * @param status 订单状态
+     */
+    private void handleOrderStatusIfOrderNotCanceled( Long id, Long userId, Integer status ){
+        if ( status == null ){
+            throw new IllegalStateException(
+                    String.format( "id = %s, userId = %s 的订单状态为 null, 可能是下单时没有设置订单状态",
+                            id, userId
+                    )
+            );
+        }
+        if ( ! OrderConstant.Status.isValidStatus( status ) ){
+            throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
+        }
+        if ( OrderConstant.Status.CANCELLED.equals( status ) ){
+            throw new OrderHasCanceledException( MessageConstant.ORDER_HAS_CANCELED );
+        }
+        if ( OrderConstant.Status.COMPLETED.equals( status ) ){
+            throw new CompletedOrderCannotCancelException( MessageConstant.COMPLETED_ORDER_CANNOT_CANCEL );
+        }
+        if ( OrderConstant.Status.CONFIRMED.equals( status ) ||
+                OrderConstant.Status.DELIVERY_IN_PROGRESS.equals( status ) ){
+            throw new OrderCannotCancelException( MessageConstant.PLEASE_CONTACT_MERCHANT );
+        }
     }
 
 

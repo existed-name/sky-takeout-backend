@@ -63,5 +63,8 @@ public class MessageConstant {
     public static final String ORDER_COUNT_IS_NULL = "订单数量不能为空";
     public static final String ORDER_COUNT_IS_NEGATIVE = "订单数量不能为负数";
     public static final String ORDER_USER_NOT_MATCH = "该订单不属于当前用户";
-    public static final String INVALID_ORDER_STATUS = "查询的订单状态无效";
+    public static final String INVALID_ORDER_STATUS = "订单状态无效";
+    public static final String ORDER_HAS_CANCELED = "订单已经取消，不能重复取消";
+    public static final String COMPLETED_ORDER_CANNOT_CANCEL = "已完成的订单不能取消";
+    public static final String PLEASE_CONTACT_MERCHANT = "订单无法取消, 请联系商家取消订单";
 }
