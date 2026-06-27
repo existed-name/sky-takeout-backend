@@ -3,24 +3,30 @@ package com.sky.service.impl;
 import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.convertor.OrderConvertor;
 import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
+import com.sky.entity.Dish;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.User;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
 import com.sky.exception.order.CompletedOrderCannotCancelException;
+import com.sky.exception.order.IncompleteOrderDetailException;
 import com.sky.exception.order.InvalidOrderStatusException;
 import com.sky.exception.order.OrderCannotCancelException;
 import com.sky.exception.order.OrderHasCanceledException;
 import com.sky.exception.order.OrderUserNotMatchException;
+import com.sky.exception.order.ReorderFailedException;
 import com.sky.exception.shoppingCart.EmptyShoppingCartException;
 import com.sky.mapper.AddressBookMapper;
+import com.sky.mapper.DishMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.result.PageResult;
@@ -39,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -61,11 +68,12 @@ public class OrderServiceImpl implements OrderService {
     private final ShoppingCartMapper shoppingCartMapper;
     private final OrderDetailMapper orderDetailMapper;
     private final OrderCacheManager orderCacheManager;
-
+    private final DishMapper dishMapper;
+    private final SetmealMapper setmealMapper;
 
 
     // ==================== 构造器 ====================
-    public OrderServiceImpl( OrderConvertor orderConvertor, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager ){
+    public OrderServiceImpl( OrderConvertor orderConvertor, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper ){
         this.orderConvertor = orderConvertor;
         this.userMapper = userMapper;
         this.addressBookMapper = addressBookMapper;
@@ -73,6 +81,8 @@ public class OrderServiceImpl implements OrderService {
         this.shoppingCartMapper = shoppingCartMapper;
         this.orderDetailMapper = orderDetailMapper;
         this.orderCacheManager = orderCacheManager;
+        this.dishMapper = dishMapper;
+        this.setmealMapper = setmealMapper;
     }
 
 
@@ -313,6 +323,115 @@ public class OrderServiceImpl implements OrderService {
         handleOrderStatusIfOrderNotCanceled( id, userId, status );
     }
 
+    @Override
+    public void reorderByIdAndUserId( Long id, Long userId ){
+        // 先排除订单不存在、数据不匹配的情况
+        if ( orderMapper.countByIdAndUserId( id, userId ) == 0L ){
+            throwIfNotExistsOrNotMatches( id );
+        }
+
+        // 再来一单 => 重复该订单内容(于是查询订单明细) => 找关联菜品/套餐(订单明细) => 组装新订单
+        List< OrderDetail > oldOrderDetailList = orderDetailMapper.selectByOrderId( id );
+        if ( oldOrderDetailList == null || oldOrderDetailList.isEmpty() ){
+            log.error( "orderId = {} 的订单的关联菜品/套餐数据不存在, 可能是误删或创建订单时没有设置逻辑外键", id );
+            throw new ReorderFailedException( MessageConstant.ORDER_DETAIL_NOT_FOUND );
+        }
+
+        /*
+            orderDetail => dishId + dishFlavor + setmealId
+                - 哪个 id 存在就说明买的哪种商品
+                - dish 由 dishId, dishFlavor 定位
+                - 防御逻辑外键都不存在的情况, TODO: 假如确定不可能有这种情况, 可以省略该步检查
+         */
+        for ( OrderDetail orderDetail : oldOrderDetailList ){
+            if ( ! orderDetail.isDish() && ! orderDetail.isSetmeal() ){
+                log.error( "id = {}, orderId = {} 的 orderDetail 没有包含 dishId, setmealId, 可能是字段映射失败"
+                        , orderDetail.getId(), id );
+                throw new IncompleteOrderDetailException( MessageConstant.INCOMPLETE_ORDER_DETAIL );
+            }
+        }
+
+        /*
+            * 注意需要检查起售状态，停售菜品/套餐不能卖
+            * 思路: 批量查询
+              - 先整合该单所有 dishId, setmealId
+              - 然后查出所有关联的 dish, setmeal
+              - 检查 status
+              - 都起售，那就可以复制 orderDetail 到新订单, 但是 amount 要改为查出来的菜品/套餐实时价格(现价)
+         */
+        List< Long > dishIdList = oldOrderDetailList.stream()
+                .filter( OrderDetail::isDish )
+                .map( OrderDetail::getDishId )
+                .toList();
+        List< Integer > dishStatusList = dishMapper.selectDishStatusListByIds( dishIdList );
+        for ( Integer dishStatus : dishStatusList ){
+            // 当时在考虑查询的 Dish 被删掉的情况(商品已下架)
+            // dishStatus == null.if
+            // 不过 MyBatis 会过滤掉 null 的列表元素, 就不用管了
+            if ( StatusConstant.isDisable( dishStatus ) ){
+                throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_OUT_OF_SALE )
+            }
+        }
+
+        List< Long > setmealIdList = oldOrderDetailList.stream()
+                .filter( OrderDetail::isSetmeal )
+                .map( OrderDetail::getSetmealId )
+                .toList();
+        List< Integer > setmealStatusList = setmealMapper.selectStatusListByIds( setmealIdList );
+        for ( Integer setmealStatus : setmealStatusList ){
+            if ( StatusConstant.isDisable( setmealStatus ) ){
+                throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_OUT_OF_SALE );
+            }
+        }
+
+        /*
+            通过起售状态检验后，就可以复制旧的 orderDetail 到新的 orderDetail
+            需要换新的字段: orderId, name, amount, image
+            复用字段: dishId, dishFlavor, setmealId, number
+         */
+        ArrayList< OrderDetail > newOrderDetailList = new ArrayList<>();
+        for ( OrderDetail old : oldOrderDetailList ){
+
+        }
+
+        /*
+            * 创建订单，拿到订单 id 作为 orderDetail 逻辑外键
+            * 其实我想直接调 service 的 createWithUserId
+            * 不过创建订单用完整 builder 可以清晰晓得需要哪些字段
+              - 然而直到这里我才发觉，`再来一单`只有 id, userId, 没有用户自己填写的字段
+              - 于是推测教程是把旧订单完全复制到新订单、修改部分字段
+              - 如果我来设计: 再来一单 → 选择地址 → 备注、餐具、派送时间 → 支付
+              - 那不就是 再来一单 → 新建订单 + 用复制的购物车数据?
+              - 那我再整理思路: 找旧的订单明细 → 复制到新的购物车数据 → 交给前端调用 createWithUserId + 加载购物车
+            * TODO: 改前端/根据需求修改逻辑
+         */
+        LocalDateTime now = LocalDateTime.now();
+        Orders.builder()
+                .id()
+                .number( generateOrderNumber( now ) )
+                .status( OrderConstant.Status.PENDING_PAYMENT )
+                .userId( userId )
+                .addressBookId()
+                .orderTime( now )
+                .checkoutTime()
+                .payMethod()
+                .payStatus( OrderConstant.PayStatus.UN_PAID )
+                .amount()
+                .remark()
+                .userName()
+                .phone()
+                .address()
+                .consignee()
+                .cancelReason().rejectionReason().cancelTime()
+                .estimatedDeliveryTime()
+                .deliveryStatus()
+                .deliveryTime()
+                .packAmount()
+                .tablewareNumber()
+                .tablewareStatus()
+                .build()
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
@@ -369,10 +488,19 @@ public class OrderServiceImpl implements OrderService {
      * @param orderId 订单 id
      */
     private void throwIfNotExistsOrNotMatches( Long orderId ){
+        throwIfNotExists( orderId );
+        throw new OrderUserNotMatchException( MessageConstant.ORDER_USER_NOT_MATCH );
+    }
+
+    /**
+     * 如果 id 对应的订单不存在，抛出{@link NotFoundException}
+     *
+     * @param orderId 订单 id
+     */
+    private void throwIfNotExists( Long orderId ){
         if ( orderMapper.countById( orderId ) == 0 ){
             throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
         }
-        throw new OrderUserNotMatchException( MessageConstant.ORDER_USER_NOT_MATCH );
     }
 
     /**
