@@ -140,4 +140,14 @@ public interface DishMapper {
             WHERE id = #{id}
             """ )
     Dish selectById( @Param( "id" ) Long dishId );
+
+    /**
+     * 查询<b>不包含审计字段</b>的 Dishes
+     */
+    List< Dish > selectPartsByIds( @Param( "ids" ) List< Long > dishIdList );
+
+    /**
+     * 统计一批 id 对应存在的数据条数, 用于和 idList 长度比较判断<b>是否有数据被删除或不存在</b>
+     */
+    long countByIds( @Param( "ids" ) List< Long > dishIdList );
 }

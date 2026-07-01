@@ -45,4 +45,20 @@ public class OrderDetail implements Serializable {
 
     /** 图片路径 */
     private String image;
+
+    /**
+     * 该条订单关联数据是不是菜品
+     * <br>
+     * 由于 dishFlavor 可空，所以只判断 dishId
+     */
+    public boolean isDish(){
+        return dishId != null;
+    }
+
+    /** 该条订单关联数据是不是套餐 */
+    public boolean isSetmeal(){
+        return setmealId != null;
+    }
+
+
 }

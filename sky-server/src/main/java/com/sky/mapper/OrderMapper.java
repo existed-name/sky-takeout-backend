@@ -104,4 +104,18 @@ public interface OrderMapper {
             WHERE id = #{id} AND user_id = #{userId}
             """ )
     Orders selectStatusByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+
+    /**
+     * 判断该数据的存在性、匹配性
+     *
+     * @return 定位的数据条数: <br>
+     *          * 0 => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 1 => 正常
+     */
+    @Select( """
+            SELECT count( * )
+            FROM orders
+            WHERE id = #{id} AND user_id = #{userId}
+            """ )
+    long countByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 }

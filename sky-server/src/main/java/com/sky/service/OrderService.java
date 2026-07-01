@@ -9,6 +9,7 @@ import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 public interface OrderService {
     /**
@@ -59,4 +60,12 @@ public interface OrderService {
      * @param orderCancelDTO 用户取消订单的相关信息
      */
     void cancelWithUserId( Long userId, OrderCancelDTO orderCancelDTO );
+
+    /**
+     * 用户端-再来一单
+     *
+     * @param userId 用户 id
+     * @param id     订单 id
+     */
+    void reorderByIdAndUserId( Long id, Long userId );
 }

@@ -169,6 +169,23 @@ public class OrderController {
         return Result.success(  );
     }
 
+    /**
+     * 再来一单
+     */
+    @ApiOperation( "再来一单" )
+    @PostMapping( "/repitition/{id}" )
+    public Result< Void > reorder(
+            @PathVariable( name = "id" )
+            @NotNull( message = "订单 id 不能为空" )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "userId = {} 的用户再来一单: id = {}", userId, id );
+        orderService.reorderByIdAndUserId( id, userId );
+        return Result.success(  );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

@@ -5,12 +5,15 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.convertor.OrderConvertor;
+import com.sky.convertor.ShoppingCartConverter;
 import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
+import com.sky.entity.Setmeal;
+import com.sky.entity.ShoppingCart;
 import com.sky.entity.User;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
@@ -70,10 +73,11 @@ public class OrderServiceImpl implements OrderService {
     private final OrderCacheManager orderCacheManager;
     private final DishMapper dishMapper;
     private final SetmealMapper setmealMapper;
+    private final ShoppingCartConverter shoppingCartConverter;
 
 
     // ==================== 构造器 ====================
-    public OrderServiceImpl( OrderConvertor orderConvertor, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper ){
+    public OrderServiceImpl( OrderConvertor orderConvertor, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper, ShoppingCartConverter shoppingCartConverter ){
         this.orderConvertor = orderConvertor;
         this.userMapper = userMapper;
         this.addressBookMapper = addressBookMapper;
@@ -83,6 +87,7 @@ public class OrderServiceImpl implements OrderService {
         this.orderCacheManager = orderCacheManager;
         this.dishMapper = dishMapper;
         this.setmealMapper = setmealMapper;
+        this.shoppingCartConverter = shoppingCartConverter;
     }
 
 
@@ -330,7 +335,17 @@ public class OrderServiceImpl implements OrderService {
             throwIfNotExistsOrNotMatches( id );
         }
 
-        // 再来一单 => 重复该订单内容(于是查询订单明细) => 找关联菜品/套餐(订单明细) => 组装新订单
+        /*
+            * 创建订单，拿到订单 id 作为 orderDetail 逻辑外键
+            * 其实我想直接调 service 的 createWithUserId
+            * 不过创建订单用完整 builder 可以清晰晓得需要哪些字段
+              - 然而直到这里我才发觉，`再来一单`只有 id, userId, 没有用户自己填写的字段
+              - 于是推测教程是把旧订单完全复制到新订单、修改部分字段
+              - 如果我来设计: 再来一单 → 选择地址 → 备注、餐具、派送时间 → 支付
+              - 那不就是 再来一单 → 新建订单 + 用复制的购物车数据?
+            * TODO: 那我再整理思路: 找旧的订单明细 → 复制到新的购物车数据 → 交给前端调用 createWithUserId + 加载购物车
+            * TODO: 改前端/根据需求修改逻辑
+         */
         List< OrderDetail > oldOrderDetailList = orderDetailMapper.selectByOrderId( id );
         if ( oldOrderDetailList == null || oldOrderDetailList.isEmpty() ){
             log.error( "orderId = {} 的订单的关联菜品/套餐数据不存在, 可能是误删或创建订单时没有设置逻辑外键", id );
@@ -358,78 +373,94 @@ public class OrderServiceImpl implements OrderService {
               - 然后查出所有关联的 dish, setmeal
               - 检查 status
               - 都起售，那就可以复制 orderDetail 到新订单, 但是 amount 要改为查出来的菜品/套餐实时价格(现价)
+            * 另外还有被删除(下架)的情况
          */
         List< Long > dishIdList = oldOrderDetailList.stream()
                 .filter( OrderDetail::isDish )
                 .map( OrderDetail::getDishId )
                 .toList();
-        List< Integer > dishStatusList = dishMapper.selectDishStatusListByIds( dishIdList );
-        for ( Integer dishStatus : dishStatusList ){
-            // 当时在考虑查询的 Dish 被删掉的情况(商品已下架)
-            // dishStatus == null.if
-            // 不过 MyBatis 会过滤掉 null 的列表元素, 就不用管了
-            if ( StatusConstant.isDisable( dishStatus ) ){
-                throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_OUT_OF_SALE )
-            }
+        // 突然发现: 判断存在性、直接 count 看目标字段数量就行了、不需要查出来 + 遍历判断
+        if ( dishMapper.countByIdsAndStatus(
+                dishIdList, StatusConstant.DISABLE ) > 0L ){
+            throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_OUT_OF_SALE );
+        }
+        if ( ( long ) dishIdList.size() > dishMapper.countByIds( dishIdList ) ){
+            throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_REMOVED );
         }
 
         List< Long > setmealIdList = oldOrderDetailList.stream()
                 .filter( OrderDetail::isSetmeal )
                 .map( OrderDetail::getSetmealId )
                 .toList();
-        List< Integer > setmealStatusList = setmealMapper.selectStatusListByIds( setmealIdList );
-        for ( Integer setmealStatus : setmealStatusList ){
-            if ( StatusConstant.isDisable( setmealStatus ) ){
-                throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_OUT_OF_SALE );
-            }
+        if ( setmealMapper.countByIdsAndStatus(
+                setmealIdList, StatusConstant.DISABLE ) > 0L ){
+            throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_OUT_OF_SALE );
+        }
+        if ( ( long ) setmealIdList.size() > setmealMapper.countByIds( setmealIdList ) ){
+            throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_REMOVED );
         }
 
         /*
-            通过起售状态检验后，就可以复制旧的 orderDetail 到新的 orderDetail
-            需要换新的字段: orderId, name, amount, image
-            复用字段: dishId, dishFlavor, setmealId, number
+            * 通过起售状态检验后，就可以复制旧的 orderDetail 到新的 shoppingCart
+            * 需要换新的字段: orderId/userId, name, amount, image, createTime
+            * 复用字段: dishId, dishFlavor, setmealId, number
+            * TODO: 为了展示最新数据(name, amount, image)我又查的 dish, setmeal, 如果确定不变那可以不查/只查个别字段
+            * 复制思路:
+              - MapStruct 批量转换 orderDetail → shoppingCart
+              - 利用 @MappingTarget 修改 shoppingCarts, 分别把 dish / setmeal 设进去
+              - 但需要提前给 shoppingCarts 分组(放菜品、放套餐)
+              - 并且还要合并
          */
-        ArrayList< OrderDetail > newOrderDetailList = new ArrayList<>();
-        for ( OrderDetail old : oldOrderDetailList ){
-
-        }
+        List< Dish > dishList = dishMapper.selectPartsByIds( dishIdList );
+        List< Setmeal > setmealList = setmealMapper.selectByIds( setmealIdList );
+        List< ShoppingCart > shoppingCartList = shoppingCartConverter.toEntities( oldOrderDetailList );
 
         /*
-            * 创建订单，拿到订单 id 作为 orderDetail 逻辑外键
-            * 其实我想直接调 service 的 createWithUserId
-            * 不过创建订单用完整 builder 可以清晰晓得需要哪些字段
-              - 然而直到这里我才发觉，`再来一单`只有 id, userId, 没有用户自己填写的字段
-              - 于是推测教程是把旧订单完全复制到新订单、修改部分字段
-              - 如果我来设计: 再来一单 → 选择地址 → 备注、餐具、派送时间 → 支付
-              - 那不就是 再来一单 → 新建订单 + 用复制的购物车数据?
-              - 那我再整理思路: 找旧的订单明细 → 复制到新的购物车数据 → 交给前端调用 createWithUserId + 加载购物车
-            * TODO: 改前端/根据需求修改逻辑
+            * 拆分、设置最新 name, amount, image
+            * MapStruct 不支持批量更新, 因为不知道列表的访问规则, 需要业务层循环更新
+            * 最开始想的下标遍历 dishList, shoppingCartList
+            * 但是问题来了 TODO: 如何确认同一个下标的 dish, shoppingCart 是对应的
+              1. 长度对应
+                * shoppingCartList 长度 = oldOrderDetailList
+                * 已经确保 oldOrderDetailList 要么有 dishId 有么有 setmealId
+                  - => oldOrderDetailList 长度 = dishIdList + setmealIdList
+                  - => shoppingCartList 长度 = dishIdList + setmealIdList
+                * 已经排除了 ids 对应商品不存在的情况
+                  - => dishList 长度 = dishIdList, setmealList 长度 = setmealIdList
+                  - => shoppingCartList 长度 = dishList + setmealList
+                * ……
+                * 反正 dishShoppingCarts 长度 = dishList, setmeal 同
+              2. 顺序相同
+                * filter/map 会保证原顺序
+                * MapStruct 批量转换 for 循环也保证原顺序
          */
+        List< ShoppingCart > dishShoppingCarts = shoppingCartList.stream()
+                .filter( ShoppingCart::isDish ).toList();
+        for ( int i = 0; i < dishList.size(); i++ ){
+            Dish dish = dishList.get( i );
+            ShoppingCart dishShoppingCart = dishShoppingCarts.get( i );
+            shoppingCartConverter.updateEntityWithDish( dish, dishShoppingCart );
+        }
+
+        List< ShoppingCart > setmealShoppingCarts = shoppingCartList.stream()
+                .filter( ShoppingCart::isSetmeal ).toList();
+        for ( int i = 0; i < setmealList.size(); i++ ){
+            Setmeal setmeal = setmealList.get( i );
+            ShoppingCart setmealShoppingCart = setmealShoppingCarts.get( i );
+            shoppingCartConverter.updateEntityWithSetmeal( setmeal, setmealShoppingCart );
+        }
+
+        // 整合、设置 createTime, userId
+        List< ShoppingCart > completeShoppingCarts = new ArrayList<  >( dishShoppingCarts );
+        completeShoppingCarts.addAll( setmealShoppingCarts );
         LocalDateTime now = LocalDateTime.now();
-        Orders.builder()
-                .id()
-                .number( generateOrderNumber( now ) )
-                .status( OrderConstant.Status.PENDING_PAYMENT )
-                .userId( userId )
-                .addressBookId()
-                .orderTime( now )
-                .checkoutTime()
-                .payMethod()
-                .payStatus( OrderConstant.PayStatus.UN_PAID )
-                .amount()
-                .remark()
-                .userName()
-                .phone()
-                .address()
-                .consignee()
-                .cancelReason().rejectionReason().cancelTime()
-                .estimatedDeliveryTime()
-                .deliveryStatus()
-                .deliveryTime()
-                .packAmount()
-                .tablewareNumber()
-                .tablewareStatus()
-                .build()
+        completeShoppingCarts.forEach(
+                shoppingCart -> {
+                    shoppingCart.setUserId( userId );
+                    shoppingCart.setCreateTime( now );
+                }
+        );
+        shoppingCartMapper.insertBatch( completeShoppingCarts );
     }
 
 

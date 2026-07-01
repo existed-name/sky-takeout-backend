@@ -94,4 +94,9 @@ public interface ShoppingCartMapper {
             WHERE id = #{id}
             """ )
     int updateNumberById( @Param( "id" ) Long id, @Param( "number" ) int newNumber );
+
+    /**
+     * 批量新增购物车数据
+     */
+    int insertBatch( @Param( "shoppingCarts" ) List< ShoppingCart > shoppingCarts );
 }

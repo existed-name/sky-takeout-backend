@@ -167,4 +167,28 @@
         </foreach>
     </select>
 
+    <!--
+    查询不包含审计字段的 Dishes
+    -->
+    <select id="selectPartsByIds" resultType="com.sky.entity.Dish">
+        SELECT id, name, category_id, price, image, description, status
+        FROM dish
+        WHERE id IN
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+    </select>
+
+    <!--
+    统计一批 id 对应存在的数据条数, 用于和 idList 长度比较判断是否有数据被删除或不存在
+    -->
+    <select id="countByIds" resultType="java.lang.Long">
+        SELECT count( * )
+        FROM dish
+        WHERE id IN
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+    </select>
+
 </mapper>
