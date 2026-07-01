@@ -173,7 +173,7 @@ public class OrderController {
      * 再来一单
      */
     @ApiOperation( "再来一单" )
-    @PostMapping( "/repitition/{id}" )
+    @PostMapping( "/repetition/{id}" )
     public Result< Void > reorder(
             @PathVariable( name = "id" )
             @NotNull( message = "订单 id 不能为空" )

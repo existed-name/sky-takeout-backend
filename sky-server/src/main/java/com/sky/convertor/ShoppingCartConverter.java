@@ -31,7 +31,7 @@ import java.util.List;
 public interface ShoppingCartConverter {
 
     /**
-     * orderDetail 订单明细批量转 shoppingCart
+     * orderDetail 订单明细转 shoppingCart
      * <p>
      * 复用字段: dishId, dishFlavor, setmealId, number
      * <p>
@@ -40,12 +40,12 @@ public interface ShoppingCartConverter {
      * @param orderDetail 订单明细(关联的菜品/套餐数据)
      * @return 只含 dishId, dishFlavor, setmealId, number 的 shoppingCart
      */
-    @Mapping( source = "orderDetail.id", target = "id", ignore = true )
+    @Mapping(  target = "id", ignore = true )
     @Mapping( target = "userId", ignore = true )
-    @Mapping( source = "orderDetail.name", target = "name", ignore = true )
-    @Mapping( source = "orderDetail.amount", target = "amount", ignore = true )
-    @Mapping( source = "orderDetail.image", target = "image", ignore = true )
-    @Mapping( source = "orderDetail.createTime", target = "createTime", ignore = true )
+    @Mapping(  target = "name", ignore = true )
+    @Mapping(  target = "amount", ignore = true )
+    @Mapping(  target = "image", ignore = true )
+    @Mapping(  target = "createTime", ignore = true )
     ShoppingCart toEntity( OrderDetail orderDetail );
 
     /**
@@ -61,10 +61,10 @@ public interface ShoppingCartConverter {
      */
     // 更新对象建议先忽略所有字段，然后手动指定映射(只需要修改这几个字段)，避免写很多 ignore
     @BeanMapping( ignoreByDefault = true )
-    @Mapping( source = "dish.id", target = "dishShoppingCart.id" )
-    @Mapping( source = "dish.price", target = "dishShoppingCart.amount" )
-    @Mapping( source = "dish.createTime", target = "dishShoppingCart.createTime" )
-    void updateEntityWithDish( Dish dish, @MappingTarget ShoppingCart dishShoppingCart );
+    @Mapping( source = "dish.image", target = "image" )
+    @Mapping( source = "dish.name", target = "name" ) // 指定 MappingTarget 后不需要指定参数 "xxx."
+    @Mapping( source = "dish.price", target = "amount" )
+    void updateFromDish( Dish dish, @MappingTarget ShoppingCart dishShoppingCart );
 
     /**
      * 将 setmeal 的部分数据填入 shoppingCart: name, amount image
@@ -73,8 +73,8 @@ public interface ShoppingCartConverter {
      * @param setmealShoppingCart 待修改的购物车实体类
      */
     @BeanMapping( ignoreByDefault = true )
-    @Mapping( source = "setmeal.id", target = "setmealShoppingCart.id" )
-    @Mapping( source = "setmeal.price", target = "setmealShoppingCart.amount" )
-    @Mapping( source = "setmeal.createTime", target = "setmealShoppingCart.createTime" )
-    void updateEntityWithSetmeal( Setmeal setmeal, ShoppingCart setmealShoppingCart );
+    @Mapping( source = "setmeal.image", target = "image" )
+    @Mapping( source = "setmeal.name", target = "name" )
+    @Mapping( source = "setmeal.price", target = "amount" )
+    void updateFromSetmeal( Setmeal setmeal, @MappingTarget ShoppingCart setmealShoppingCart );
 }
