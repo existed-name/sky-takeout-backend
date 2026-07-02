@@ -328,6 +328,7 @@ public class OrderServiceImpl implements OrderService {
         handleOrderStatusIfOrderNotCanceled( id, userId, status );
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void reorderByIdAndUserId( Long id, Long userId ){
         // 先排除订单不存在、数据不匹配的情况
@@ -378,12 +379,14 @@ public class OrderServiceImpl implements OrderService {
         List< Long > dishIdList = oldOrderDetailList.stream()
                 .filter( OrderDetail::isDish )
                 .map( OrderDetail::getDishId )
+                .distinct() // 注意去重
                 .toList();
         // 突然发现: 判断存在性、直接 count 看目标字段数量就行了、不需要查出来 + 遍历判断
         if ( dishMapper.countByIdsAndStatus(
                 dishIdList, StatusConstant.DISABLE ) > 0L ){
             throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_OUT_OF_SALE );
         }
+        // TODO: 注意 id IN( .. ) 是集合，会去重，idList 也需要去重, 防止统计对不上
         if ( ( long ) dishIdList.size() > dishMapper.countByIds( dishIdList ) ){
             throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_REMOVED );
         }
@@ -391,6 +394,7 @@ public class OrderServiceImpl implements OrderService {
         List< Long > setmealIdList = oldOrderDetailList.stream()
                 .filter( OrderDetail::isSetmeal )
                 .map( OrderDetail::getSetmealId )
+                .distinct()
                 .toList();
         if ( setmealMapper.countByIdsAndStatus(
                 setmealIdList, StatusConstant.DISABLE ) > 0L ){
@@ -439,7 +443,7 @@ public class OrderServiceImpl implements OrderService {
         for ( int i = 0; i < dishList.size(); i++ ){
             Dish dish = dishList.get( i );
             ShoppingCart dishShoppingCart = dishShoppingCarts.get( i );
-            shoppingCartConverter.updateEntityWithDish( dish, dishShoppingCart );
+            shoppingCartConverter.updateFromDish( dish, dishShoppingCart );
         }
 
         List< ShoppingCart > setmealShoppingCarts = shoppingCartList.stream()
@@ -447,7 +451,7 @@ public class OrderServiceImpl implements OrderService {
         for ( int i = 0; i < setmealList.size(); i++ ){
             Setmeal setmeal = setmealList.get( i );
             ShoppingCart setmealShoppingCart = setmealShoppingCarts.get( i );
-            shoppingCartConverter.updateEntityWithSetmeal( setmeal, setmealShoppingCart );
+            shoppingCartConverter.updateFromSetmeal( setmeal, setmealShoppingCart );
         }
 
         // 整合、设置 createTime, userId
