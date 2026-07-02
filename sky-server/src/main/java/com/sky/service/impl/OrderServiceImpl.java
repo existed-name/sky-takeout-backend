@@ -412,41 +412,39 @@ public class OrderServiceImpl implements OrderService {
             * 复制思路:
               - MapStruct 批量转换 orderDetail → shoppingCart
               - 利用 @MappingTarget 修改 shoppingCarts, 分别把 dish / setmeal 设进去
-              - 分组?
-                * 提前给 shoppingCarts 分组(放菜品、放套餐)
-                * 分别遍历
-                * 并且还要合并
-              - 不分组?
-                * 直接遍历、根据 dishId/setmealId 定位
+              - 遍历 shoppingCarts、根据 dishId/setmealId 定位关联商品
+            * TODO: 还要看业务需不需要设置最新 name, amount, image
+            * MapStruct 不支持批量更新, 需要业务层循环单次更新
+            * AI 提醒优化:
+              - 我想的遍历 shoppingCarts 内部再遍历寻找 dish/setmeal
+              - 但毕竟是 id 定位, 用 Map 直接就可以获取对应的商品
+              - 所以可优化为外部组装商品 Map, 遍历 shoppingCarts 时直接拿 Map 数据
          */
-        List< Dish > dishList = dishMapper.selectPartsByIds( dishIdList );
-        List< Setmeal > setmealList = setmealMapper.selectByIds( setmealIdList );
         List< ShoppingCart > shoppingCartList = shoppingCartConverter.toEntities( oldOrderDetailList );
 
-        /*
-            * TODO: 看业务需不需要设置最新 name, amount, image
-            * MapStruct 不支持批量更新, 因为不知道列表的访问规则, 需要业务层循环更新
-            * 最开始想的下标遍历 dishList, shoppingCartList
-              - 但是如何确认同一个下标的 dish, shoppingCart 是对应的
-              - 甚至 SQL 一排序、stream 一乱，那么顺序就乱了
-              - 下标不可靠
-            * 直接用 dishId/setmealId 准确定位
-            * TODO: 这里遍历 shoppingCartList, 也可以分开遍历 dishList + setmealList
-         */
+        List< Dish > dishList = dishMapper.selectPartsByIds( dishIdList );
+        Map< Long, Dish > idToDishMap = dishList.stream()
+                .collect( Collectors.toMap(
+                                Dish::getId, // 指定 key
+                                dish -> dish // 指定 value
+                )
+        );
+        List< Setmeal > setmealList = setmealMapper.selectByIds( setmealIdList );
+        Map< Long, Setmeal > idToSetmealMap = setmealList.stream()
+                .collect(
+                        Collectors.toMap(
+                                Setmeal::getId, setmeal -> setmeal
+                        )
+                );
+
         LocalDateTime now = LocalDateTime.now();
         for ( ShoppingCart shoppingCart : shoppingCartList ){
             if ( shoppingCart.isDish() ){
                 // dishList, setmealList 相同 id 只有 1 个对象
-                Dish source = dishList.stream()
-                        .filter( dish -> shoppingCart.getDishId().equals( dish.getId() ) )
-                        .toList()
-                        .getFirst();
+                Dish source = idToDishMap.get( shoppingCart.getDishId() );
                 shoppingCartConverter.updateFromDish( source, shoppingCart );
             } else {
-                Setmeal source = setmealList.stream()
-                        .filter( setmeal -> shoppingCart.getSetmealId().equals( setmeal.getId() ) )
-                        .toList()
-                        .getFirst();
+                Setmeal source = idToSetmealMap.get( shoppingCart.getSetmealId() );
                 shoppingCartConverter.updateFromSetmeal( source, shoppingCart );
             }
             shoppingCart.setUserId( userId );
