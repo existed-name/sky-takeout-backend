@@ -33,18 +33,22 @@ public interface ShoppingCartConverter {
     /**
      * orderDetail 订单明细转 shoppingCart
      * <p>
-     * 复用字段: dishId, dishFlavor, setmealId, number
+     * 复用字段: dishId, dishFlavor, setmealId, number, name, amount, image
      * <p>
-     * <b>需要手动更换</b>: orderId/userId, name, amount, image, createTime
-     *
+     * 假如想要<b>展示最新数据, 需要手动更换</b>: name, amount, image
+     * <p>
+     * <b>需要手动设置</b>: orderId/userId, createTime
+     * </p>
      * @param orderDetail 订单明细(关联的菜品/套餐数据)
-     * @return 只含 dishId, dishFlavor, setmealId, number 的 shoppingCart
+     * @return 不含 id, userId, createTime 的 shoppingCart
      */
     @Mapping(  target = "id", ignore = true )
     @Mapping( target = "userId", ignore = true )
+    /*
     @Mapping(  target = "name", ignore = true )
     @Mapping(  target = "amount", ignore = true )
     @Mapping(  target = "image", ignore = true )
+     */
     @Mapping(  target = "createTime", ignore = true )
     ShoppingCart toEntity( OrderDetail orderDetail );
 

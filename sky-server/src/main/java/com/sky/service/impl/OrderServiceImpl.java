@@ -412,59 +412,47 @@ public class OrderServiceImpl implements OrderService {
             * 复制思路:
               - MapStruct 批量转换 orderDetail → shoppingCart
               - 利用 @MappingTarget 修改 shoppingCarts, 分别把 dish / setmeal 设进去
-              - 但需要提前给 shoppingCarts 分组(放菜品、放套餐)
-              - 并且还要合并
+              - 分组?
+                * 提前给 shoppingCarts 分组(放菜品、放套餐)
+                * 分别遍历
+                * 并且还要合并
+              - 不分组?
+                * 直接遍历、根据 dishId/setmealId 定位
          */
         List< Dish > dishList = dishMapper.selectPartsByIds( dishIdList );
         List< Setmeal > setmealList = setmealMapper.selectByIds( setmealIdList );
         List< ShoppingCart > shoppingCartList = shoppingCartConverter.toEntities( oldOrderDetailList );
 
         /*
-            * 拆分、设置最新 name, amount, image
+            * TODO: 看业务需不需要设置最新 name, amount, image
             * MapStruct 不支持批量更新, 因为不知道列表的访问规则, 需要业务层循环更新
             * 最开始想的下标遍历 dishList, shoppingCartList
-            * 但是问题来了 TODO: 如何确认同一个下标的 dish, shoppingCart 是对应的
-              1. 长度对应
-                * shoppingCartList 长度 = oldOrderDetailList
-                * 已经确保 oldOrderDetailList 要么有 dishId 有么有 setmealId
-                  - => oldOrderDetailList 长度 = dishIdList + setmealIdList
-                  - => shoppingCartList 长度 = dishIdList + setmealIdList
-                * 已经排除了 ids 对应商品不存在的情况
-                  - => dishList 长度 = dishIdList, setmealList 长度 = setmealIdList
-                  - => shoppingCartList 长度 = dishList + setmealList
-                * ……
-                * 反正 dishShoppingCarts 长度 = dishList, setmeal 同
-              2. 顺序相同
-                * filter/map 会保证原顺序
-                * MapStruct 批量转换 for 循环也保证原顺序
+              - 但是如何确认同一个下标的 dish, shoppingCart 是对应的
+              - 甚至 SQL 一排序、stream 一乱，那么顺序就乱了
+              - 下标不可靠
+            * 直接用 dishId/setmealId 准确定位
+            * TODO: 这里遍历 shoppingCartList, 也可以分开遍历 dishList + setmealList
          */
-        List< ShoppingCart > dishShoppingCarts = shoppingCartList.stream()
-                .filter( ShoppingCart::isDish ).toList();
-        for ( int i = 0; i < dishList.size(); i++ ){
-            Dish dish = dishList.get( i );
-            ShoppingCart dishShoppingCart = dishShoppingCarts.get( i );
-            shoppingCartConverter.updateFromDish( dish, dishShoppingCart );
-        }
-
-        List< ShoppingCart > setmealShoppingCarts = shoppingCartList.stream()
-                .filter( ShoppingCart::isSetmeal ).toList();
-        for ( int i = 0; i < setmealList.size(); i++ ){
-            Setmeal setmeal = setmealList.get( i );
-            ShoppingCart setmealShoppingCart = setmealShoppingCarts.get( i );
-            shoppingCartConverter.updateFromSetmeal( setmeal, setmealShoppingCart );
-        }
-
-        // 整合、设置 createTime, userId
-        List< ShoppingCart > completeShoppingCarts = new ArrayList<  >( dishShoppingCarts );
-        completeShoppingCarts.addAll( setmealShoppingCarts );
         LocalDateTime now = LocalDateTime.now();
-        completeShoppingCarts.forEach(
-                shoppingCart -> {
-                    shoppingCart.setUserId( userId );
-                    shoppingCart.setCreateTime( now );
-                }
-        );
-        shoppingCartMapper.insertBatch( completeShoppingCarts );
+        for ( ShoppingCart shoppingCart : shoppingCartList ){
+            if ( shoppingCart.isDish() ){
+                // dishList, setmealList 相同 id 只有 1 个对象
+                Dish source = dishList.stream()
+                        .filter( dish -> shoppingCart.getDishId().equals( dish.getId() ) )
+                        .toList()
+                        .getFirst();
+                shoppingCartConverter.updateFromDish( source, shoppingCart );
+            } else {
+                Setmeal source = setmealList.stream()
+                        .filter( setmeal -> shoppingCart.getSetmealId().equals( setmeal.getId() ) )
+                        .toList()
+                        .getFirst();
+                shoppingCartConverter.updateFromSetmeal( source, shoppingCart );
+            }
+            shoppingCart.setUserId( userId );
+            shoppingCart.setCreateTime( now );
+        }
+        shoppingCartMapper.insertBatch( shoppingCartList );
     }
 
 
