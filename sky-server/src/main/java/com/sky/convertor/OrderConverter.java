@@ -7,6 +7,7 @@ import com.sky.entity.Orders;
 import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderSubmitVO;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -41,36 +42,76 @@ import java.util.List;
 public interface OrderConverter {
     /**
      * 用户下单 dto 转订单 entity
-     * <br>
-     * 我猜教程用 Orders 而不是 Order 是为了跟 Spring 的 Order 顺序注解区分??
+     * <p>
+     * <b>Orders 忽略字段</b>: 除了 dto 包含的字段, 其他都忽略、业务类设置
      */
+    /*
+    Entity 字段 >> DTO, 建议手动映射
+    @Mapping( target = "id", ignore = true )
+    @Mapping( target = "number", ignore = true )
+    @Mapping( target = "status", ignore = true )
+    @Mapping( target = "userId", ignore = true )
+    @Mapping( target = "orderTime", ignore = true )
+    @Mapping( target = "checkoutTime", ignore = true )
+    @Mapping( target = "payStatus", ignore = true )
+    @Mapping( target = "userName", ignore = true )
+    @Mapping( target = "phone", ignore = true )
+    @Mapping( target = "address", ignore = true )
+    @Mapping( target = "consignee", ignore = true )
+    @Mapping( target = "cancelReason", ignore = true )
+    @Mapping( target = "rejectionReason", ignore = true )
+    @Mapping( target = "cancelTime", ignore = true )
+    @Mapping( target = "deliveryTime", ignore = true )
+     */
+    @BeanMapping( ignoreByDefault = true )
+    @Mapping( source = "ordersSubmitDTO.addressBookId", target = "addressBookId" )
+    @Mapping( source = "ordersSubmitDTO.payMethod", target = "payMethod" )
+    @Mapping( source = "ordersSubmitDTO.remark", target = "remark" )
+    @Mapping( source = "ordersSubmitDTO.estimatedDeliveryTime", target = "estimatedDeliveryTime" )
+    @Mapping( source = "ordersSubmitDTO.deliveryStatus", target = "deliveryStatus" )
+    @Mapping( source = "ordersSubmitDTO.tablewareNumber", target = "tablewareNumber" )
+    @Mapping( source = "ordersSubmitDTO.tablewareStatus", target = "tablewareStatus" )
+    @Mapping( source = "ordersSubmitDTO.packAmount", target = "packAmount" )
+    @Mapping( source = "ordersSubmitDTO.amount", target = "amount" )
     Orders toEntity( OrdersSubmitDTO submitDTO );
+
 
     /**
      * 用户下单后，订单 entity 转 vo 展示支付订单界面
+     * <p>
+     * <b>OrderSubmitVO 忽略字段</b>: 无
      */
     @Mapping( source = "order.number", target = "orderNumber" )
     @Mapping( source = "order.amount", target = "orderAmount" )
     OrderSubmitVO toSubmitVO( Orders order );
 
     /**
-     * 用户购物车数据转为订单明细(记录的内容基本一样)
+     * 用户购物车数据转为订单明细, 2 种对象记录的内容基本一样
+     * <p>
+     *     <b>orderDetail 忽略字段</b>: id, orderId
+     * </p>
      */
-    @Mapping( target = "id", ignore = true )  // 注意两者的 id 意义不同, 忽略后交给 Service 补充
-    @Mapping( source = "price", target = "amount" )
+    @Mapping( target = "id", ignore = true )
+    @Mapping( target = "orderId", ignore = true )
+    OrderDetail toDetail( ShoppingCartItemVO shoppingCart );
+
+    /**
+     * 用户购物车数据批量转为订单明细, 该接口方法编译后循环调用{@link #toDetail(ShoppingCartItemVO)}
+     */
     List< OrderDetail > toDetailList( List< ShoppingCartItemVO > shoppingCartItemVOList );
 
     /**
      * 完整订单实体类 → 用户端查询订单明细 VO
      * <p>
-     * 由于字段接近实体类，直接查询完整实体 + MapStruct 去除不需要的字段
+     * <b>OrderInfoVO 忽略字段</b>: orderDetailList 由业务类查找组装
      */
-    @Mapping( target = "userId", ignore = true )
-    @Mapping( target = "userName", ignore = true )
-    @Mapping( target = "checkoutTime", ignore = true )
-    @Mapping( target = "cancelReason", ignore = true )
-    @Mapping( target = "cancelTime", ignore = true )
-    @Mapping( target = "rejectionReason", ignore = true )
+//    @Mapping( target = "userId", ignore = true )
+//    @Mapping( target = "userName", ignore = true )
+//    @Mapping( target = "checkoutTime", ignore = true )
+//    @Mapping( target = "cancelReason", ignore = true )
+//    @Mapping( target = "cancelTime", ignore = true )
+//    @Mapping( target = "rejectionReason", ignore = true )
+    @Mapping( target = "orderDetailList", ignore = true )
     OrderInfoVO toInfoVO( Orders order );
 
 

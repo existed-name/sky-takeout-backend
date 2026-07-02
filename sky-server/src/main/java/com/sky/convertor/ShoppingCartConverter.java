@@ -34,16 +34,11 @@ public interface ShoppingCartConverter {
      */
     @Mapping(  target = "id", ignore = true )
     @Mapping( target = "userId", ignore = true )
-    /*
-    @Mapping(  target = "name", ignore = true )
-    @Mapping(  target = "amount", ignore = true )
-    @Mapping(  target = "image", ignore = true )
-     */
     @Mapping(  target = "createTime", ignore = true )
     ShoppingCart toEntity( OrderDetail orderDetail );
 
     /**
-     * orderDetail 订单明细批量转 shoppingCart, 见{@link #toEntity(OrderDetail)}
+     * orderDetail 订单明细批量转 shoppingCart, 该接口方法编译后循环调用{@link #toEntity(OrderDetail)}
      */
     List< ShoppingCart > toEntities( List< OrderDetail > orderDetails );
 
