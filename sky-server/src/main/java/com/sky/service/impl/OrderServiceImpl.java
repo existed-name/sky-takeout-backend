@@ -4,7 +4,7 @@ import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
 import com.sky.constant.StatusConstant;
-import com.sky.convertor.OrderConvertor;
+import com.sky.convertor.OrderConverter;
 import com.sky.convertor.ShoppingCartConverter;
 import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
@@ -48,7 +48,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +63,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     // ==================== 实例变量 ====================
-    private final OrderConvertor orderConvertor;
+    private final OrderConverter orderConverter;
     private final UserMapper userMapper;
     private final AddressBookMapper addressBookMapper;
     private final OrderMapper orderMapper;
@@ -77,8 +76,8 @@ public class OrderServiceImpl implements OrderService {
 
 
     // ==================== 构造器 ====================
-    public OrderServiceImpl( OrderConvertor orderConvertor, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper, ShoppingCartConverter shoppingCartConverter ){
-        this.orderConvertor = orderConvertor;
+    public OrderServiceImpl( OrderConverter orderConverter, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper, ShoppingCartConverter shoppingCartConverter ){
+        this.orderConverter = orderConverter;
         this.userMapper = userMapper;
         this.addressBookMapper = addressBookMapper;
         this.orderMapper = orderMapper;
@@ -118,7 +117,7 @@ public class OrderServiceImpl implements OrderService {
             所以就只复制 dto，其他手动 set
             * 另外比较奇怪: Orders.amount 实收金额是总金额??为什么还有 packAmount 但是没有 deliveryAmount ?
          */
-        Orders entity = orderConvertor.toEntity( ordersSubmitDTO );
+        Orders entity = orderConverter.toEntity( ordersSubmitDTO );
 
         // 设置用户信息
         entity.setUserId( userId );
@@ -163,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
         if ( shoppingCartItemVOList == null || shoppingCartItemVOList.isEmpty() ){
             throw new EmptyShoppingCartException( MessageConstant.SHOPPING_CART_IS_NULL );
         }
-        List< OrderDetail > orderDetailList = orderConvertor.toDetailList( shoppingCartItemVOList );
+        List< OrderDetail > orderDetailList = orderConverter.toDetailList( shoppingCartItemVOList );
         orderDetailList.forEach( orderDetail -> orderDetail.setOrderId( orderId ) );
         orderDetailMapper.insertBatch( orderDetailList );
 
@@ -174,7 +173,7 @@ public class OrderServiceImpl implements OrderService {
          */
 
         // 转 VO
-        return orderConvertor.toSubmitVO( entity );
+        return orderConverter.toSubmitVO( entity );
     }
 
 //    @Transactional( rollbackFor = Exception.class )
@@ -279,7 +278,7 @@ public class OrderServiceImpl implements OrderService {
             throwIfNotExistsOrNotMatches( id );
         }
 
-        OrderInfoVO orderInfoVO = orderConvertor.toInfoVO( order );
+        OrderInfoVO orderInfoVO = orderConverter.toInfoVO( order );
         List< OrderDetail > orderDetailList = orderDetailMapper.selectByOrderId( id );
         // 这里不会空指针，因为前面判空时已经抛了异常
         orderInfoVO.setOrderDetailList( orderDetailList );

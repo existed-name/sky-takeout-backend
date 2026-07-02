@@ -1,5 +1,6 @@
 package com.sky.convertor;
 
+import com.sky.config.GlobalMappingConfiguration;
 import com.sky.entity.Dish;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Setmeal;
@@ -8,7 +9,6 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
@@ -17,17 +17,7 @@ import java.util.List;
  *
  * @CreateTime 2026/6/28 7:53
  */
-@Mapper(
-    // 让 MapStruct 接口编译后生成 Spring 的 `@Component`，方便直接 `@Autowired` 注入
-    componentModel = "spring",
-    // 源对象字段如果没有被用到，该怎么处理
-    // 由于多数情况下源对象字段很多用不到，如果选择 ERROR 就必须手动指定忽略源对象字段、很多很麻烦
-    // 所以通常 IGNORE, 只映射同名的属性、手动 Mapping 的属性
-    unmappedSourcePolicy = ReportingPolicy.IGNORE,
-    // 目标对象字段如果没有被赋值，该怎么处理
-    // 因为目标对象通常需要填满，所以如果有字段没赋值就报错, 必须手动忽略部分字段, 确保所有字段都被处理
-    unmappedTargetPolicy = ReportingPolicy.ERROR
-)
+@Mapper( config = GlobalMappingConfiguration.class )
 public interface ShoppingCartConverter {
 
     /**

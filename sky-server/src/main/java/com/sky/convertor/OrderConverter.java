@@ -1,5 +1,6 @@
 package com.sky.convertor;
 
+import com.sky.config.GlobalMappingConfiguration;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
@@ -8,7 +9,6 @@ import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderSubmitVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
@@ -37,13 +37,8 @@ import java.util.List;
  *
  * @CreateTime 2026/6/19 10:16
  */
-@Mapper(
-    componentModel = "spring",
-    unmappedSourcePolicy = ReportingPolicy.ERROR,  // 源字段没映射到目标 = 编译报错
-    unmappedTargetPolicy = ReportingPolicy.ERROR   // 目标字段没被源字段填充 = 编译报错,
-        // 这 2 个用来提醒设置 ignore / 字段同步
-)
-public interface OrderConvertor {
+@Mapper( config = GlobalMappingConfiguration.class )
+public interface OrderConverter {
     /**
      * 用户下单 dto 转订单 entity
      * <br>

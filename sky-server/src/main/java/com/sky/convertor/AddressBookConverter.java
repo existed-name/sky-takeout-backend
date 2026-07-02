@@ -1,5 +1,6 @@
 package com.sky.convertor;
 
+import com.sky.config.GlobalMappingConfiguration;
 import com.sky.dto.AddressBookDTO;
 import com.sky.entity.AddressBook;
 import com.sky.vo.AddressBookVO;
@@ -14,8 +15,8 @@ import java.util.List;
  *
  * @CreateTime 2026/6/16
  */
-@Mapper( componentModel = "spring" ) // 用 Spring 集成，可以生成 Spring Bean
-public interface AddressBookConvertor {
+@Mapper( config = GlobalMappingConfiguration.class )
+public interface AddressBookConverter {
     /**
      * DTO 转 entity
      */

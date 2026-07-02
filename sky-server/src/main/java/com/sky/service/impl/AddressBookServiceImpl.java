@@ -2,7 +2,7 @@ package com.sky.service.impl;
 
 import com.sky.constant.AddressBookConstant;
 import com.sky.constant.MessageConstant;
-import com.sky.convertor.AddressBookConvertor;
+import com.sky.convertor.AddressBookConverter;
 import com.sky.dto.AddressBookDTO;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
@@ -25,13 +25,13 @@ public class AddressBookServiceImpl implements AddressBookService {
 
     // ==================== 实例变量 ====================
     private final AddressBookMapper addressBookMapper;
-    private final AddressBookConvertor addressBookConvertor;
+    private final AddressBookConverter addressBookConverter;
 
 
     // ==================== 构造器 ====================
-    public AddressBookServiceImpl( AddressBookMapper addressBookMapper, AddressBookConvertor addressBookConvertor ){
+    public AddressBookServiceImpl( AddressBookMapper addressBookMapper, AddressBookConverter addressBookConverter ){
         this.addressBookMapper = addressBookMapper;
-        this.addressBookConvertor = addressBookConvertor;
+        this.addressBookConverter = addressBookConverter;
     }
 
 
@@ -47,7 +47,7 @@ public class AddressBookServiceImpl implements AddressBookService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void saveWithUserId( Long userId, AddressBookDTO addressBookDTO ){
-        AddressBook entity = addressBookConvertor.toEntity( addressBookDTO );
+        AddressBook entity = addressBookConverter.toEntity( addressBookDTO );
         // DTO、VO 没有 userId 入库前需要手动给 entity 设置 userId
         entity.setUserId( userId );
         // 以及其他字段的非空默认值
@@ -73,7 +73,7 @@ public class AddressBookServiceImpl implements AddressBookService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void updateByIdAndUserId( Long userId, AddressBookDTO addressBookDTO ){
-        AddressBook entity = addressBookConvertor.toEntity( addressBookDTO );
+        AddressBook entity = addressBookConverter.toEntity( addressBookDTO );
         entity.setUserId( userId );
         // 猛然想起: userId 是 BaseContext，dto 不带 userId 但是有 id, 修改之前应该先看这个 id 是不是当前用户的
         // 这里用 id、userId 定位，找得到说明是这个用户的数据
