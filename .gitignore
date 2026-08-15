@@ -5,5 +5,9 @@
 #*Test.java
 #**/test/
 
-documents/prompt.md
-documents/Tutorial-Code.md
+# 草稿/临时文件
+draft/
+
+# 隐私配置
+sky-server/src/main/resources/application-dev.yml
+

@@ -1,3 +1,5 @@
+# 把 `application-dev.yml.example` 的 `.example` 后缀去掉、密钥/配置改成自己的
+
 sky:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -23,5 +25,6 @@ sky:
   wechat:
     appid: <自己的小程序 id>
     secret: <自己的小程序密钥>
+
 
 
