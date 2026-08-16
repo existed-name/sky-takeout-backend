@@ -64,15 +64,15 @@ public interface OrderConverter {
     @Mapping( target = "deliveryTime", ignore = true )
      */
     @BeanMapping( ignoreByDefault = true )
-    @Mapping( source = "ordersSubmitDTO.addressBookId", target = "addressBookId" )
-    @Mapping( source = "ordersSubmitDTO.payMethod", target = "payMethod" )
-    @Mapping( source = "ordersSubmitDTO.remark", target = "remark" )
-    @Mapping( source = "ordersSubmitDTO.estimatedDeliveryTime", target = "estimatedDeliveryTime" )
-    @Mapping( source = "ordersSubmitDTO.deliveryStatus", target = "deliveryStatus" )
-    @Mapping( source = "ordersSubmitDTO.tablewareNumber", target = "tablewareNumber" )
-    @Mapping( source = "ordersSubmitDTO.tablewareStatus", target = "tablewareStatus" )
-    @Mapping( source = "ordersSubmitDTO.packAmount", target = "packAmount" )
-    @Mapping( source = "ordersSubmitDTO.amount", target = "amount" )
+    @Mapping( source = "submitDTO.addressBookId", target = "addressBookId" )
+    @Mapping( source = "submitDTO.payMethod", target = "payMethod" )
+    @Mapping( source = "submitDTO.remark", target = "remark" )
+    @Mapping( source = "submitDTO.estimatedDeliveryTime", target = "estimatedDeliveryTime" )
+    @Mapping( source = "submitDTO.deliveryStatus", target = "deliveryStatus" )
+    @Mapping( source = "submitDTO.tablewareNumber", target = "tablewareNumber" )
+    @Mapping( source = "submitDTO.tablewareStatus", target = "tablewareStatus" )
+    @Mapping( source = "submitDTO.packAmount", target = "packAmount" )
+    @Mapping( source = "submitDTO.amount", target = "amount" )
     Orders toEntity( OrdersSubmitDTO submitDTO );
 
 
