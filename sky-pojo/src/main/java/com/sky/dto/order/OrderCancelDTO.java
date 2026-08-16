@@ -1,5 +1,6 @@
 package com.sky.dto.order;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ import javax.validation.constraints.Positive;
  *
  * @CreateTime 2026/6/26 11:13
  */
+@ApiModel( value = "用户端取消订单信息" )
 @Data
 public class OrderCancelDTO {
     // ==================== 常量 ====================
