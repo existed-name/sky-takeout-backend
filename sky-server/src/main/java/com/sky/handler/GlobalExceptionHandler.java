@@ -9,9 +9,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
+import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -57,10 +57,11 @@ public class GlobalExceptionHandler {
 
     /**
      * 捕获检验 Controller 方法的 <b>DTO 参数及其字段</b>抛出的异常
+     * <br>
+     * BindException: {@code @Valid} 会抛出该异常, 子类是 MethodArgumentNotValidException
      */
-    // ValidationException 是它父类，也可以捕获
-    @ExceptionHandler( MethodArgumentNotValidException.class )
-    public Result< String > handleDtoValidationException( MethodArgumentNotValidException exception ){
+    @ExceptionHandler( BindException.class )
+    public Result< String > handleDtoValidationException( BindException exception ){
         String message = extractBusinessMessage( exception );
         log.warn( "DTO 检验未通过: {}", message );
         return Result.error( message );
@@ -247,7 +248,7 @@ public class GlobalExceptionHandler {
      * @param exception 检验 Controller 方法的 DTO 对象及其属性时抛出的参数检验异常
      * @return 提取异常的业务信息
      */
-    private String extractBusinessMessage( MethodArgumentNotValidException exception ){
+    private String extractBusinessMessage( BindException exception ){
         /*
             Validation failed for argument [0] in public com.sky.result.Result<java.lang.Void>
             com.sky.controller.user.AddressBookController.save(com.sky.dto.AddressBookDTO):
