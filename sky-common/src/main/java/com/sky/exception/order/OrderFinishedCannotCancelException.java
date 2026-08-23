@@ -7,8 +7,8 @@ import com.sky.exception.BusinessException;
  *
  * @CreateTime 2026/6/26 14:31
  */
-public class CompletedOrderCannotCancelException extends BusinessException {
-    public CompletedOrderCannotCancelException( String message ){
+public class OrderFinishedCannotCancelException extends BusinessException {
+    public OrderFinishedCannotCancelException( String message ){
         super( message );
     }
 }

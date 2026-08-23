@@ -7,8 +7,8 @@ import com.sky.exception.BusinessException;
  *
  * @CreateTime 2026/6/25 6:42
  */
-public class InvalidOrderStatusException extends BusinessException {
-    public InvalidOrderStatusException( String message ){
+public class OrderStatusInvalidException extends BusinessException {
+    public OrderStatusInvalidException( String message ){
         super( message );
     }
 }

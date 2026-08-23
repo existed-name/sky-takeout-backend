@@ -18,9 +18,9 @@ import com.sky.entity.ShoppingCart;
 import com.sky.entity.User;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
-import com.sky.exception.order.CompletedOrderCannotCancelException;
-import com.sky.exception.order.IncompleteOrderDetailException;
-import com.sky.exception.order.InvalidOrderStatusException;
+import com.sky.exception.order.OrderFinishedCannotCancelException;
+import com.sky.exception.order.OrderDetailIncompleteException;
+import com.sky.exception.order.OrderStatusInvalidException;
 import com.sky.exception.order.OrderCannotCancelException;
 import com.sky.exception.order.OrderHasCanceledException;
 import com.sky.exception.order.OrderUserNotMatchException;
@@ -221,7 +221,7 @@ public class OrderServiceImpl implements OrderService {
     public PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO ){
         // TODO: 如果用户端查询条件拓展，这里可能还要补充参数检验、提取检验方法
         if ( userOrderPageQueryDTO.hasStatus() && ! OrderConstant.Status.isValid( userOrderPageQueryDTO.getStatus() ) ){
-            throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
+            throw new OrderStatusInvalidException( MessageConstant.INVALID_ORDER_STATUS );
         }
 
         // 只对 1 次 SQL 查询有效
@@ -364,7 +364,7 @@ public class OrderServiceImpl implements OrderService {
             if ( ! orderDetail.isDish() && ! orderDetail.isSetmeal() ){
                 log.error( "id = {}, orderId = {} 的 orderDetail 没有包含 dishId, setmealId, 可能是字段映射失败"
                         , orderDetail.getId(), id );
-                throw new IncompleteOrderDetailException( MessageConstant.INCOMPLETE_ORDER_DETAIL );
+                throw new OrderDetailIncompleteException( MessageConstant.INCOMPLETE_ORDER_DETAIL );
             }
         }
 
@@ -465,7 +465,7 @@ public class OrderServiceImpl implements OrderService {
 
         Integer orderStatus = orderPageQueryDTO.getStatus();
         if ( orderStatus != null && ! OrderConstant.Status.isValid( orderStatus ) ){
-            throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
+            throw new OrderStatusInvalidException( MessageConstant.INVALID_ORDER_STATUS );
         }
 
         // 自动分页, List 实际会被 PageHelper 转成 Page, 并且查出来的 List 不可能为 null
@@ -512,7 +512,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Long countByStatus( Integer status ){
         if ( ! OrderConstant.Status.isValid( status ) ){
-            throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
+            throw new OrderStatusInvalidException( MessageConstant.INVALID_ORDER_STATUS );
         }
         Long count = orderMapper.countByStatus( status );
         return count;
@@ -605,13 +605,13 @@ public class OrderServiceImpl implements OrderService {
             );
         }
         if ( ! OrderConstant.Status.isValid( status ) ){
-            throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
+            throw new OrderStatusInvalidException( MessageConstant.INVALID_ORDER_STATUS );
         }
         if ( OrderConstant.Status.CANCELLED.equals( status ) ){
             throw new OrderHasCanceledException( MessageConstant.ORDER_HAS_CANCELED );
         }
         if ( OrderConstant.Status.COMPLETED.equals( status ) ){
-            throw new CompletedOrderCannotCancelException( MessageConstant.COMPLETED_ORDER_CANNOT_CANCEL );
+            throw new OrderFinishedCannotCancelException( MessageConstant.COMPLETED_ORDER_CANNOT_CANCEL );
         }
         if ( OrderConstant.Status.CONFIRMED.equals( status ) ||
                 OrderConstant.Status.DELIVERY_IN_PROGRESS.equals( status ) ){
