@@ -6,6 +6,7 @@ import com.sky.constant.OrderConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.convertor.OrderConverter;
 import com.sky.convertor.ShoppingCartConverter;
+import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
@@ -38,6 +39,7 @@ import com.sky.utils.OrderCacheManager;
 import com.sky.utils.PageUtil;
 import com.sky.vo.AddressBookVO;
 import com.sky.vo.ShoppingCartItemVO;
+import com.sky.vo.order.OrderPageQueryVO;
 import com.sky.vo.order.OrderHistoryItemVO;
 import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
@@ -452,6 +454,62 @@ public class OrderServiceImpl implements OrderService {
         shoppingCartMapper.insertBatch( shoppingCartList );
     }
 
+    @Override
+    public PageResult pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO ){
+        /*
+            参数基本格式检验交给 Controller、参数检验注解
+            参数业务检验: 订单状态有效性, 由于是选填、只有非 null( 传了 status )才做判断
+            查询条件交给 Mapper, 细节是查询排序 + 如果查完整对象则 MapStruct 转换
+         */
+        PageUtil.validateParamsAndStartPage( orderPageQueryDTO.getPage(), orderPageQueryDTO.getPageSize() );
+
+        Integer orderStatus = orderPageQueryDTO.getStatus();
+        if ( orderStatus != null && ! OrderConstant.Status.isValidStatus( orderStatus ) ){
+            throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
+        }
+
+        // 自动分页, List 实际会被 PageHelper 转成 Page, 并且查出来的 List 不可能为 null
+        Page< Orders > ordersPage = ( Page< Orders > ) orderMapper.selectByQuery( orderPageQueryDTO );
+        List< OrderPageQueryVO > orderPageVOList = orderConverter.toPageVOList( ordersPage.getResult() );
+
+        // 对于未完成的订单需要展示菜品数据
+        // 本来 orderStatus 为 null 是不算 Finished 的, 但是内部 Set.of 的 Set 不允许 contains 传 null, 所以需要判空
+        if ( orderStatus != null && ! OrderConstant.Status.isFinished( orderStatus ) ){
+            /*
+                我再回看原型界面, 其实它要展示的不是 orderDetail 订单细节,
+                它只需要展示 "dishName * number; setmealName * number..." 字符串
+                也就是把所有菜品、套餐名字和数量拼起来
+                于是我认为单条 vo 数据不需要返回 orderDetails, 而是直接返回 orderDishesStr
+             */
+
+            List< Long > orderIds = orderPageVOList.stream()
+                    .map( OrderPageQueryVO::getId )
+                    .toList();
+            List< OrderDetail > allOrderDetails = orderDetailMapper.selectByOrderIds( orderIds );
+
+            /*
+                这里查到的是待展示 orders 对应的所有 orderDetails,
+                先按 orderId 分组, 每个组内拼接自己的 orderDishesStr
+                然后遍历 orderPageVOList, 每个 VO 设置 orderDishesStr
+             */
+            Map< Long, List< OrderDetail > > orderIdToDetailsMap = allOrderDetails.stream()
+                    .collect( Collectors.groupingBy( OrderDetail::getOrderId ) );
+            // TODO: 这里暂时嵌套 for, 之后可以优化在 for 外面拼接每个 order 的 orderDishes
+            for ( OrderPageQueryVO pageQueryVO : orderPageVOList ){
+                pageQueryVO.setOrderDishes(
+                        concatOrderDishes(
+                                orderIdToDetailsMap.get(
+                                        pageQueryVO.getId()
+                                )
+                        )
+                );
+            }
+        }
+
+        return PageUtil.buildPageResult( ordersPage.getTotal(), orderPageVOList );
+    }
+
+
 
     // ==================== 私有辅助方法 ====================
 
@@ -553,5 +611,18 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /**
+     * 拼接该订单的菜品、套餐信息为 1 个字符串
+     *
+     * @param orderDetails 同一个订单的各个菜品详情数据
+     * @return 菜品/套餐字符串, 模板为<code>dishName * number; setmealName * number...</code>
+     */
+    private String concatOrderDishes( List< OrderDetail > orderDetails ){
+        return orderDetails.stream()
+                .map( orderDetail -> String.format(
+                        "%s * %d; ", orderDetail.getName(), orderDetail.getNumber()
+                ) )
+                .collect( Collectors.joining() );
+    }
 
 }

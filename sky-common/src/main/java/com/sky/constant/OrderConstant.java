@@ -19,7 +19,7 @@ public class OrderConstant {
         public static final Integer PENDING_PAYMENT = 1;
         /** 2待接单 */
         public static final Integer TO_BE_CONFIRMED = 2;
-        /** 3已接单 */
+        /** 3已接单, 待派送 */
         public static final Integer CONFIRMED = 3;
         /** 4派送中 */
         public static final Integer DELIVERY_IN_PROGRESS = 4;
@@ -32,12 +32,23 @@ public class OrderConstant {
                 PENDING_PAYMENT, TO_BE_CONFIRMED, CONFIRMED, DELIVERY_IN_PROGRESS,
                 COMPLETED, CANCELLED
         );
+        /** 订单状态已完成( 送达/取消都算作完成 ) */
+        public static final Set< Integer > FINISHED_STATUS = Set.of(
+                COMPLETED, CANCELLED
+        );
 
         /**
          * 判断订单状态是否有效
          */
         public static boolean isValidStatus( Integer status ){
             return VALID_STATUS.contains( status );
+        }
+
+        /**
+         * 该订单是否完成
+         */
+        public static boolean isFinished( Integer status ){
+            return FINISHED_STATUS.contains( status );
         }
 
         private Status(){}

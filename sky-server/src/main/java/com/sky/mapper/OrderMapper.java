@@ -1,5 +1,7 @@
 package com.sky.mapper;
 
+import com.github.pagehelper.Page;
+import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Orders;
 import com.sky.vo.order.OrderHistoryItemVO;
@@ -118,4 +120,19 @@ public interface OrderMapper {
             WHERE id = #{id} AND user_id = #{userId}
             """ )
     long countByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+
+    /**
+     * 管理端条件查询订单, 分页操作由{@link com.sky.utils.PageUtil}完成
+     * <br>
+     * 排序规则: 按照下单时间降序排列、时间相同按照 id 倒序排列，管理端优先看最新订单
+     * <br>
+     * 不过排序也有问题: 理论上顾客应该先到先处理( 时间升序排列 ), 但是这样会把老旧订单也排在前面,
+     * 想要查询全部、查询已完成/取消订单为时间降序, 而中间状态订单为时间升序,
+     * 可以在 Mapper 对 status 分值处理对应的排序策略
+     * <br>
+     * TODO: 优化排序规则 + 修改查询参数后，SQL 也需要修改
+     *
+     * @return 完整的订单对象列表
+     */
+    List< Orders > selectByQuery( @Param( "query" ) AdminOrderPageQueryDTO orderPageQueryDTO );
 }

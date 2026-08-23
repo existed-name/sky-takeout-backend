@@ -77,4 +77,34 @@
         WHERE id = #{id} AND user_id = #{userId}
     </select>
 
+    <!--
+    管理端条件查询订单, 分页操作由com.sky.utils.PageUtil完成
+    排序规则: 按照下单时间降序排列、时间相同按照 id 倒序排列，管理端优先看最新订单
+    Returns: 完整的订单对象列表
+    -->
+    <select id="selectByQuery" resultType="com.sky.entity.Orders">
+        SELECT <include refid="BaseColumns"/>
+        FROM orders
+        <where>
+            <if test="query.beginTime != null">
+                <!-- greater than -->
+                AND order_time &gt;= #{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                <!-- less than -->
+                AND order_time &lt;= #{query.endTime}
+            </if>
+            <if test="query.number != null and query.number.trim() != ''">
+                AND number LIKE concat( '%', #{query.number}, '%' )
+            </if>
+            <if test="query.phone != null and query.phone.trim() != ''">
+                AND phone LIKE concat( '%', #{query.phone}, '%' )
+            </if>
+            <if test="query.status != null">
+                AND status = #{query.status}
+            </if>
+        </where>
+        ORDER BY order_time DESC, id DESC
+    </select>
+
 </mapper>

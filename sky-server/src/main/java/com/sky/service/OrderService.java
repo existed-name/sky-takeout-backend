@@ -1,5 +1,6 @@
 package com.sky.service;
 
+import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
@@ -68,4 +69,12 @@ public interface OrderService {
      * @param id     订单 id
      */
     void reorderByIdAndUserId( Long id, Long userId );
+
+    /**
+     * 管理端-条件分页查询订单
+     *
+     * @param orderPageQueryDTO 订单条件分页查询参数
+     * @return 包装查询数据列表的分页结果
+     */
+    PageResult pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO );
 }

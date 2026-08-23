@@ -5,6 +5,7 @@ import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.vo.ShoppingCartItemVO;
+import com.sky.vo.order.OrderPageQueryVO;
 import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderSubmitVO;
 import org.mapstruct.BeanMapping;
@@ -114,7 +115,18 @@ public interface OrderConverter {
     @Mapping( target = "orderDetailList", ignore = true )
     OrderInfoVO toInfoVO( Orders order );
 
+    /**
+     * 完整订单实体类转管理端订单条件分页查询 VO 列表, converter 会循环调用{@link #toPageVO(Orders)}
+     */
+    List< OrderPageQueryVO > toPageVOList( List< Orders > entities );
 
+    /**
+     * 完整订单实体类 → 管理端订单条件分页查询 VO
+     * <br>
+     * 由于 source 已经覆盖了 target 的所有字段, 所以这里直接 converter 自动转换、丢弃没用到的字段就行
+     */
+    @Mapping( target = "orderDishes", ignore = true )
+    OrderPageQueryVO toPageVO( Orders entity );
 
 
 
