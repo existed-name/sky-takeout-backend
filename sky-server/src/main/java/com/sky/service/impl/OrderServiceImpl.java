@@ -220,7 +220,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO ){
         // TODO: 如果用户端查询条件拓展，这里可能还要补充参数检验、提取检验方法
-        if ( userOrderPageQueryDTO.hasStatus() && ! OrderConstant.Status.isValidStatus( userOrderPageQueryDTO.getStatus() ) ){
+        if ( userOrderPageQueryDTO.hasStatus() && ! OrderConstant.Status.isValid( userOrderPageQueryDTO.getStatus() ) ){
             throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
         }
 
@@ -464,7 +464,7 @@ public class OrderServiceImpl implements OrderService {
         PageUtil.validateParamsAndStartPage( orderPageQueryDTO.getPage(), orderPageQueryDTO.getPageSize() );
 
         Integer orderStatus = orderPageQueryDTO.getStatus();
-        if ( orderStatus != null && ! OrderConstant.Status.isValidStatus( orderStatus ) ){
+        if ( orderStatus != null && ! OrderConstant.Status.isValid( orderStatus ) ){
             throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
         }
 
@@ -511,7 +511,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Long countByStatus( Integer status ){
-        if ( ! OrderConstant.Status.isValidStatus( status ) ){
+        if ( ! OrderConstant.Status.isValid( status ) ){
             throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
         }
         Long count = orderMapper.countByStatus( status );
@@ -604,7 +604,7 @@ public class OrderServiceImpl implements OrderService {
                     )
             );
         }
-        if ( ! OrderConstant.Status.isValidStatus( status ) ){
+        if ( ! OrderConstant.Status.isValid( status ) ){
             throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
         }
         if ( OrderConstant.Status.CANCELLED.equals( status ) ){

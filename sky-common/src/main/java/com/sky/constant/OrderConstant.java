@@ -40,7 +40,7 @@ public class OrderConstant {
         /**
          * 判断订单状态是否有效
          */
-        public static boolean isValidStatus( Integer status ){
+        public static boolean isValid( Integer status ){
             return VALID_STATUS.contains( status );
         }
 
