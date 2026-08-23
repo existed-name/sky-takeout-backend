@@ -12,6 +12,8 @@ import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -42,6 +44,30 @@ public class GlobalExceptionHandler {
     无权限	            403	        授权失败，标准语义
     系统异常	        500	        服务端错误，标准语义
      */
+
+    /**
+     * 捕获不传 RequestParam 或者不给 RequestParam 赋值抛出的请求参数缺少异常
+     * <pre>
+     *     <code>org.springframework.web.bind.MissingServletRequestParameterException: Required request parameter 'status' for method parameter type Integer is not present</code>
+     * </pre>
+     */
+    @ExceptionHandler( MissingServletRequestParameterException.class )
+    public Result< String > handleMissingRequestParamException( MissingServletRequestParameterException ex ){
+        String parameterName = ex.getParameterName();
+        return Result.error( String.format( "请求参数 %s 不能为空", parameterName ) );
+    }
+
+    /**
+     * 捕获前端传入参数绑定到后端字段抛出的数据类型转换错误
+     * <pre>
+     *     <code>org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Integer'; nested exception is java.lang.NumberFormatException: For input string: "1.5"</code>
+     * </pre>
+     * <b>导包注意不是<code>org.springframework.messaging.handler.annotation.support</code></b>
+     */
+    @ExceptionHandler( MethodArgumentTypeMismatchException.class )
+    public Result< String > handleTypeMismatchException( MethodArgumentTypeMismatchException ex ){
+        return Result.error( "参数类型转换错误, 请检查参数数据类型是否满足要求" );
+    }
 
     /**
      * 捕获检验 Controller 方法<b>单个字段参数</b>抛出的异常
