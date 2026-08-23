@@ -9,6 +9,11 @@ sky:
     username: root
     password: 123456
 
+  jwt:
+    # 密钥不应该暴露到仓库, 但练习项目可以不讲究这么多, 可以改成自己定的密钥
+    admin-secret-key: itcast
+    user-secret-key: itheima
+
   alioss:
     endpoint: <自己的endpoint>
     access-key-id: <自己的access-key-id>
