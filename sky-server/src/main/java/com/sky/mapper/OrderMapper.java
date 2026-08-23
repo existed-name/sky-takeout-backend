@@ -135,4 +135,17 @@ public interface OrderMapper {
      * @return 完整的订单对象列表
      */
     List< Orders > selectByQuery( @Param( "query" ) AdminOrderPageQueryDTO orderPageQueryDTO );
+
+    /**
+     * 管理端统计某种状态的订单数量
+     *
+     * @param status 订单状态, {@link com.sky.constant.OrderConstant.Status}
+     * @return 订单数量
+     */
+    @Select( """
+            SELECT count( * )
+            FROM orders
+            WHERE status = #{status}
+            """ )
+    Long countByStatus( @Param( "status" ) Integer status );
 }

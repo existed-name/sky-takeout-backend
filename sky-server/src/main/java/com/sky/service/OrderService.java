@@ -77,4 +77,12 @@ public interface OrderService {
      * @return 包装查询数据列表的分页结果
      */
     PageResult pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO );
+
+    /**
+     * 管理端统计某种状态的订单数量
+     *
+     * @param status 订单状态, {@link com.sky.constant.OrderConstant.Status}
+     * @return 订单数量
+     */
+    Long countByStatus( Integer status );
 }

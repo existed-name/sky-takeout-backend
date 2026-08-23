@@ -509,6 +509,14 @@ public class OrderServiceImpl implements OrderService {
         return PageUtil.buildPageResult( ordersPage.getTotal(), orderPageVOList );
     }
 
+    @Override
+    public Long countByStatus( Integer status ){
+        if ( ! OrderConstant.Status.isValidStatus( status ) ){
+            throw new InvalidOrderStatusException( MessageConstant.INVALID_ORDER_STATUS );
+        }
+        Long count = orderMapper.countByStatus( status );
+        return count;
+    }
 
 
     // ==================== 私有辅助方法 ====================
