@@ -5,6 +5,7 @@ import com.sky.exception.BusinessException;
 import com.sky.exception.auth.NotLoginException;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -44,6 +45,29 @@ public class GlobalExceptionHandler {
     无权限	            403	        授权失败，标准语义
     系统异常	        500	        服务端错误，标准语义
      */
+
+    /**
+     * HTTP 请求方法不匹配
+     */
+    @ExceptionHandler( HttpRequestMethodNotSupportedException.class )
+    public Result< String > handleHttpRequestMethodNotSupportedException( HttpRequestMethodNotSupportedException e ){
+        /*
+        org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'PUT' not supported
+        at org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.handleNoMatch(RequestMappingInfoHandlerMapping.java:253) ~[spring-webmvc-5.3.22.jar:5.3.22]
+        at org.springframework.web.servlet.handler.AbstractHandlerMethodMapping.lookupHandlerMethod(AbstractHandlerMethodMapping.java:442) ~[spring-webmvc-5.3.22.jar:5.3.22]
+        at org.springframework.web.servlet.handler.AbstractHandlerMethodMapping.getHandlerInternal(AbstractHandlerMethodMapping.java:383) ~[spring-webmvc-5.3.22.jar:5.3.22]
+        at org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.getHandlerInternal(RequestMappingInfoHandlerMapping.java:125) ~[spring-webmvc-5.3.22.jar:5.3.22]
+        at org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.getHandlerInternal(RequestMappingInfoHandlerMapping.java:67) ~[spring-webmvc-5.3.22.jar:5.3.22]
+        at org.springframework.web.servlet.handler.AbstractHandlerMapping.getHandler(AbstractHandlerMapping.java:498) ~[spring-webmvc-5.3.22.jar:5.3.22]
+        at org.springframework.web.servlet.DispatcherServlet.getHandler(DispatcherServlet.java:1264) ~[spring-webmvc-5.3.22.jar:5.3.22]
+        at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1046) ~[spring-webmvc-5.3.22.jar:5.3.22]
+
+        请求路径错误的异常是框架管理的 👇
+        2026-06-18 17:15:00.190  WARN 29992 --- [nio-8080-exec-9] o.s.web.servlet.PageNotFound             : No mapping for GET /admin/test
+         */
+        log.error( "HTTP 请求方法不匹配: {}", e.getMessage() );
+        return Result.error( MessageConstant.REQUEST_METHOD_ERROR );
+    }
 
     /**
      * 捕获不传 RequestParam 或者不给 RequestParam 赋值抛出的请求参数缺少异常
@@ -234,28 +258,19 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * HTTP 请求方法不匹配
+     * 捕获 MyBatis 异常, <code>org.mybatis.spring.MyBatisSystemException</code>
+     *
      */
-    @ExceptionHandler( HttpRequestMethodNotSupportedException.class )
-    public Result< String > handleHttpRequestMethodNotSupportedException( HttpRequestMethodNotSupportedException e ){
+    @ExceptionHandler( MyBatisSystemException.class )
+    public Result< String > handleMyBatisException( MyBatisSystemException ex ){
+        log.error( "MyBatis 异常, 可能是 mapper 写错代码: {}", ex.getMessage() );
         /*
-        org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'PUT' not supported
-        at org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.handleNoMatch(RequestMappingInfoHandlerMapping.java:253) ~[spring-webmvc-5.3.22.jar:5.3.22]
-        at org.springframework.web.servlet.handler.AbstractHandlerMethodMapping.lookupHandlerMethod(AbstractHandlerMethodMapping.java:442) ~[spring-webmvc-5.3.22.jar:5.3.22]
-        at org.springframework.web.servlet.handler.AbstractHandlerMethodMapping.getHandlerInternal(AbstractHandlerMethodMapping.java:383) ~[spring-webmvc-5.3.22.jar:5.3.22]
-        at org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.getHandlerInternal(RequestMappingInfoHandlerMapping.java:125) ~[spring-webmvc-5.3.22.jar:5.3.22]
-        at org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.getHandlerInternal(RequestMappingInfoHandlerMapping.java:67) ~[spring-webmvc-5.3.22.jar:5.3.22]
-        at org.springframework.web.servlet.handler.AbstractHandlerMapping.getHandler(AbstractHandlerMapping.java:498) ~[spring-webmvc-5.3.22.jar:5.3.22]
-        at org.springframework.web.servlet.DispatcherServlet.getHandler(DispatcherServlet.java:1264) ~[spring-webmvc-5.3.22.jar:5.3.22]
-        at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1046) ~[spring-webmvc-5.3.22.jar:5.3.22]
-
-        请求路径错误的异常是框架管理的 👇
-        2026-06-18 17:15:00.190  WARN 29992 --- [nio-8080-exec-9] o.s.web.servlet.PageNotFound             : No mapping for GET /admin/test
+            如果是拿去最底层异常 getRootCause.getMessage
+            输出 There is no getter for property named 'status' in 'class java.lang.Long'
+            非常精简好看, 但是缺少定位信息
          */
-        log.error( "HTTP 请求方法不匹配: {}", e.getMessage() );
-        return Result.error( MessageConstant.REQUEST_METHOD_ERROR );
+        return Result.error( "系统数据库操作异常, 请稍后尝试或联系管理员" );
     }
-
 
     /**
      * 捕获所有异常(兜底)
