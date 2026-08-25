@@ -8,6 +8,7 @@ import com.sky.convertor.OrderConverter;
 import com.sky.convertor.ShoppingCartConverter;
 import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderCancelDTO;
+import com.sky.dto.order.OrderStatusCount;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Dish;
@@ -43,6 +44,7 @@ import com.sky.vo.order.OrderPageQueryVO;
 import com.sky.vo.order.OrderHistoryItemVO;
 import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
+import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -510,13 +512,24 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Long countByStatus( Integer status ){
-        if ( ! OrderConstant.Status.isValid( status ) ){
-            throw new OrderStatusInvalidException( MessageConstant.INVALID_ORDER_STATUS );
-        }
-        Long count = orderMapper.countByStatus( status );
-        return count;
+    public OrderStatisticsVO statistics( ){
+        Map< Integer, OrderStatusCount > statusToCountMap = orderMapper.countGroupByStatus();
+
+        /*
+        // group by 只保留数据库存在的 status, 不存在则不会包装返回、导致直接访问该 status 的 count 出现 null 而
+        statusToCountMap.forEach( ( k, v ) -> {
+            log.info( "k = {}, v = {}", k, v );
+        } );
+         */
+
+        OrderStatisticsVO build = OrderStatisticsVO.builder()
+                .toBeConfirmed( getValidStatusCountFromMap( statusToCountMap, OrderConstant.Status.TO_BE_CONFIRMED ) )
+                .confirmed( getValidStatusCountFromMap( statusToCountMap, OrderConstant.Status.CONFIRMED ) )
+                .deliveryInProgress( getValidStatusCountFromMap( statusToCountMap, OrderConstant.Status.DELIVERY_IN_PROGRESS ) )
+                .build();
+        return build;
     }
+
 
 
     // ==================== 私有辅助方法 ====================
@@ -633,4 +646,22 @@ public class OrderServiceImpl implements OrderService {
                 .collect( Collectors.joining() );
     }
 
+    /**
+     * 从 Mapper 返回的 Map 拿取某种状态的订单数量, 同时作判空处理
+     * <br>
+     * 由调用方保证数据非空、合法
+     *
+     * @param statusToCountMap 订单状态 → < 状态, 数量 >封装对象
+     * @param orderStatus 目标订单状态
+     * @return 该状态的订单数量
+     */
+    private Long getValidStatusCountFromMap( Map< Integer, OrderStatusCount > statusToCountMap, Integer orderStatus ){
+        OrderStatusCount orderStatusCount = statusToCountMap.get( orderStatus );
+        if ( orderStatusCount == null ){
+            return 0L;
+        }
+
+        Long count = orderStatusCount.getCount();
+        return count == null ? 0L : count;
+    }
 }

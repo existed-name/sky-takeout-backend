@@ -2,16 +2,19 @@ package com.sky.mapper;
 
 import com.github.pagehelper.Page;
 import com.sky.dto.order.AdminOrderPageQueryDTO;
+import com.sky.dto.order.OrderStatusCount;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Orders;
 import com.sky.vo.order.OrderHistoryItemVO;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface OrderMapper {
@@ -148,4 +151,23 @@ public interface OrderMapper {
             WHERE status = #{status}
             """ )
     Long countByStatus( @Param( "status" ) Integer status );
+
+    /**
+     * 管理端统计各种状态的订单数量
+     * <p>
+     *     这种报表查询默认返回<code>List< Map< String, Object > ></code>每行作为 1 个 Map<br>
+     *     使用<code>@MapKey</code>必须确保 Value 能够 get 拿取 Key,
+     *     直接<code>Map< Integer, Long ></code>会因为 Long 没有 getStatus 而报错<br>
+     *     这里用 status 作为主键、每行数据封装成{@link OrderStatusCount}, 方便拿取数据、管理字段
+     * </p>
+     *
+     * @return 记录<code>orderStatus → {@link OrderStatusCount}</code>的 Map
+     */
+    @Select( """
+            SELECT status, count( * ) AS count
+            FROM orders
+            GROUP BY status
+            """ )
+    @MapKey( "status" )
+    Map< Integer, OrderStatusCount > countGroupByStatus();
 }

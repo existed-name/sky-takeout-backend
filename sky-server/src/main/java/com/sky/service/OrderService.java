@@ -7,10 +7,8 @@ import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
+import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 
 public interface OrderService {
     /**
@@ -79,10 +77,9 @@ public interface OrderService {
     PageResult pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO );
 
     /**
-     * 管理端统计某种状态的订单数量
+     * 管理端统计<code>待接单、待派送、派送中</code>的订单数量
      *
-     * @param status 订单状态, {@link com.sky.constant.OrderConstant.Status}
-     * @return 订单数量
+     * @return <code>待接单、待派送、派送中</code>的订单数量视图对象
      */
-    Long countByStatus( Integer status );
+    OrderStatisticsVO statistics(  );
 }

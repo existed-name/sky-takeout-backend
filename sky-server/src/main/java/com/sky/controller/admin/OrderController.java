@@ -5,12 +5,12 @@ import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
+import com.sky.vo.order.OrderStatisticsVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -55,19 +55,15 @@ public class OrderController {
     }
 
     /**
-     * 统计某种状态的订单数量
+     * 统计<code>待接单、待派送、派送中</code>的订单数量
      */
-    @ApiOperation( "统计某种状态的订单数量" )
+    @ApiOperation( "统计待接单、待派送、派送中的订单数量" )
     @GetMapping( "/statistics" )
-    public Result< Long > count(
-            @RequestParam( name = "status", required = true )
-//            @NotNull( message = "订单状态不能为空" ) 不需要了, 因为 RequestParam 默认必需
-            Integer status
-    ){
+    public Result< OrderStatisticsVO > statistics(){
         Long adminId = BaseContext.getCurrentId();
-        log.info( "管理员 {} 统计状态为 {} 的订单数量", adminId, status );
-        Long count = orderService.countByStatus( status );
-        return Result.success( count );
+        log.info( "id = {} 的管理员统计待接单、待派送、派送中的订单数量", adminId );
+        OrderStatisticsVO orderStatisticsVO = orderService.statistics(  );
+        return Result.success( orderStatisticsVO );
     }
 
 
