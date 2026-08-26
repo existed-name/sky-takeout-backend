@@ -5,10 +5,13 @@ import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
+import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
+
+import javax.validation.constraints.Positive;
 
 public interface OrderService {
     /**
@@ -82,4 +85,12 @@ public interface OrderService {
      * @return <code>待接单、待派送、派送中</code>的订单数量视图对象
      */
     OrderStatisticsVO statistics(  );
+
+    /**
+     * 管理端查看订单详情
+     *
+     * @param id 订单 id
+     * @return 订单详情 VO( 与用户端订单详情 VO 隔离 )
+     */
+    AdminOrderInfoVO getById(  Long id );
 }

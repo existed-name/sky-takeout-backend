@@ -107,4 +107,13 @@
         ORDER BY order_time DESC, id DESC
     </select>
 
+    <!--
+    管理端查询某个订单实体对象
+    -->
+    <select id="selectById" resultType="com.sky.entity.Orders">
+        SELECT <include refid="BaseColumns"/>
+        FROM orders
+        WHERE id = #{id}
+    </select>
+
 </mapper>

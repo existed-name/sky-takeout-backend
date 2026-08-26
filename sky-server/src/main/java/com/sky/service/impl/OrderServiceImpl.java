@@ -40,6 +40,7 @@ import com.sky.utils.OrderCacheManager;
 import com.sky.utils.PageUtil;
 import com.sky.vo.AddressBookVO;
 import com.sky.vo.ShoppingCartItemVO;
+import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
 import com.sky.vo.order.OrderHistoryItemVO;
 import com.sky.vo.order.OrderInfoVO;
@@ -530,6 +531,24 @@ public class OrderServiceImpl implements OrderService {
         return build;
     }
 
+    @Override
+    public AdminOrderInfoVO getById( Long id ){
+        /*
+            思路: vo = orderEntity + orderDetailList,
+            分 2 次查再组装
+            由于 vo 字段接近( 等于 )实体, 我考虑的先查整个实体、交给 converter 按需转换,
+            之后改字段只需要改 converter
+         */
+        Orders order = orderMapper.selectById( id );
+        if ( order == null ){
+            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
+        }
+        // 如果 order == null, converter 后仍然返回 null
+        AdminOrderInfoVO adminOrderInfoVO = orderConverter.toAdminInfoVO( order );
+        List< OrderDetail > orderDetailList = orderDetailMapper.selectByOrderId( id );
+        adminOrderInfoVO.setOrderDetailList( orderDetailList );
+        return adminOrderInfoVO;
+    }
 
 
     // ==================== 私有辅助方法 ====================

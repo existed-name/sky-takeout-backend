@@ -170,4 +170,12 @@ public interface OrderMapper {
             """ )
     @MapKey( "status" )
     Map< Integer, OrderStatusCount > countGroupByStatus();
+
+    /**
+     * 查询某个订单实体对象
+     *
+     * @param id 订单 id
+     * @return 完整的订单实体对象, 不存在时返回 null
+     */
+    Orders selectById( @Param( "id" ) Long id );
 }

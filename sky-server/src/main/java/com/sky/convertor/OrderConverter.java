@@ -5,6 +5,7 @@ import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.vo.ShoppingCartItemVO;
+import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
 import com.sky.vo.order.OrderInfoVO;
 import com.sky.vo.order.OrderSubmitVO;
@@ -128,6 +129,12 @@ public interface OrderConverter {
     @Mapping( target = "orderDishes", ignore = true )
     OrderPageQueryVO toPageVO( Orders entity );
 
-
-
+    /**
+     * 完整订单实体类 → 管理端订单详情 VO
+     *
+     * @param order 完整订单实体类
+     * @return 管理端订单详情 VO
+     */
+    @Mapping( target = "orderDetailList", ignore = true )
+    AdminOrderInfoVO toAdminInfoVO( Orders order );
 }
