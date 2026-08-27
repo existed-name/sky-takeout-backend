@@ -27,7 +27,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ApiModel( description = "用户端订单详情展示对象 VO" )
-public class OrderInfoVO {
+public class UserOrderInfoVO {
     // ==================== 常量 ====================
 
 

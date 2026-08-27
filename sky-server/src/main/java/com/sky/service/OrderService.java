@@ -6,12 +6,10 @@ import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.order.AdminOrderInfoVO;
-import com.sky.vo.order.OrderInfoVO;
+import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
-
-import javax.validation.constraints.Positive;
 
 public interface OrderService {
     /**
@@ -53,7 +51,7 @@ public interface OrderService {
      * @param id     订单 id
      * @return 订单详情 = order 部分展示字段 + orderDetail
      */
-    OrderInfoVO getByIdAndUserId( Long id, Long userId );
+    UserOrderInfoVO getByIdAndUserId( Long id, Long userId );
 
     /**
      * 用户端-取消订单

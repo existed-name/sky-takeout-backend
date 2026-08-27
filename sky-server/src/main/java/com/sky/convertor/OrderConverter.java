@@ -7,7 +7,7 @@ import com.sky.entity.Orders;
 import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
-import com.sky.vo.order.OrderInfoVO;
+import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderSubmitVO;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -114,7 +114,7 @@ public interface OrderConverter {
 //    @Mapping( target = "cancelTime", ignore = true )
 //    @Mapping( target = "rejectionReason", ignore = true )
     @Mapping( target = "orderDetailList", ignore = true )
-    OrderInfoVO toInfoVO( Orders order );
+    UserOrderInfoVO toInfoVO( Orders order );
 
     /**
      * 完整订单实体类转管理端订单条件分页查询 VO 列表, converter 会循环调用{@link #toPageVO(Orders)}

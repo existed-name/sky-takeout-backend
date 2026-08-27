@@ -7,7 +7,7 @@ import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
-import com.sky.vo.order.OrderInfoVO;
+import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
 import io.swagger.annotations.Api;
@@ -141,7 +141,7 @@ public class OrderController {
      */
     @ApiOperation( "查询订单详情" )
     @GetMapping( "/orderDetail/{id}" )
-    public Result< OrderInfoVO > getInfo(
+    public Result< UserOrderInfoVO > getInfo(
             @PathVariable( name = "id" )
             @NotNull( message = "订单 id 不能为空" )
             @Positive( message = "订单 id 必须是正整数" )
@@ -149,7 +149,7 @@ public class OrderController {
     ){
         Long userId = BaseContext.getCurrentId();
         log.info( "userId = {} 的用户查询 id = {} 的订单信息", userId, id );
-        OrderInfoVO orderInfoVO = orderService.getByIdAndUserId( id, userId );
+        UserOrderInfoVO orderInfoVO = orderService.getByIdAndUserId( id, userId );
         return Result.success( orderInfoVO );
     }
 

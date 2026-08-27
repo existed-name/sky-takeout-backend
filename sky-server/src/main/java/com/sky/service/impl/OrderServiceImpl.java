@@ -43,7 +43,7 @@ import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
 import com.sky.vo.order.OrderHistoryItemVO;
-import com.sky.vo.order.OrderInfoVO;
+import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
@@ -276,14 +276,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional( readOnly = true )
     @Override
-    public OrderInfoVO getByIdAndUserId( Long id, Long userId ){
+    public UserOrderInfoVO getByIdAndUserId( Long id, Long userId ){
         // orderInfoVO = order 部分字段 + orderDetailList, 1 + 1 查询
         Orders order = orderMapper.selectByIdAndUserId( id, userId );
         if ( order == null ){
             throwIfNotExistsOrNotMatches( id );
         }
 
-        OrderInfoVO orderInfoVO = orderConverter.toInfoVO( order );
+        UserOrderInfoVO orderInfoVO = orderConverter.toInfoVO( order );
         List< OrderDetail > orderDetailList = orderDetailMapper.selectByOrderId( id );
         // 这里不会空指针，因为前面判空时已经抛了异常
         orderInfoVO.setOrderDetailList( orderDetailList );
