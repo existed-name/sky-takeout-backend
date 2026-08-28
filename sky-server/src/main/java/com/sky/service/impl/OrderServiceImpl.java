@@ -19,6 +19,7 @@ import com.sky.entity.ShoppingCart;
 import com.sky.entity.User;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.order.OrderAcceptFailedException;
 import com.sky.exception.order.OrderFinishedCannotCancelException;
 import com.sky.exception.order.OrderDetailIncompleteException;
 import com.sky.exception.order.OrderStatusInvalidException;
@@ -548,6 +549,36 @@ public class OrderServiceImpl implements OrderService {
         List< OrderDetail > orderDetailList = orderDetailMapper.selectByOrderId( id );
         adminOrderInfoVO.setOrderDetailList( orderDetailList );
         return adminOrderInfoVO;
+    }
+
+    @Override
+    public void acceptById( Long id ){
+        /*
+            业务考虑:
+            * 不存在的订单报错提醒 → 可以直接看 Mapper.update 返回的修改行数
+            * 理论上待接单的订单已经付款( OrderConstant.PayStatus.PAID ), 这里没有再多考虑支付状态
+            * 已经接单的订单不能重复接单 →
+              - mapper 只对待接单状态的订单进行修改, 但不能显式提醒
+              - 或者显式查询该订单的状态、进行判断
+            * 全部丢在 mapper 处理也是可行的, 但不够清晰, 于是选择先查状态
+         */
+        Integer orderStatus = orderMapper.selectStatusById( id );
+        if ( orderStatus == null ){
+            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
+        }
+
+        // 待付款
+        if ( OrderConstant.Status.PENDING_PAYMENT.equals( orderStatus ) ){
+            throw new OrderAcceptFailedException( MessageConstant.ORDER_PENDING_PAYMENT );
+        }
+
+        // 已付款 & 已接单
+        if ( ! OrderConstant.Status.TO_BE_CONFIRMED.equals( orderStatus ) ){
+            throw new OrderAcceptFailedException( MessageConstant.ORDER_HAS_ACCEPTED );
+        }
+
+        // 之前已判空, 修改行数应该恒为 1
+        int updatedRow = orderMapper.updateStatusById( id, OrderConstant.Status.CONFIRMED );
     }
 
 

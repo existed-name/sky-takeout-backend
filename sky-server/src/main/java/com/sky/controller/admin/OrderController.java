@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -88,6 +89,25 @@ public class OrderController {
         log.info( "id = {} 的管理员查看 id = {} 的订单详情", adminId, id );
         AdminOrderInfoVO orderInfoVO = orderService.getById( id );
         return Result.success( orderInfoVO );
+    }
+
+    /**
+     * 接受订单, <br>
+     * 跟教程的<code>confirm</code>区分开,
+     * 因为 confirm 只是确认、可能多种含义,
+     * 而 accept 接受、履行相关职责
+     */
+    @ApiOperation( "接受订单" )
+    @PutMapping( "/{id}/accept" )
+    public Result< Void > accept(
+        @PathVariable( name = "id", required = true )
+        @Positive( message = "订单 id 必须是正整数" )
+        Long id
+    ){
+        Long adminId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员确认接受 id = {} 的订单", adminId, id );
+        orderService.acceptById( id );
+        return Result.success(  );
     }
 
 

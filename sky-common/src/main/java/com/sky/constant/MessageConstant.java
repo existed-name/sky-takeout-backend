@@ -73,4 +73,6 @@ public class MessageConstant {
     public static final String REORDER_FAILED_BECAUSE_SETMEAL_OUT_OF_SALE = "该订单的部分套餐已停售, 不能重新下单";
     public static final String REORDER_FAILED_BECAUSE_DISH_REMOVED = "该订单的部分菜品已下架, 不能重新下单";
     public static final String REORDER_FAILED_BECAUSE_SETMEAL_REMOVED = "该订单的部分套餐已下架, 不能重新下单";
+    public static final String ORDER_PENDING_PAYMENT = "未付款的订单不能接受~~";
+    public static final String ORDER_HAS_ACCEPTED = "已接受的订单请勿重复接受";
 }

@@ -11,6 +11,8 @@ import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
 
+import javax.validation.constraints.Positive;
+
 public interface OrderService {
     /**
      * 用户端-用户下单、创建订单、返回订单必要数据
@@ -91,4 +93,11 @@ public interface OrderService {
      * @return 订单详情 VO( 与用户端订单详情 VO 隔离 )
      */
     AdminOrderInfoVO getById(  Long id );
+
+    /**
+     * 管理端接受订单
+     *
+     * @param id 订单 id
+     */
+    void acceptById(  Long id );
 }

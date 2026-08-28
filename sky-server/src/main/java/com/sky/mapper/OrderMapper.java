@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 import java.util.Map;
@@ -178,4 +179,31 @@ public interface OrderMapper {
      * @return 完整的订单实体对象, 不存在时返回 null
      */
     Orders selectById( @Param( "id" ) Long id );
+
+    /**
+     * 查询某个订单的状态
+     *
+     * @param id 订单 id
+     * @return 订单状态, 为 null 说明订单不存在
+     */
+    @Select( """
+            SELECT status
+            FROM orders
+            WHERE id = #{id}
+            """ )
+    Integer selectStatusById( @Param( "id" ) Long id );
+
+    /**
+     * 管理端更新订单状态
+     *
+     * @param id 订单 id
+     * @param status 订单状态, {@link com.sky.constant.OrderConstant.Status}
+     * @return 修改行数, 0 => 订单不存在, 1 => 修改成功
+     */
+    @Update( """
+            UPDATE orders
+            SET status = #{status}
+            WHERE id = #{id}
+            """ )
+    int updateStatusById( @Param( "id" ) Long id, @Param( "status" ) Integer status );
 }
