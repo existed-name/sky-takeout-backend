@@ -461,6 +461,7 @@ public class OrderServiceImpl implements OrderService {
         shoppingCartMapper.insertBatch( shoppingCartList );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public PageResult pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO ){
         /*
@@ -516,6 +517,7 @@ public class OrderServiceImpl implements OrderService {
         return PageUtil.buildPageResult( ordersPage.getTotal(), orderPageVOList );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public OrderStatisticsVO statistics( ){
         Map< Integer, OrderStatusCount > statusToCountMap = orderMapper.countGroupByStatus();
@@ -535,6 +537,7 @@ public class OrderServiceImpl implements OrderService {
         return build;
     }
 
+    @Transactional( readOnly = true )
     @Override
     public AdminOrderInfoVO getById( Long id ){
         /*
@@ -554,6 +557,7 @@ public class OrderServiceImpl implements OrderService {
         return adminOrderInfoVO;
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void acceptById( Long id ){
         /*
