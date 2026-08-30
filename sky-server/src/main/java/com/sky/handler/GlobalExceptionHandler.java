@@ -62,11 +62,11 @@ public class GlobalExceptionHandler {
         at org.springframework.web.servlet.DispatcherServlet.getHandler(DispatcherServlet.java:1264) ~[spring-webmvc-5.3.22.jar:5.3.22]
         at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1046) ~[spring-webmvc-5.3.22.jar:5.3.22]
 
-        请求路径错误的异常是框架管理的 👇
+        请求路径错误是框架管理的, 无需单独捕获 👇
         2026-06-18 17:15:00.190  WARN 29992 --- [nio-8080-exec-9] o.s.web.servlet.PageNotFound             : No mapping for GET /admin/test
          */
-        log.error( "HTTP 请求方法不匹配: {}", e.getMessage() );
-        return Result.error( MessageConstant.REQUEST_METHOD_ERROR );
+        log.warn( "HTTP 请求方法不匹配: {}", e.getMessage() );
+        return Result.error( MessageConstant.REQUEST_METHOD_NOT_MATCH );
     }
 
     /**
