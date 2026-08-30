@@ -2,6 +2,7 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
+import com.sky.dto.order.AdminOrderCancelDTO;
 import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrdersRejectionDTO;
 import com.sky.enumeration.OperationType;
@@ -150,6 +151,35 @@ public class OrderController {
     @RequestMapping( "/reject" )
     public Result< String > handleMissingId(){
         return Result.error( "拒绝订单 id 不能为空" );
+    }
+
+    /**
+     * 取消订单( 待派送、派送中 )
+     *
+     * @param id 订单状态
+     */
+    @ApiOperation( "取消订单" )
+    @PutMapping( "/{id}/cancel" )
+    public Result< Void > cancel(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id,
+            @RequestBody @Valid
+            AdminOrderCancelDTO orderCancelDTO
+    ){
+        Long adminId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员取消 id = {} 的订单, 取消信息 = {}", adminId, id, orderCancelDTO );
+        orderService.cancelById( id, orderCancelDTO );
+        return Result.success(  );
+    }
+
+    /**
+     * 处理取消订单时缺失 id 路径变量的情况
+     */
+    @ApiOperation( "处理取消订单缺失 id 路径变量的情况" )
+    @RequestMapping( "/cancel" )
+    public Result< String > handleCancelOrderMissingId(){
+        return Result.error( "取消订单 id 不能为空" );
     }
 
 

@@ -6,6 +6,7 @@ import com.sky.constant.OrderConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.convertor.OrderConverter;
 import com.sky.convertor.ShoppingCartConverter;
+import com.sky.dto.order.AdminOrderCancelDTO;
 import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrderStatusCount;
@@ -18,9 +19,12 @@ import com.sky.entity.Orders;
 import com.sky.entity.Setmeal;
 import com.sky.entity.ShoppingCart;
 import com.sky.entity.User;
+import com.sky.enumeration.OrderPayStatus;
+import com.sky.enumeration.OrderStatus;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
 import com.sky.exception.order.OrderAcceptFailedException;
+import com.sky.exception.order.OrderCancelFailedException;
 import com.sky.exception.order.OrderFinishedCannotCancelException;
 import com.sky.exception.order.OrderDetailIncompleteException;
 import com.sky.exception.order.OrderRejectFailedException;
@@ -646,6 +650,50 @@ public class OrderServiceImpl implements OrderService {
         throw new OrderRejectFailedException(
                 MessageConstant.formOrderRejectFailedMessage(
                         OrderConstant.Status.toChineseName( statusProjection.getStatus() )
+                )
+        );
+    }
+
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void cancelById( Long id, AdminOrderCancelDTO orderCancelDTO ){
+        /*
+            * 业务规则
+              - 待接单 → 接单 / 拒单
+              - 待派送、派送中 的订单 → 取消
+              - 已完成 → 退单
+              - 取消肯定需要检查支付状态 → 退款
+            * 思路
+              - 存在性检验
+              - 状态检验、满足要求的才可以取消
+              - 支付状态判断、付了钱就退款
+            * 涉及字段: status, pay_status, cancel_reason, cancel_timed
+         */
+        StatusProjection statusProjection = orderMapper.selectStatusProjectionById( id );
+        if ( statusProjection == null ){
+            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
+        }
+
+        Integer orderStatus = statusProjection.getStatus();
+        if ( OrderStatus.allowCancel( orderStatus ) ){
+            Orders build = Orders.builder()
+                    .id( id )
+                    .status( OrderStatus.CANCELLED.getValue() )
+                    .cancelTime( LocalDateTime.now() )
+                    .cancelReason( orderCancelDTO.getCancelReason() )
+                    .build();
+            Integer payStatus = statusProjection.getPayStatus();
+            if ( OrderPayStatus.PAID.getValue() == payStatus ){
+                refund( id );
+                build.setPayStatus( OrderPayStatus.REFUND.getValue() );
+            }
+            orderMapper.updateById( build );
+            return;
+        }
+
+        throw new OrderCancelFailedException(
+                MessageConstant.formOrderCancelFailedMessage(
+                        OrderStatus.toChineseName( orderStatus )
                 )
         );
     }

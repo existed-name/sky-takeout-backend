@@ -101,4 +101,16 @@ public enum OrderStatus {
         return toInstance( statusValue ).chineseName;
     }
 
+    /**
+     * 可不可以取消该状态的订单
+     * <p>
+     *     实际只允许取消{@link #CONFIRMED}{@link #DELIVERY_IN_PROGRESS}状态的订单
+     * </p>
+     *
+     *
+     * @param statusValue 订单状态数值, 非空
+     */
+    public static boolean allowCancel( int statusValue ){
+        return CONFIRMED.getValue() == statusValue || DELIVERY_IN_PROGRESS.getValue() == statusValue;
+    }
 }

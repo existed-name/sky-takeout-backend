@@ -77,12 +77,22 @@ public class MessageConstant {
     public static final String ORDER_HAS_ACCEPTED = "已接受的订单请勿重复接受";
 
     /**
-     * 拼装因为订单状态不符合要求导致的拒单失败信息
+     * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )
      *
      * @param chineseName 订单状态中文名
      * @return <code>不能拒绝状态为 "xxx" 的订单</code>
      */
     public static String formOrderRejectFailedMessage( String chineseName ){
         return String.format( "不能拒绝状态为 \"%s\" 的订单", chineseName );
+    }
+
+    /**
+     * 拼装因为订单状态不符合要求导致的取消订单失败信息( 管理端 )
+     *
+     * @param chineseName 订单状态中文名
+     * @return <code>不能取消状态为 "xxx" 的订单</code>
+     */
+    public static String formOrderCancelFailedMessage( String chineseName ){
+        return String.format( "不能取消状态为 \"%s\" 的订单", chineseName );
     }
 }
