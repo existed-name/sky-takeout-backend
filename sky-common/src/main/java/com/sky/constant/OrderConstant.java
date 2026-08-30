@@ -14,6 +14,8 @@ public class OrderConstant {
     // ==================== 常量 ====================
     /**
      * 订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+     *
+     * @deprecated 已弃用, 新代码请勿引用, 迁移到{@link com.sky.enumeration.OrderStatus}枚举类进行管理
      */
     public static final class Status {
         /** 1待付款 */
