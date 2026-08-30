@@ -82,6 +82,8 @@ public class OrderConstant {
 
     /**
      * 支付状态 0未支付 1已支付 2退款
+     *
+     * @deprecated 已弃用, 新代码请用{@link com.sky.enumeration.OrderPayStatus}枚举管理订单支付状态常量及方法
      */
     public static final class PayStatus {
         /** 0未支付 */
