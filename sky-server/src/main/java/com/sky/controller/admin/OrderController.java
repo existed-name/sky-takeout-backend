@@ -149,7 +149,7 @@ public class OrderController {
      */
     @ApiOperation( "处理拒绝订单缺失 id 路径变量的问题" )
     @RequestMapping( "/reject" )
-    public Result< String > handleMissingId(){
+    public Result< String > handleRejectOrderMissingId(){
         return Result.error( "拒绝订单 id 不能为空" );
     }
 
