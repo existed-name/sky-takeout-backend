@@ -1,10 +1,10 @@
 package com.sky.mapper;
 
-import com.github.pagehelper.Page;
 import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderStatusCount;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.projection.order.StatusProjection;
 import com.sky.vo.order.OrderHistoryItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
@@ -19,6 +19,9 @@ import java.util.Map;
 
 @Mapper
 public interface OrderMapper {
+
+
+
     /**
      * 用户下单、创建订单、主键回填
      */
@@ -29,8 +32,6 @@ public interface OrderMapper {
             """ )
     @Options( useGeneratedKeys = true, keyProperty = "id" )
     int insert( @Param( "order" ) Orders order );
-
-
 
     /**
      * 根据 id、userId 修改订单信息, 修改前会对传入对象的字段判空
@@ -192,6 +193,19 @@ public interface OrderMapper {
             WHERE id = #{id}
             """ )
     Integer selectStatusById( @Param( "id" ) Long id );
+
+    /**
+     * 查询某个订单的状态、支付状态
+     *
+     * @param id 订单 id
+     * @return 订单状态 + 支付状态 record, 为 null 说明订单不存在
+     */
+    @Select( """
+            SELECT status, pay_status
+            FROM orders
+            WHERE id = #{id}
+            """ )
+    StatusProjection selectStatusProjectionById( @Param( "id" ) Long id );
 
     /**
      * 管理端更新订单状态
