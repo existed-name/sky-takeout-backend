@@ -9,6 +9,7 @@ import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
@@ -103,6 +106,28 @@ public class GlobalExceptionHandler {
         String message = extractBusinessMessage( exception );
         log.warn( "参数检验未通过: {}", message );
         return Result.error( message );
+    }
+
+    /**
+     * 捕获 RequestBody 为空 / 非 json 格式抛出的异常
+     * <pre>
+     *     <code>org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public com.sky.result.Result<java.lang.Void> com.sky.controller.admin.OrderController.reject(java.lang.Long,com.sky.dto.order.OrdersRejectionDTO)</code>
+     * </pre>
+     */
+    @ExceptionHandler( HttpMessageNotReadableException.class )
+    public Result< String > handleNullRequestBodyException( HttpMessageNotReadableException ex ){
+        /*
+        try {
+            byte[] allBytes = ex.getHttpInputMessage().getBody().readAllBytes();
+            String requestBody = new String( allBytes, StandardCharsets.UTF_8 );
+            log.warn( "请求体具体数据 = {}", requestBody );
+        } catch ( IOException e ){
+            log.error( "解析 RequestBody 字节流失败" );
+//            throw new RuntimeException( e );
+        }
+         */
+        log.warn( "请求体为空或者不符合 json 格式" );
+        return Result.error( "请求体不能为空且必须满足 json 格式" );
     }
 
     /**
