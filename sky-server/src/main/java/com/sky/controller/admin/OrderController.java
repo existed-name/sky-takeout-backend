@@ -1,7 +1,10 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
 import com.sky.dto.order.AdminOrderPageQueryDTO;
+import com.sky.dto.order.OrdersRejectionDTO;
+import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
@@ -14,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -110,6 +114,43 @@ public class OrderController {
         return Result.success(  );
     }
 
+    /**
+     * 拒绝订单,
+     * <p>
+     *     RESTful 设计, 请求路径
+     *     <code>/orders/{id}/reject</code> 定位资源和动作,
+     *     dto 传递信息, dto 不需要再带 id
+     * </p>
+     */
+    @ApiOperation( "拒绝订单" )
+    @PutMapping( "/{id}/reject" )
+    @LogOperation( description = "拒绝订单", operationType = OperationType.UPDATE )
+    public Result< Void > reject(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id,
+            @RequestBody @Valid
+            OrdersRejectionDTO orderRejectionDTO
+    ){
+        Long adminId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员拒绝 id = {} 的订单, 拒单信息 = {}", adminId, id, orderRejectionDTO );
+        orderService.rejectById( id, orderRejectionDTO );
+        return Result.success(  );
+    }
+
+    /**
+     * 处理拒绝订单缺失 id 路径变量的问题
+     * <p>
+     *     问题描述: 缺失<code>{id}</code>请求路径缩写为<code>/admin/orders/reject</code>,
+     *     而刚好存在接口<code>GET /admin/orders/{id}</code>, 于是把<code>reject</code>当作 id,
+     *     结果请求方法不匹配
+     * </p>
+     */
+    @ApiOperation( "处理拒绝订单缺失 id 路径变量的问题" )
+    @RequestMapping( "/reject" )
+    public Result< String > handleMissingId(){
+        return Result.error( "拒绝订单 id 不能为空" );
+    }
 
 
 

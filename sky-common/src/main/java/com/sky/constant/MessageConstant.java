@@ -75,4 +75,14 @@ public class MessageConstant {
     public static final String REORDER_FAILED_BECAUSE_SETMEAL_REMOVED = "该订单的部分套餐已下架, 不能重新下单";
     public static final String ORDER_PENDING_PAYMENT = "未付款的订单不能接受~~";
     public static final String ORDER_HAS_ACCEPTED = "已接受的订单请勿重复接受";
+
+    /**
+     * 拼装因为订单状态不符合要求导致的拒单失败信息
+     *
+     * @param chineseName 订单状态中文名
+     * @return <code>不能拒绝状态为 "xxx" 的订单</code>
+     */
+    public static String formOrderRejectFailedMessage( String chineseName ){
+        return String.format( "不能拒绝状态为 \"%s\" 的订单", chineseName );
+    }
 }

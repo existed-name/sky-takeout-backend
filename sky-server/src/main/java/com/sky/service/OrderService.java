@@ -2,6 +2,7 @@ package com.sky.service;
 
 import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderCancelDTO;
+import com.sky.dto.order.OrdersRejectionDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
@@ -11,7 +12,8 @@ import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
 
-import javax.validation.constraints.Positive;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 public interface OrderService {
     /**
@@ -100,4 +102,12 @@ public interface OrderService {
      * @param id 订单 id
      */
     void acceptById(  Long id );
+
+    /**
+     * 管理端拒绝订单
+     *
+     * @param id                订单 id
+     * @param orderRejectionDTO 拒单信息
+     */
+    void rejectById( Long id, OrdersRejectionDTO orderRejectionDTO );
 }

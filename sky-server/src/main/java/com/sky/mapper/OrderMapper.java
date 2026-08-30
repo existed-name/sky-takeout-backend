@@ -206,4 +206,14 @@ public interface OrderMapper {
             WHERE id = #{id}
             """ )
     int updateStatusById( @Param( "id" ) Long id, @Param( "status" ) Integer status );
+
+    /**
+     * 管理端更新订单信息
+     *
+     * @param order 订单实体类, 建议业务类新建对象手动拼装、不需要修改的字段留空、避免覆盖成错误数值
+     * @return 修改行数<br>
+     *          0 => 订单不存在;<br>
+     *          1 => 该订单修改成功
+     */
+    int updateById( @Param( "order" ) Orders order );
 }

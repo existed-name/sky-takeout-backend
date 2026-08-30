@@ -1,5 +1,6 @@
 package com.sky.constant;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,6 +37,16 @@ public class OrderConstant {
         public static final Set< Integer > FINISHED_STATUS = Set.of(
                 COMPLETED, CANCELLED
         );
+        /** 订单状态序号 → 中文名称 */
+        public static final Map< Integer, String > STATUS_TO_CHINESE_NAME_MAP = Map.ofEntries(
+                // 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+                Map.entry( PENDING_PAYMENT, "待付款" ),
+                Map.entry( TO_BE_CONFIRMED, "待接单" ),
+                Map.entry( CONFIRMED, "已接单" ),
+                Map.entry( DELIVERY_IN_PROGRESS, "派送中" ),
+                Map.entry( COMPLETED, "已完成" ),
+                Map.entry( CANCELLED, "已取消" )
+        );
 
         /**
          * 判断订单状态是否有效
@@ -45,10 +56,23 @@ public class OrderConstant {
         }
 
         /**
-         * 该订单是否完成
+         * 该订单是否完成: {@link #COMPLETED}, {@link #CANCELLED}
          */
         public static boolean isFinished( Integer status ){
             return FINISHED_STATUS.contains( status );
+        }
+
+        /**
+         * 拿到该订单状态对应的中文名称
+         *
+         * @throws IllegalArgumentException 当订单状态为 null 时
+         * @return 订单状态中文名, <b>订单状态无效时返回 null</b>
+         */
+        public static String toChineseName( Integer status ){
+            if ( status == null ){
+                throw new IllegalArgumentException( "订单状态不能为空" );
+            }
+            return STATUS_TO_CHINESE_NAME_MAP.get( status );
         }
 
         private Status(){}

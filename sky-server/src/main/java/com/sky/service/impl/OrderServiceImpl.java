@@ -9,6 +9,7 @@ import com.sky.convertor.ShoppingCartConverter;
 import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderCancelDTO;
 import com.sky.dto.order.OrderStatusCount;
+import com.sky.dto.order.OrdersRejectionDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Dish;
@@ -22,6 +23,7 @@ import com.sky.exception.NotFoundException;
 import com.sky.exception.order.OrderAcceptFailedException;
 import com.sky.exception.order.OrderFinishedCannotCancelException;
 import com.sky.exception.order.OrderDetailIncompleteException;
+import com.sky.exception.order.OrderRejectFailedException;
 import com.sky.exception.order.OrderStatusInvalidException;
 import com.sky.exception.order.OrderCannotCancelException;
 import com.sky.exception.order.OrderHasCanceledException;
@@ -52,6 +54,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -581,6 +585,59 @@ public class OrderServiceImpl implements OrderService {
         int updatedRow = orderMapper.updateStatusById( id, OrderConstant.Status.CONFIRMED );
     }
 
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void rejectById( Long id, OrdersRejectionDTO orderRejectionDTO ){
+        /*
+            * 业务规则
+              - 订单不存在、已接单不能拒单( 那个是取消订单 )、拒单后需要退款
+              - 只有订单处于“待接单”状态时可以执行拒单操作
+              - 拒单时需要指定拒单原因 rejection_reason
+              - 已完成不能拒单
+            * 没考虑再对查出来的 orderStatus 判断有效性
+            * 审计字段:
+              - status,
+              - pay_status,
+              - cancel_time 应该是用户端取消订单 + 管理端拒绝订单共用的
+         */
+        Integer orderStatus = orderMapper.selectStatusById( id );
+        if ( orderStatus == null ){
+            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
+        }
+
+        /*
+              - 待付款 状态我觉得可以拒单, 虽然前端原型没有展示待付款订单, 但是语义上讲、只要没有接单那就可以拒单
+        // 待付款: 拒单、无需退款
+        if ( OrderConstant.Status.PENDING_PAYMENT.equals( orderStatus ) ){
+            orderMapper.updateStatusById( id, OrderConstant.Status.CANCELLED );
+            // PayStatus 依然为 UN_PAID
+            return;
+        }
+         */
+
+        // 待接单: 已付款、拒单需要退款, 同步订单状态、支付状态、拒单原因
+        if ( OrderConstant.Status.TO_BE_CONFIRMED.equals( orderStatus ) ){
+            // 先退款、再写库, 防止写库失败导致退款失败、影响用户体验
+            refund( id );
+            Orders build = Orders.builder()
+                    .id( id )
+                    .status( OrderConstant.Status.CANCELLED )
+                    .payStatus( OrderConstant.PayStatus.REFUND )
+                    .rejectionReason( orderRejectionDTO.getRejectionReason() )
+                    .cancelTime( LocalDateTime.now() )
+                    .build();
+            orderMapper.updateById( build );
+            return;
+        }
+
+        // 剩下的就是不可以拒单的: 1待付款 3已接单 4派送中 5已完成 6已取消
+        throw new OrderRejectFailedException(
+                MessageConstant.formOrderRejectFailedMessage(
+                        OrderConstant.Status.toChineseName( orderStatus )
+                )
+        );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
@@ -713,5 +770,14 @@ public class OrderServiceImpl implements OrderService {
 
         Long count = orderStatusCount.getCount();
         return count == null ? 0L : count;
+    }
+
+    /**
+     * 订单退款
+     *
+     * @param id 订单 id, 由调用方保证合法
+     */
+    private void refund( Long id ){
+        log.info( "id = {} 的订单正在退款", id );
     }
 }
