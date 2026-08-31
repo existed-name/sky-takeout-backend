@@ -119,4 +119,11 @@ public interface OrderService {
      * @param id 订单 id
      */
     void cancelById( Long id, AdminOrderCancelDTO orderCancelDTO );
+
+    /**
+     * 管理端派送订单( 状态 = 待派送 )
+     *
+     * @param id 订单 id
+     */
+    void deliverById( Long id );
 }

@@ -25,6 +25,7 @@ import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
 import com.sky.exception.order.OrderAcceptFailedException;
 import com.sky.exception.order.OrderCancelFailedException;
+import com.sky.exception.order.OrderDeliverFailedException;
 import com.sky.exception.order.OrderFinishedCannotCancelException;
 import com.sky.exception.order.OrderDetailIncompleteException;
 import com.sky.exception.order.OrderRejectFailedException;
@@ -698,6 +699,33 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public void deliverById( Long id ){
+        /*
+            * 业务规则
+              - 只对 `已接单, 待派送` 状态的订单进行派送
+            * 涉及字段
+              - status
+         */
+        Integer orderStatus = orderMapper.selectStatusById( id );
+        if ( orderStatus == null ){
+            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
+        }
+
+        if ( OrderStatus.CONFIRMED.getValue() == orderStatus ){
+            deliver( id );
+            orderMapper.updateStatusById( id, OrderStatus.DELIVERY_IN_PROGRESS.getValue() );
+        }
+
+        throw new OrderDeliverFailedException(
+                MessageConstant.formOrderDeliverFailedMessage(
+                        OrderStatus.toChineseName( orderStatus )
+                )
+        );
+    }
+
+
 
     // ==================== 私有辅助方法 ====================
 
@@ -840,4 +868,15 @@ public class OrderServiceImpl implements OrderService {
     private void refund( Long id ){
         log.info( "id = {} 的订单正在退款", id );
     }
+
+    /**
+     * 派送订单, {@link #deliverById(Long id)}
+     *
+     * @param id 订单 id
+     */
+    private void deliver( Long id ){
+        log.info( "正在派送 id = {} 的订单", id );
+    }
+
+
 }

@@ -184,6 +184,31 @@ public class OrderController {
         return Result.error( "取消订单 id 不能为空" );
     }
 
+    /**
+     * 派送订单
+     */
+    @ApiOperation( "派送订单" )
+    @PutMapping( "/{id}/deliver" )
+    @LogOperation( description = "派送订单", operationType = OperationType.UPDATE )
+    public Result< Void > deliver(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id
+    ){
+        Long adminId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员派送 id = {} 的订单", adminId, id );
+        orderService.deliverById( id );
+        return Result.success(  );
+    }
+
+    /**
+     * 处理派送订单时缺失 id 路径变量的情况
+     */
+    @ApiOperation( "处理派送订单缺失 id 路径变量的情况" )
+    @RequestMapping( "/deliver" )
+    public Result< String > handleDeliverOrderMissingId(){
+        return Result.error( "派送订单的 id 不能为空" );
+    }
 
 
     // ==================== 私有辅助方法 ====================

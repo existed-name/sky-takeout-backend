@@ -95,4 +95,14 @@ public class MessageConstant {
     public static String formOrderCancelFailedMessage( String chineseName ){
         return String.format( "不能取消状态为 \"%s\" 的订单", chineseName );
     }
+
+    /**
+     * 拼装因为订单状态不符合要求导致的派送订单失败信息( 管理端 )
+     *
+     * @param chineseName 订单状态中文名
+     * @return <code>不能派送状态为 "xxx" 的订单</code>
+     */
+    public static String formOrderDeliverFailedMessage( String chineseName ){
+        return String.format( "不能派送状态为 \"%s\" 的订单", chineseName );
+    }
 }
