@@ -104,6 +104,7 @@ public class OrderController {
      */
     @ApiOperation( "接受订单" )
     @PutMapping( "/{id}/accept" )
+    @LogOperation( description = "接受订单", operationType = OperationType.UPDATE )
     public Result< Void > accept(
         @PathVariable( name = "id", required = true )
         @Positive( message = "订单 id 必须是正整数" )
@@ -160,6 +161,7 @@ public class OrderController {
      */
     @ApiOperation( "取消订单" )
     @PutMapping( "/{id}/cancel" )
+    @LogOperation( description = "取消订单", operationType = OperationType.UPDATE )
     public Result< Void > cancel(
             @PathVariable( name = "id", required = true )
             @Positive( message = "订单 id 必须是正整数" )
