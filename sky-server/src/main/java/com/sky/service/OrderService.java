@@ -126,4 +126,11 @@ public interface OrderService {
      * @param id 订单 id
      */
     void deliverById( Long id );
+
+    /**
+     * 管理端完成( 派送中的 )订单
+     *
+     * @param id 订单 id
+     */
+    void completeById( Long id );
 }

@@ -210,6 +210,32 @@ public class OrderController {
         return Result.error( "派送订单的 id 不能为空" );
     }
 
+    /**
+     * 完成订单
+     */
+    @ApiOperation( "完成订单" )
+    @PutMapping( "/{id}/complete" )
+    @LogOperation( description = "完成订单", operationType = OperationType.UPDATE )
+    public Result< Void > complete(
+        @PathVariable( name = "id", required = true )
+        @Positive( message = "订单 id 必须是正整数" )
+        Long id
+    ){
+        Long adminId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员完成 id = {} 的订单", adminId, id );
+        orderService.completeById( id );
+        return Result.success(  );
+    }
+
+    /**
+     * 处理完成订单时缺失 id 路径变量的情况
+     */
+    @ApiOperation( "处理完成订单缺失 id 路径变量的情况" )
+    @RequestMapping( "/complete" )
+    public Result< String > handleCompleteOrderMissingId(){
+        return Result.error( "完成订单的 id 不能为空" );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 
