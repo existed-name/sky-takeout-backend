@@ -31,5 +31,9 @@ sky:
     appid: <自己的小程序 id>
     secret: <自己的小程序密钥>
 
-
+  baidu-map:
+    access-key: <自己的ak>
+    url:
+      geocoding: https://api.map.baidu.com/geocoding/v3
+      direction: https://api.map.baidu.com/direction/v2/riding
 

@@ -60,6 +60,15 @@ sky:
     bucket-name: ${sky.alioss.bucket-name}
     endpoint: ${sky.alioss.endpoint}
     access-key-secret: ${sky.alioss.access-key-secret}
+  # 百度地图
+  baidu-map:
+    access-key: ${sky.baidu-map.access-key}
+    # API 网址放在配置文件的目的是方便部署替换新网址
+    url:
+      # 地理编码 API, 把具体地址转为经纬度
+      geocoding: ${sky.baidu-map.url.geocoding}
+      # 路线规划 API, 主要用来拿到 2 个地址的路线距离
+      direction: ${sky.baidu-map.url.direction}
 
 pageHelper:
   # 自动修正非法页码（0、负数改为1，超过最大页改为最后一页）
