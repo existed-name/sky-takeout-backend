@@ -1,6 +1,8 @@
 package com.sky.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -15,62 +17,108 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Http工具类
+ * Http工具类，向远程发送请求，封装了 Get、Post 操作
+ *
+ * @UpdateTime 2026-09-05 6:44
  */
+@Slf4j
 public class HttpClientUtil {
 
     static final  int TIMEOUT_MSEC = 5 * 1000;
 
     /**
-     * 发送GET方式请求
-     * @param url
-     * @param paramMap
-     * @return
+     * 向目标路径/网址发送 GET 请求
+     *
+     * @param url 目标接口的完整路径/网址, 比如{@code https://api.map.baidu.com/geocoding/v3}
+     * @param nameToRequestParamsMap 请求参数, 以 RequestParam 形式拼接在请求路径后面, 比如{@code https://api.map.baidu.com/geocoding/v3?address=北京市海淀区上地十街10号&output=json&ak=您的ak}
+     * @return 响应体{@link org.springframework.http.ResponseEntity}解析出的 json 字符串
      */
-    public static String doGet(String url,Map<String,String> paramMap){
-        // 创建Httpclient对象
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+    public static String doGet( String url, Map< String, String > nameToRequestParamsMap ){
+        /*
+            1. 创建默认 HttpClient 操作客户端
+            2. 发送请求:
+                需要用到 HttpClient.execute
+                进而需要构建请求对象 HttpUriRequest request
+                而 org.apache.http.client.methods.HttpUriRequest 是接口
+                进而找到实现类的子类 org.apache.http.client.methods.HttpGet
+            3. 于是需要提前构建 HttpGet
+            4. 于是需要提前构建 uri 拼接请求路径
+         */
+        URIBuilder uriBuilder = new URIBuilder(  );
+        uriBuilder.setPath( url );
+        nameToRequestParamsMap.forEach(
+                ( k, v ) -> uriBuilder.addParameter( k, v )
+        );
+        URI uri = null;
 
-        String result = "";
-        CloseableHttpResponse response = null;
+        String responseString = "";
+        try(
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+        ){
+            uri = uriBuilder.build();
+            HttpGet httpGet = new HttpGet( uri );
 
-        try{
-            URIBuilder builder = new URIBuilder(url);
-            if(paramMap != null){
-                for (String key : paramMap.keySet()) {
-                    builder.addParameter(key,paramMap.get(key));
+            try(
+                CloseableHttpResponse httpResponse = httpClient.execute( httpGet );
+            ){
+            /*
+                发请求、拿到响应体 json 字符串
+                额外检验: 遇到了再做 → 判空、状态码检验
+             */
+                if ( httpResponse == null || httpResponse.getEntity() == null ){
+                    String message = String.format( "请求方法 GET, 访问 uri = %s 时响应体为空, 可能是 uri 写错或者远程服务器不可用", uri );
+                    /*
+                    对于日志的理解
+                    手动 if 检验：抛异常 + 带上信息就行、交给全局异常处理器输出日志
+                    catch 异常：log 当前操作及参数（不带异常）、异常上抛
+                    log.error( message );
+                     */
+                    throw new IllegalStateException( message );
                 }
-            }
-            URI uri = builder.build();
 
-            //创建GET请求
-            HttpGet httpGet = new HttpGet(uri);
+                int statusCode = httpResponse.getStatusLine().getStatusCode();
+                if ( statusCode < 200 || statusCode >= 300 ){
+                    String message = String.format( "请求方法 GET, 访问 uri = %s 时响应失败, 状态码 = %d", uri, statusCode );
+                    throw new IllegalStateException( message );
+                }
 
-            //发送请求
-            response = httpClient.execute(httpGet);
-
-            //判断响应状态
-            if(response.getStatusLine().getStatusCode() == 200){
-                result = EntityUtils.toString(response.getEntity(),"UTF-8");
+                /*
+                    【注意】
+                    嵌套 try-catch 可能会吞掉内部异常
+                    一定要看看去掉最外层 catch 看看内部代码会不会有编译时异常
+                    否则会内外层异常混到一起、区分不开
+                 */
+                HttpEntity responseEntity = httpResponse.getEntity();
+                try {
+                    responseString = EntityUtils.toString( responseEntity, StandardCharsets.UTF_8 );
+                } catch ( IOException e ){
+                    log.error( "请求方法 GET, uri = {} , 响应体转换字符串失败, 响应体 = {}", uri, responseEntity );
+                    throw new UncheckedIOException( e );
+                }
+            } catch ( IOException e ){
+                log.error( "执行 GET 请求失败, uri = {}", uri );
+                throw new UncheckedIOException( e );
             }
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            try {
-                response.close();
-                httpClient.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } catch ( IOException e ){
+            log.error( "创建默认 HttpClient 失败" );
+            throw new UncheckedIOException( e );
+        } catch ( URISyntaxException e ){
+            log.error( "构建 URI 对象失败" );
+            throw new IllegalStateException( e );
         }
 
-        return result;
+        // 高频调用 / 成功率大 / 技术细节省略日志 最多 debug
+        log.debug( "GET 请求执行成功, uri = {}, 响应结果字符串 = {}", uri.toString(), responseString );
+        return responseString;
     }
 
     /**
