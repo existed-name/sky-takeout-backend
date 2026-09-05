@@ -1,12 +1,16 @@
 package com.sky.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sky.external.DirectionDTO;
 import com.sky.external.GeoCodingDTO;
 import com.sky.properties.BaiduMapProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,6 +85,88 @@ public class BaiduMapUtil {
             throw new IllegalStateException( message );
         }
         return geoCodingDTO;
+    }
+
+    /**
+     * 规划 2 点之间的路线, 主要用于获取距离
+     * <p>
+     *     内部获取 2 点位置的纬度精度数据后, 调用{@link #direct( String destination, String origin ))}
+     * </p>
+     *
+     * @param destinationAddress 终点具体位置, 比如{@code 北京市海淀区上地十街10号}
+     * @param originAddress 起点具体位置
+     * @return 2 点距离数据封装对象
+     */
+    public DirectionDTO directByAddress( String destinationAddress, String originAddress ){
+        GeoCodingDTO destinationGeoCodingDTO = geoCoding( destinationAddress );
+        String destination = destinationGeoCodingDTO.concatLongitudeAndLatitude();
+        GeoCodingDTO originGeoCodingDTO = geoCoding( originAddress );
+        String origin = originGeoCodingDTO.concatLongitudeAndLatitude();
+        return direct( destination, origin );
+    }
+
+    /**
+     * 规划 2 点之间的路线, 主要用于获取距离
+     * <p>
+     *     完整请求路径示例: {@code https://api.map.baidu.com/direction/v2/riding?origin=40.01116,116.339303&destination=39.936404,116.452562&ak=您的AK}
+     * </p>
+     *
+     * @param destination 拼接好的终点纬度经度, 格式{@code 纬度,经度}, 小数点后不超过6位, 比如 {@code 40.056878,116.30815}
+     * @param origin 拼接好的起点纬度经度字符串
+     * @return 2 点距离数据封装对象
+     *
+     * @see <a href="https://lbsyun.baidu.com/docs/webapi?title=directionv2/webservice-direction/cycling">百度地图路线规划接口文档</a>
+     */
+    private DirectionDTO direct( String destination, String origin ){
+        /*
+            请求路径、请求参数、发起请求、解析响应
+         */
+        String directionUrl = baiduMapProperties.getUrl().getDirection();
+        Map< String, String > requestParamsMap = Map.ofEntries(
+                Map.entry( "origin", origin ),
+                Map.entry( "destination", destination ),
+                Map.entry( "ak", baiduMapProperties.getAccessKey() )
+        );
+
+        String responseJson = HttpClientUtil.doGet( directionUrl, requestParamsMap );
+        DirectionDTO directionDTO = new DirectionDTO();
+        try {
+            /*
+                {
+                  // ...
+                  "result": {
+                    "routes": [
+                      {
+                        // ...
+                        // 这个应该才是想要的, result.routes.distance
+                        "distance": 17278,
+                        "duration": 5879,
+                        "steps": [
+                           // 一堆规划
+                         ],
+                        // ...
+                      }
+                    ],
+                    // ...
+                  }
+                }
+
+                于是根据 ai 提示, 把 json 的 result.routes 提取出来
+                然后拿到里面的 distance
+             */
+            JsonNode rootNode = objectMapper.readTree( responseJson );
+            JsonNode routes = rootNode.path( "result" ).path( "routes" );
+            List< Double > distances = new ArrayList<>();
+            for ( JsonNode route : routes ){
+                distances.add( route.path( "distance" ).asDouble() );
+            }
+            directionDTO.setDistances( distances );
+        } catch ( JsonProcessingException e ){
+            log.error( "解析 json 树节点失败, 可能是 json 语法/结构错误, 百度地图路线规划响应体信息: {}", responseJson );
+            throw new IllegalStateException( e );
+        }
+
+        return directionDTO;
     }
 
 
