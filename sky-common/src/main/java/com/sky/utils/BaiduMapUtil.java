@@ -98,25 +98,25 @@ public class BaiduMapUtil {
     }
 
     /**
-     * 规划 2 点之间的路线, 主要用于获取距离
+     * 根据 2 点地址规划 2 点之间的路线, 主要用于获取距离
      * <p>
-     *     内部获取 2 点位置的纬度精度数据后, 调用{@link #direct( String destination, String origin ))}
+     *     内部获取 2 点位置的纬度精度数据后, 调用{@link #directByGeoCoordinates( String destination, String origin ))}
      * </p>
      *
      * @param destinationAddress 终点具体位置, 比如{@code 北京市海淀区上地十街10号}
      * @param originAddress 起点具体位置
      * @return 2 点距离数据封装对象
      */
-    public DirectionDTO directByAddress( String destinationAddress, String originAddress ){
+    public DirectionDTO directByAddresses( String originAddress, String destinationAddress ){
         GeoCodingDTO destinationGeoCodingDTO = geoCoding( destinationAddress );
         String destination = destinationGeoCodingDTO.concatLongitudeAndLatitude();
         GeoCodingDTO originGeoCodingDTO = geoCoding( originAddress );
         String origin = originGeoCodingDTO.concatLongitudeAndLatitude();
-        return direct( destination, origin );
+        return directByGeoCoordinates( destination, origin );
     }
 
     /**
-     * 规划 2 点之间的路线, 主要用于获取距离
+     * 根据 2 点的地理坐标( 纬度经度 )规划 2 点之间的路线, 主要用于获取距离
      * <p>
      *     完整请求路径示例: {@code https://api.map.baidu.com/direction/v2/riding?origin=40.01116,116.339303&destination=39.936404,116.452562&ak=您的AK}
      * </p>
@@ -127,7 +127,7 @@ public class BaiduMapUtil {
      *
      * @see <a href="https://lbsyun.baidu.com/docs/webapi?title=directionv2/webservice-direction/cycling">百度地图路线规划接口文档</a>
      */
-    private DirectionDTO direct( String destination, String origin ){
+    private DirectionDTO directByGeoCoordinates( String origin, String destination ){
         /*
             请求路径、请求参数、发起请求、解析响应
          */
