@@ -72,6 +72,16 @@ public class BaiduMapUtil {
 
         /*
             解析 json 字符串成目标对象
+            {
+                "status": 0,
+                "result": {
+                    "location": {
+                        "lng": 116.4133836971231,
+                        "lat": 39.910924547299568
+                    },
+                    // ...
+                }
+            }
          */
         GeoCodingDTO geoCodingDTO = null;
         try {
