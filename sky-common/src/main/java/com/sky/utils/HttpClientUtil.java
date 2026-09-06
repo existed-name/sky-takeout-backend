@@ -38,7 +38,7 @@ public class HttpClientUtil {
     /**
      * 向目标路径/网址发送 GET 请求
      *
-     * @param url 目标接口的完整路径/网址, 比如{@code https://api.map.baidu.com/geocoding/v3}
+     * @param url 请求参数之前的所有网址 = 目标接口的{@code 协议://域名或者IP/部分路径}, 比如{@code https://api.map.baidu.com/geocoding/v3}
      * @param nameToRequestParamsMap 请求参数, 以 RequestParam 形式拼接在请求路径后面, 比如{@code https://api.map.baidu.com/geocoding/v3?address=北京市海淀区上地十街10号&output=json&ak=您的ak}
      * @return 响应体{@link org.springframework.http.ResponseEntity}解析出的 json 字符串
      */
@@ -53,18 +53,34 @@ public class HttpClientUtil {
             3. 于是需要提前构建 HttpGet
             4. 于是需要提前构建 uri 拼接请求路径
          */
-        URIBuilder uriBuilder = new URIBuilder(  );
-        uriBuilder.setPath( url );
-        nameToRequestParamsMap.forEach(
-                ( k, v ) -> uriBuilder.addParameter( k, v )
-        );
         URI uri = null;
+        try {
+            URIBuilder uriBuilder = new URIBuilder( url );
+            nameToRequestParamsMap.forEach(
+                    /*
+                        本来是在 try 外面定义 URIBuilder、try 内赋值
+                        但是 lambda 要求变量不变
+                        Variable used in lambda expression should be final or effectively final
+                        所以就合在一起构建、只输出产物 uri
+                      */
+                    ( k, v ) -> uriBuilder.addParameter( k, v )
+            );
+            try {
+                uri = uriBuilder.build();
+            } catch ( URISyntaxException e ){
+                log.error( "构建 URI 对象失败, url = {}", url );
+                throw new IllegalStateException( e );
+            }
+        } catch ( URISyntaxException e ){
+            log.error( "URIBuilder 创建失败, 可能是 url 格式错误导致解析失败, url = {}", url );
+            throw new IllegalStateException( e );
+        }
+
 
         String responseString = "";
         try(
             CloseableHttpClient httpClient = HttpClients.createDefault();
         ){
-            uri = uriBuilder.build();
             HttpGet httpGet = new HttpGet( uri );
 
             try(
@@ -111,9 +127,6 @@ public class HttpClientUtil {
         } catch ( IOException e ){
             log.error( "创建默认 HttpClient 失败" );
             throw new UncheckedIOException( e );
-        } catch ( URISyntaxException e ){
-            log.error( "构建 URI 对象失败" );
-            throw new IllegalStateException( e );
         }
 
         // 高频调用 / 成功率大 / 技术细节省略日志 最多 debug
