@@ -33,6 +33,7 @@ logging:
         mapper: debug
         service: info
         controller: info
+        utils: info # debug
 
 sky:
   # JwtProperties

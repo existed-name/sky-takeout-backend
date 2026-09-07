@@ -48,7 +48,7 @@ public class GeoCodingDTO {
     // ==================== 实例变量 ====================
     /** 状态码，0 为正常 */
     @JsonProperty( "status" )
-    private int status;
+    private Integer status;
     /** 异常信息, 只在服务状态码异常（非0）时返回 */
     @JsonProperty( "msg" )
     private String msg;
@@ -73,7 +73,7 @@ public class GeoCodingDTO {
         /** 经度 lng, 官方类型为 float */
         @JsonProperty( "lng" )
         private float longitude;
-        /** 维度 lat, 官方类型为 float */
+        /** 纬度 lat, 官方类型为 float */
         @JsonProperty( "lat" )
         private float latitude;
     }
@@ -90,7 +90,7 @@ public class GeoCodingDTO {
     /**
      * 将该点的纬度、精度拼接为字符串, 作为百度地图规划路线的请求参数起点经纬度
      * <p>
-     *     格式为{@code 纬度 lng,经度 lat}, 小数点后不超过6位, 比如 {@code 40.056878,116.30815}
+     *     格式为{@code 纬度 latitude,经度 longitude}, 小数点后不超过6位, 比如 {@code 40.056878,116.30815}
      * </p>
      *
      * @see <a href="https://lbsyun.baidu.com/docs/webapi?title=directionv2/webservice-direction/cycling">百度地图路线规划接口文档</a>
@@ -100,8 +100,8 @@ public class GeoCodingDTO {
         DecimalFormat df = new DecimalFormat( "#.######" );
         String concat = String.format(
                 "%s,%s",
-                df.format( result.getLocation().getLongitude() ),
-                df.format( result.getLocation().getLatitude() )
+                df.format( result.getLocation().getLatitude() ),
+                df.format( result.getLocation().getLongitude() )
         );
         return concat;
     }
