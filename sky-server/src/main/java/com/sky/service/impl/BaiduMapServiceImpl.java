@@ -4,6 +4,7 @@ import com.sky.constant.MessageConstant;
 import com.sky.enumeration.BaiduMapAPIStatus;
 import com.sky.exception.baiduMap.AddressBlankException;
 import com.sky.exception.baiduMap.BaiduMapStatusException;
+import com.sky.external.DirectionDTO;
 import com.sky.external.GeoCodingDTO;
 import com.sky.service.BaiduMapService;
 import com.sky.utils.BaiduMapUtil;
@@ -46,6 +47,24 @@ public class BaiduMapServiceImpl implements BaiduMapService {
             throw new BaiduMapStatusException( geoCodingDTO.getMsg() );
         }
         return geoCodingDTO;
+    }
+
+    @Override
+    public DirectionDTO listDistances( String originAddress, String destinationAddress ){
+        /*
+            * 如果直接交给 baiduMapUtil 会缺失地址检验、但我又不想重复写判断
+              所以直接调用 geocode 方法拿到每个地点的地理坐标数据,
+            * 然后 baiduMapUtil 还没有提供参数为 GeoCodingDTO 的方法
+              我又不想暴露太多细节到 service
+              所以又新增了参数为 GeoCodingDTO 的方法
+         */
+        GeoCodingDTO originGeoCodingDto = geocode( originAddress );
+        GeoCodingDTO destinationGeoCodingDto = geocode( destinationAddress );
+        DirectionDTO directionDTO = baiduMapUtil.directByGeoCodingDTOs( originGeoCodingDto, destinationGeoCodingDto );
+        if ( BaiduMapAPIStatus.DIRECTION_OK.getStatusCode() != directionDTO.getStatus() ){
+            throw new BaiduMapStatusException( directionDTO.getMessage() );
+        }
+        return directionDTO;
     }
 
 

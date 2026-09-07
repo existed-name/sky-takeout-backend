@@ -116,6 +116,22 @@ public class BaiduMapUtil {
     }
 
     /**
+     * 根据 2 点的地理坐标数据对象规划 2 点之间的路线, 主要用于获取距离
+     * <p>
+     *     内部拼接纬度经度地理坐标后, 调用{@link #directByGeoCoordinates( String destination, String origin ))}
+     * </p>
+     *
+     * @param originGeoCodingDto 起点地理坐标数据对象
+     * @param destinationGeoCodingDto 终点地理坐标数据对象
+     * @return 2 点距离数据封装对象
+     */
+    public DirectionDTO directByGeoCodingDTOs( GeoCodingDTO originGeoCodingDto, GeoCodingDTO destinationGeoCodingDto ){
+        String origin = originGeoCodingDto.concatLongitudeAndLatitude();
+        String destination = destinationGeoCodingDto.concatLongitudeAndLatitude();
+        return directByGeoCoordinates( origin, destination );
+    }
+
+    /**
      * 根据 2 点的地理坐标( 纬度经度 )规划 2 点之间的路线, 主要用于获取距离
      * <p>
      *     完整请求路径示例: {@code https://api.map.baidu.com/direction/v2/riding?origin=40.01116,116.339303&destination=39.936404,116.452562&ak=您的AK}
@@ -127,7 +143,7 @@ public class BaiduMapUtil {
      *
      * @see <a href="https://lbsyun.baidu.com/docs/webapi?title=directionv2/webservice-direction/cycling">百度地图路线规划接口文档</a>
      */
-    private DirectionDTO directByGeoCoordinates( String origin, String destination ){
+    public DirectionDTO directByGeoCoordinates( String origin, String destination ){
         /*
             请求路径、请求参数、发起请求、解析响应
          */
@@ -143,6 +159,8 @@ public class BaiduMapUtil {
         try {
             /*
                 {
+                  "status": 0,
+                  "message": "ok",
                   // ...
                   "result": {
                     "routes": [
@@ -165,6 +183,9 @@ public class BaiduMapUtil {
                 然后拿到里面的 distance
              */
             JsonNode rootNode = objectMapper.readTree( responseJson );
+            directionDTO.setStatus( rootNode.path( "status" ).asInt() );
+            directionDTO.setMessage( rootNode.path( "message" ).asText() );
+
             JsonNode routes = rootNode.path( "result" ).path( "routes" );
             List< Double > distances = new ArrayList<>();
             for ( JsonNode route : routes ){

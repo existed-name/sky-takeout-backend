@@ -1,5 +1,6 @@
 package com.sky.external;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -19,7 +20,22 @@ public class DirectionDTO {
 
 
     // ==================== 实例变量 ====================
-    /** 2 地址之间各种路线的距离 */
+
+    /**
+     * 响应状态码
+     * <p>
+     *     0：成功<br>
+     *     1：服务内部错误<br>
+     *     2：参数无效<br>
+     *     2001：无骑行路线
+     * </p>
+     */
+    @JsonProperty( "status" )
+    private Integer status;
+    /** 状态码对应的信息 */
+    @JsonProperty( "message" )
+    private String message;
+    /** 2 地址之间各种路线的距离, 单位: 米 m */
     private List< Double > distances = new ArrayList<>();
 
 
