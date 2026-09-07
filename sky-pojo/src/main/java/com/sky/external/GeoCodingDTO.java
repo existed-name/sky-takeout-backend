@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.text.DecimalFormat;
 
 /**
- * 百度地图将具体位置地理编码后拿到的经度纬度包装对象
+ * 百度地图将具体位置地理编码后拿到的地理坐标数据对象对象( 包装经度纬度 )
  * <p>
  *     注意<br>
  *     1. 官方的经纬度类型写的 float、所以这里没用 double<br>
@@ -70,7 +70,7 @@ public class GeoCodingDTO {
      */
     @Getter
     private static class Location {
-        /** 精度 lng, 官方类型为 float */
+        /** 经度 lng, 官方类型为 float */
         @JsonProperty( "lng" )
         private float longitude;
         /** 维度 lat, 官方类型为 float */
@@ -90,7 +90,7 @@ public class GeoCodingDTO {
     /**
      * 将该点的纬度、精度拼接为字符串, 作为百度地图规划路线的请求参数起点经纬度
      * <p>
-     *     格式为{@code 纬度,经度}, 小数点后不超过6位, 比如 {@code 40.056878,116.30815}
+     *     格式为{@code 纬度 lng,经度 lat}, 小数点后不超过6位, 比如 {@code 40.056878,116.30815}
      * </p>
      *
      * @see <a href="https://lbsyun.baidu.com/docs/webapi?title=directionv2/webservice-direction/cycling">百度地图路线规划接口文档</a>

@@ -100,7 +100,7 @@ public class BaiduMapUtil {
     /**
      * 根据 2 点地址规划 2 点之间的路线, 主要用于获取距离
      * <p>
-     *     内部获取 2 点位置的纬度精度数据后, 调用{@link #directByGeoCoordinates( String destination, String origin ))}
+     *     内部获取 2 点位置的纬度精度数据后, 拼接纬度经度地理坐标, 再调用{@link #directByGeoCoordinates( String destination, String origin ))}
      * </p>
      *
      * @param destinationAddress 终点具体位置, 比如{@code 北京市海淀区上地十街10号}
