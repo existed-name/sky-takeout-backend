@@ -116,4 +116,14 @@ public class MessageConstant {
     public static String formOrderCompleteFailedMessage( String chineseName ){
         return String.format( "不能完成状态为 \"%s\" 的订单", chineseName );
     }
+
+    /**
+     * 用户收货地址距离商家门店太远时, 拼接异常信息
+     *
+     * @param limitDistance 配送距离限制, 单位 m 米
+     * @return {@code 配送距离限制 xxx 米, 您的收货地址太远啦}
+     */
+    public static String formDistanceLimitExceededMessage( Double limitDistance ){
+        return String.format( "配送距离限制 %f 米, 您的收货地址太远啦~~~", limitDistance );
+    }
 }

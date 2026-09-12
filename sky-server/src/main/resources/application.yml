@@ -70,6 +70,12 @@ sky:
       geocoding: ${sky.baidu-map.url.geocoding}
       # 路线规划 API, 主要用来拿到 2 个地址的路线距离
       direction: ${sky.baidu-map.url.direction}
+  # 商家门店信息
+  shop:
+    # 具体地址
+    address: ${sky.shop.address}
+    # 送货距离限制, 单位 m 米
+    limit-distance: ${sky.shop.limit-distance}
 
 pageHelper:
   # 自动修正非法页码（0、负数改为1，超过最大页改为最后一页）

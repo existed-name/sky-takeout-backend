@@ -23,6 +23,7 @@ import com.sky.enumeration.OrderPayStatus;
 import com.sky.enumeration.OrderStatus;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
+import com.sky.exception.baiduMap.DistanceLimitExceededException;
 import com.sky.exception.order.OrderAcceptFailedException;
 import com.sky.exception.order.OrderCancelFailedException;
 import com.sky.exception.order.OrderCompleteFailedException;
@@ -36,6 +37,7 @@ import com.sky.exception.order.OrderHasCanceledException;
 import com.sky.exception.order.OrderUserNotMatchException;
 import com.sky.exception.order.ReorderFailedException;
 import com.sky.exception.shoppingCart.EmptyShoppingCartException;
+import com.sky.external.DirectionDTO;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.OrderDetailMapper;
@@ -44,7 +46,9 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.projection.order.StatusProjection;
+import com.sky.properties.ShopInfoProperties;
 import com.sky.result.PageResult;
+import com.sky.service.BaiduMapService;
 import com.sky.service.OrderService;
 import com.sky.utils.OrderCacheManager;
 import com.sky.utils.PageUtil;
@@ -88,10 +92,12 @@ public class OrderServiceImpl implements OrderService {
     private final DishMapper dishMapper;
     private final SetmealMapper setmealMapper;
     private final ShoppingCartConverter shoppingCartConverter;
+    private final ShopInfoProperties shopInfoProperties;
+    private final BaiduMapService baiduMapService;
 
 
     // ==================== 构造器 ====================
-    public OrderServiceImpl( OrderConverter orderConverter, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper, ShoppingCartConverter shoppingCartConverter ){
+    public OrderServiceImpl( OrderConverter orderConverter, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper, ShoppingCartConverter shoppingCartConverter, ShopInfoProperties shopInfoProperties, BaiduMapService baiduMapService ){
         this.orderConverter = orderConverter;
         this.userMapper = userMapper;
         this.addressBookMapper = addressBookMapper;
@@ -102,6 +108,8 @@ public class OrderServiceImpl implements OrderService {
         this.dishMapper = dishMapper;
         this.setmealMapper = setmealMapper;
         this.shoppingCartConverter = shoppingCartConverter;
+        this.shopInfoProperties = shopInfoProperties;
+        this.baiduMapService = baiduMapService;
     }
 
 
@@ -153,6 +161,30 @@ public class OrderServiceImpl implements OrderService {
             }
             throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
         }
+
+        /*
+            day09 新需求: 用户下单之前检验收货地址距离商家地址是否过远
+            这里拼装的 `xx省xx市xx具体地址`, 获取配置文件的商家地址,
+            然后调百度地图服务类获取 2 点距离
+            如果最短距离都超过距离限制、那就拒绝派送
+         */
+        String userCompleteAddress = String.format( "%s%s%s",
+                addressBookVO.getProvinceName(),
+                addressBookVO.getCityName(),
+                addressBookVO.getDetail() );
+        String shopAddress = shopInfoProperties.getAddress();
+        DirectionDTO directionDTO = baiduMapService.listDistances( shopAddress, userCompleteAddress );
+        List< Double > distances = directionDTO.getDistances();
+        Double minDistance = distances.stream()
+                // Double::compare
+                .min( ( a, b ) -> Double.compare( a, b ) )
+                // TODO: 补充存在性判断( 理论上 baiduMapService 里面响应状态正常就有 distance、否则就抛异常, 但是不能完全确保遗漏 )
+                .get();
+        if ( Double.compare( minDistance, shopInfoProperties.getLimitDistance() ) > 0 ){
+            throw new DistanceLimitExceededException( MessageConstant.formDistanceLimitExceededMessage( shopInfoProperties.getLimitDistance() ) );
+        }
+
+        // 继续设置信息、创建订单
         entity.setConsignee( addressBookVO.getConsignee() );
         entity.setAddress( addressBookVO.getDetail() );
         entity.setPhone( addressBookVO.getPhone() );

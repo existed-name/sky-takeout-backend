@@ -1,6 +1,7 @@
 package com.sky;
 
 import com.sky.properties.BaiduMapProperties;
+import com.sky.properties.ShopInfoProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableConfigurationProperties( {
         // 交给 IoC 注册为 Spring Bean
         BaiduMapProperties.class,
+        ShopInfoProperties.class
 } )
 @Slf4j
 public class SkyApplication {

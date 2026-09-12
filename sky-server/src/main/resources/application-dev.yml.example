@@ -37,3 +37,6 @@ sky:
       geocoding: https://api.map.baidu.com/geocoding/v3
       direction: https://api.map.baidu.com/direction/v2/riding
 
+  shop:
+    address: 北京市海淀区上地十街10号
+    limit-distance: 5000
