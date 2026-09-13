@@ -97,8 +97,8 @@ public class OrderTask {
      * 每天凌晨1点检查一次是否存在“派送中”的订单，如果存在则修改订单状态为“已完成”
      */
     @Transactional( rollbackFor = Exception.class )
-//    @Scheduled( cron = "0 0 1 * * ?" )
-    @Scheduled( cron = "*/15 * * * * ?" ) // 测试使用
+    @Scheduled( cron = "0 0 1 * * ?" )
+//    @Scheduled( cron = "*/15 * * * * ?" ) // 测试使用
     public void handleDeliveringOrders(){
         /*
             1. 查询派送中的订单
