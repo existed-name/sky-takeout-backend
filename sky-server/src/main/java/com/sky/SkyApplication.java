@@ -7,8 +7,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+@EnableScheduling // 开启 Spring Task 定时任务调度
 @EnableCaching // Spring Cache 注解
 @SpringBootApplication
 @EnableTransactionManagement //开启注解方式的事务管理

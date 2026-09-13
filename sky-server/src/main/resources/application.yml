@@ -34,6 +34,7 @@ logging:
         service: info
         controller: info
         utils: info # debug
+        task: info # debug
 
 sky:
   # JwtProperties
