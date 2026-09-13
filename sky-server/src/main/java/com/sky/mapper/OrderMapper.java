@@ -4,6 +4,7 @@ import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderStatusCount;
 import com.sky.dto.order.UserOrderPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.projection.order.PaymentTimeoutProjection;
 import com.sky.projection.order.StatusProjection;
 import com.sky.vo.order.OrderHistoryItemVO;
 import org.apache.ibatis.annotations.Insert;
@@ -230,4 +231,25 @@ public interface OrderMapper {
      *          1 => 该订单修改成功
      */
     int updateById( @Param( "order" ) Orders order );
+
+    /**
+     * 根据订单状态查询订单信息, 主要用于定时任务检查订单是否支付超时
+     *
+     * @param status 订单状态, {@link com.sky.enumeration.OrderStatus}
+     * @return 投影对象列表
+     */
+    @Select( """
+            SELECT id, status, pay_status, order_time
+            FROM orders
+            WHERE status = #{status}
+            """ )
+    List< PaymentTimeoutProjection > selectPaymentTimeoutProjectionsByStatus( @Param( "status" ) int status );
+
+    /**
+     * 批量更新订单
+     *
+     * @param orders 待更新的订单列表, 建议新建订单对象、不修改的字段设置为空
+     * @return 修改数据条数, 理论上 = {@code list.size}( 如果不含重复 id )
+     */
+    int updateBatchByIds( @Param( "orders" ) List< Orders > orders );
 }

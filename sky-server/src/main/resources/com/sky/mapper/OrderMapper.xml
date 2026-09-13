@@ -87,6 +87,37 @@
     </update>
 
     <!--
+    批量更新订单
+    -->
+    <update id="updateBatchByIds">
+        <foreach collection="orders" item="order" separator=";">
+            UPDATE orders
+
+            <set>
+                <if test="order.status != null">
+                    status = #{order.status},
+                </if>
+                <if test="order.payStatus != null">
+                    pay_status = #{order.payStatus},
+                </if>
+                <if test="order.cancelReason != null and order.cancelReason.trim() !='' ">
+                    cancel_reason = #{order.cancelReason},
+                </if>
+                <if test="order.cancelTime != null">
+                    cancel_time = #{order.cancelTime},
+                </if>
+                <if test="order.rejectionReason != null and order.rejectionReason.trim() !='' ">
+                    rejection_reason = #{order.rejectionReason},
+                </if>
+                <if test="order.deliveryTime != null">
+                    delivery_time = #{order.deliveryTime}
+                </if>
+            </set>
+            WHERE id = #{order.id}
+        </foreach>
+    </update>
+
+    <!--
     条件查询该用户的历史订单 VO, 分页操作由com.sky.utils.PageUtil完成
     排序规则: 按照时间降序排列、时间相同按照 id 倒序排列，确保用户看到最新订单
     -->
