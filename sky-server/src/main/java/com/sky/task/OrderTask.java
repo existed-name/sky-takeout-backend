@@ -1,7 +1,6 @@
 package com.sky.task;
 
 import com.sky.entity.Orders;
-import com.sky.enumeration.OrderPayStatus;
 import com.sky.enumeration.OrderStatus;
 import com.sky.mapper.OrderMapper;
 import com.sky.projection.order.PaymentTimeoutProjection;
@@ -12,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -52,46 +50,29 @@ public class OrderTask {
 
     /**
      * 每分钟检查是否存在支付超时的订单, 并取消这些订单
+     * <p>
+     *     本地测试可用更短时间间隔
+     * </p>
      */
     @Transactional( rollbackFor = Exception.class )
     @Scheduled( cron = "0 */1 * * * ?" )
-//    @Scheduled( cron = "*/15 * * * * ?") 本地测试可用更短时间间隔
+//    @Scheduled( cron = "*/15 * * * * ?")
     public void handlePaymentTimeoutOrders(){
         /*
-            1. 查询订单状态待付款 / 支付状态未支付的订单
-              * 处理到位的情况只会查出最近的订单、不会查出老旧数据
-            2. 创建订单时间到现在时间间隔有无超时
-              * 超时则取消
-              * 可以攒够一批、一起取消、一次性修改数据库
+            1. 直接查询超时的未支付订单、不再需要单独判断超时
+              * 查询时指定订单状态、下单时间
+            2. 取消这批超时订单
             3. 涉及字段
               * status / pay_status
               * order_time , id
               * cancel_reason, cancel_time
          */
-        List< PaymentTimeoutProjection > unpaidOrders = orderMapper.selectPaymentTimeoutProjectionsByStatus( OrderStatus.PENDING_PAYMENT.getValue() );
         LocalDateTime now = LocalDateTime.now();
-        log.info( "正在处理支付超时的订单, 当前时间 = {}", now );
+        LocalDateTime deadline = now.minusMinutes( PAYMENT_TIMEOUT_MINUTE );
+        log.info( "正在处理支付超时的订单, 当前时间 = {}, 创建时间早于 {} 的未支付订单判定为超时", now, deadline );
+        List< PaymentTimeoutProjection > paymentTimeoutOrders = orderMapper.selectPaymentTimeoutProjectionsByStatusAndDeadline( OrderStatus.PENDING_PAYMENT.getValue(), deadline );
 
-        /*
-        ArrayList< Long > orderIdsToBeCanceled = new ArrayList<>();
-        for ( Orders order : unpaidOrders ){
-            LocalDateTime orderTime = order.getOrderTime();
-            Duration between = Duration.between( orderTime, now );
-            long seconds = between.toSeconds();
-            if ( seconds > PAYMENT_TIMEOUT_MINUTE * 60 ){
-                orderIdsToBeCanceled.add( order.getId() );
-            }
-        }
-         */
-
-        List< Orders > ordersToBeCanceled = unpaidOrders.stream()
-                .filter( order -> {
-                    LocalDateTime orderTime = order.getOrderTime();
-                    Duration between = Duration.between( orderTime, now );
-                    // 为了避免直接转分钟丢失部分时间, 转成秒来比较
-                    long seconds = between.toSeconds();
-                    return ( seconds > PAYMENT_TIMEOUT_MINUTE * 60 );
-                } )
+        List< Orders > ordersToBeCanceled = paymentTimeoutOrders.stream()
                 .map( order -> Orders.builder()
                         .id( order.getId() )
                         .status( OrderStatus.CANCELLED.getValue() )
@@ -102,6 +83,7 @@ public class OrderTask {
                 .toList();
 
 //        orderMapper.updateBatchByIds( ordersToBeCanceled );
+        // TODO: 优化为 1 次性修改整批订单, 比如 CASE WHEN
         for ( Orders order : ordersToBeCanceled ){
             orderMapper.updateById( order );
         }

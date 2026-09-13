@@ -15,6 +15,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -233,17 +234,21 @@ public interface OrderMapper {
     int updateById( @Param( "order" ) Orders order );
 
     /**
-     * 根据订单状态查询订单信息, 主要用于定时任务检查订单是否支付超时
+     * 根据订单状态、下单截止时间查询订单, 主要用于<b>查询超时的未支付订单</b>
      *
-     * @param status 订单状态, {@link com.sky.enumeration.OrderStatus}
+     * @param status   订单状态, {@link com.sky.enumeration.OrderStatus}
+     * @param deadline 截止时间, 用于筛选下单时间早于该节点的订单, <b>创建时间早于该节点即为超时</b>
      * @return 投影对象列表
      */
     @Select( """
             SELECT id, status, pay_status, order_time
             FROM orders
-            WHERE status = #{status}
+            WHERE status = #{status} AND order_time < #{deadline}
             """ )
-    List< PaymentTimeoutProjection > selectPaymentTimeoutProjectionsByStatus( @Param( "status" ) int status );
+    List< PaymentTimeoutProjection > selectPaymentTimeoutProjectionsByStatusAndDeadline(
+            @Param( "status" ) int status,
+            @Param( "deadline" ) LocalDateTime deadline
+    );
 
     /**
      * 批量更新订单
