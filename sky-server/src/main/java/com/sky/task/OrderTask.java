@@ -56,7 +56,7 @@ public class OrderTask {
      */
     @Transactional( rollbackFor = Exception.class )
     @Scheduled( cron = "0 */1 * * * ?" )
-//    @Scheduled( cron = "*/15 * * * * ?")
+//    @Scheduled( cron = "*/15 * * * * ?") // 测试使用
     public void handlePaymentTimeoutOrders(){
         /*
             1. 直接查询超时的未支付订单、不再需要单独判断超时
@@ -91,6 +91,46 @@ public class OrderTask {
 
         orderMapper.updateBatchByIds( ordersToBeCanceled );
         log.info( "成功取消 {} 个支付超时的订单", size );
+    }
+
+    /**
+     * 每天凌晨1点检查一次是否存在“派送中”的订单，如果存在则修改订单状态为“已完成”
+     */
+    @Transactional( rollbackFor = Exception.class )
+//    @Scheduled( cron = "0 0 1 * * ?" )
+    @Scheduled( cron = "*/15 * * * * ?" ) // 测试使用
+    public void handleDeliveringOrders(){
+        /*
+            1. 查询派送中的订单
+            2. 不存在则跳过、存在则批量设置状态已完成
+              * 虽然总感觉不对, 理论上都该骑手送货、确认送货、同步订单状态
+              * 不过没有骑手端、就只能靠店家确认( 有可能是店家管理员送货
+              * 如果店家忘了确认完成订单、也就是靠定时任务处理
+              * 但是如果特殊情况、实际上没有送到, 那就是业务的问题了...
+            3. 涉及字段
+              * status, id
+              * delivery_time 送达时间 !? 那我设置 now 不炸了吗
+         */
+        LocalDateTime now = LocalDateTime.now();
+        log.info( "正在处理派送中、忘记确认完成的订单, 当前时间 = {}", now );
+        // 教程专门查询 1 个小时及以前的派送中订单, 可能是考虑 0 点 ~ 1 点之间还有人在送外卖...
+        List< Long > deliveringOrderIds = orderMapper.selectIdsByStatus( OrderStatus.DELIVERY_IN_PROGRESS.getValue() );
+
+        int size = deliveringOrderIds.size();
+        if ( size == 0 ){
+            log.info( "没有需要确认完成的订单" );
+            return;
+        }
+
+        List< Orders > ordersToBeCompleted = deliveringOrderIds.stream()
+                .map( id -> Orders.builder()
+                        .id( id )
+                        .status( OrderStatus.COMPLETED.getValue() )
+                        .build()
+                )
+                .toList();
+        orderMapper.updateBatchByIds( ordersToBeCompleted );
+        log.info( "已确认完成 {} 个派送中的订单", size );
     }
 
 

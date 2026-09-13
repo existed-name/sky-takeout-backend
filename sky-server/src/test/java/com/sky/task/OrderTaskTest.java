@@ -19,8 +19,10 @@ import static org.mockito.Mockito.*;
 /**
  * OrderTask 单元测试
  * <p>
- *     源码逻辑: 直接查询超时未支付订单( SQL WHERE order_time &lt; deadline )，
- *     不再做 Java 内存过滤。测试重点: 查出来的订单是否被正确取消、deadline 传参是否正确。
+ *     覆盖两个定时任务方法:
+ *     1. handlePaymentTimeoutOrders: 支付超时取消 (场景 1~4)
+ *     2. handleDeliveringOrders: 派送中自动完成 (场景 5~8)
+ *     测试重点: 查询参数正确性、空列表 guard、批量更新字段映射。
  * </p>
  *
  * @CreateTime 2026/9/13
@@ -161,6 +163,99 @@ public class OrderTaskTest {
             assertThat( o.getStatus() ).isEqualTo( OrderStatus.CANCELLED.getValue() );
             assertThat( o.getCancelReason() ).isEqualTo( CANCEL_REASON );
         } );
+    }
+
+
+    /**
+     * 场景 5: 存在派送中订单 → 批量更新为已完成
+     * Given: mapper 返回 1 条派送中订单 id
+     * When: 调用 handleDeliveringOrders()
+     * Then: updateBatchByIds 被调用，status=COMPLETED
+     */
+    @Test
+    void shouldCompleteOrders_whenDeliveringOrdersExist() {
+        // Given: 1 条派送中订单
+        when( orderMapper.selectIdsByStatus( OrderStatus.DELIVERY_IN_PROGRESS.getValue() ) )
+                .thenReturn( List.of( ORDER_ID_1 ) );
+
+        // When
+        orderTask.handleDeliveringOrders();
+
+        // Then
+        @SuppressWarnings( "unchecked" )
+        ArgumentCaptor< List< Orders > > captor = ArgumentCaptor.forClass( List.class );
+        verify( orderMapper ).updateBatchByIds( captor.capture() );
+
+        List< Orders > batch = captor.getValue();
+        assertThat( batch ).hasSize( 1 );
+        assertThat( batch.get( 0 ).getId() ).isEqualTo( ORDER_ID_1 );
+        assertThat( batch.get( 0 ).getStatus() ).isEqualTo( OrderStatus.COMPLETED.getValue() );
+    }
+
+    /**
+     * 场景 6: 无派送中订单 → 不调用 updateBatchByIds
+     * Given: mapper 返回空列表
+     * When: 调用 handleDeliveringOrders()
+     * Then: updateBatchByIds 从未被调用
+     */
+    @Test
+    void shouldNotCallUpdate_whenNoDeliveringOrders() {
+        // Given
+        when( orderMapper.selectIdsByStatus( OrderStatus.DELIVERY_IN_PROGRESS.getValue() ) )
+                .thenReturn( Collections.emptyList() );
+
+        // When
+        orderTask.handleDeliveringOrders();
+
+        // Then
+        verify( orderMapper, never() ).updateBatchByIds( any() );
+    }
+
+    /**
+     * 场景 7: 多条派送中订单 → 全部更新为已完成
+     * Given: mapper 返回 2 条派送中订单 id
+     * When: 调用 handleDeliveringOrders()
+     * Then: updateBatchByIds 被调 1 次，批次含 2 条，status 均为 COMPLETED
+     */
+    @Test
+    void shouldCompleteEachOrder_whenMultipleDeliveringOrdersExist() {
+        // Given: 2 条派送中订单
+        when( orderMapper.selectIdsByStatus( OrderStatus.DELIVERY_IN_PROGRESS.getValue() ) )
+                .thenReturn( List.of( ORDER_ID_1, ORDER_ID_2 ) );
+
+        // When
+        orderTask.handleDeliveringOrders();
+
+        // Then
+        @SuppressWarnings( "unchecked" )
+        ArgumentCaptor< List< Orders > > captor = ArgumentCaptor.forClass( List.class );
+        verify( orderMapper ).updateBatchByIds( captor.capture() );
+
+        List< Orders > batch = captor.getValue();
+        assertThat( batch ).hasSize( 2 );
+        assertThat( batch.get( 0 ).getId() ).isEqualTo( ORDER_ID_1 );
+        assertThat( batch.get( 1 ).getId() ).isEqualTo( ORDER_ID_2 );
+        batch.forEach( o ->
+                assertThat( o.getStatus() ).isEqualTo( OrderStatus.COMPLETED.getValue() )
+        );
+    }
+
+    /**
+     * 场景 8: status 传参正确 → 传给 mapper 的是 DELIVERY_IN_PROGRESS
+     * Given: mapper 返回空列表
+     * When: 调用 handleDeliveringOrders()
+     * Then: selectIdsByStatus 参数 = DELIVERY_IN_PROGRESS
+     */
+    @Test
+    void shouldPassCorrectStatus_whenQueryingDeliveringOrders() {
+        // Given
+        when( orderMapper.selectIdsByStatus( anyInt() ) ).thenReturn( Collections.emptyList() );
+
+        // When
+        orderTask.handleDeliveringOrders();
+
+        // Then
+        verify( orderMapper ).selectIdsByStatus( OrderStatus.DELIVERY_IN_PROGRESS.getValue() );
     }
 
 

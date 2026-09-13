@@ -259,4 +259,17 @@ public interface OrderMapper {
      * @return 修改数据条数, 理论上 = {@code list.size}( 如果不含重复 id )
      */
     int updateBatchByIds( @Param( "orders" ) List< Orders > orders );
+
+    /**
+     * 查询特定状态的一批订单的 id
+     *
+     * @param status 订单状态, {@link com.sky.enumeration.OrderStatus}
+     * @return 订单 id 列表, 订单状态错误、不存在时列表大小为 0
+     */
+    @Select( """
+            SELECT id
+            FROM orders
+            WHERE status = #{status}
+            """ )
+    List< Long > selectIdsByStatus( @Param( "status" ) int status );
 }
