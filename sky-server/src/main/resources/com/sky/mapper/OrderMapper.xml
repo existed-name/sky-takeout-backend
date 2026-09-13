@@ -90,31 +90,112 @@
     批量更新订单
     -->
     <update id="updateBatchByIds">
-        <foreach collection="orders" item="order" separator=";">
-            UPDATE orders
+        UPDATE orders
 
-            <set>
-                <if test="order.status != null">
-                    status = #{order.status},
-                </if>
-                <if test="order.payStatus != null">
-                    pay_status = #{order.payStatus},
-                </if>
-                <if test="order.cancelReason != null and order.cancelReason.trim() !='' ">
-                    cancel_reason = #{order.cancelReason},
-                </if>
-                <if test="order.cancelTime != null">
-                    cancel_time = #{order.cancelTime},
-                </if>
-                <if test="order.rejectionReason != null and order.rejectionReason.trim() !='' ">
-                    rejection_reason = #{order.rejectionReason},
-                </if>
-                <if test="order.deliveryTime != null">
-                    delivery_time = #{order.deliveryTime}
-                </if>
-            </set>
-            WHERE id = #{order.id}
-        </foreach>
+        SET status = CASE id
+            <foreach collection="orders" item="order">
+                WHEN #{order.id} THEN
+                <choose>
+                    <when test="order.status != null">
+                        #{order.status}
+                    </when>
+                    <otherwise>
+                        status
+                    </otherwise>
+                </choose>
+            </foreach>
+            ELSE status
+        END,
+
+        <!--
+        实际拼接情况
+        SET status = CASE id
+            WHEN 4 THEN 6
+            WHEN 5 THEN 6
+            WHEN ...
+            ELSE status  兜底处理没有枚举到的情况
+        END,
+        -->
+
+        pay_status = CASE id
+            <foreach collection="orders" item="order">
+                WHEN #{order.id} THEN
+                <choose>
+                    <when test="order.payStatus != null">
+                        #{order.payStatus}
+                    </when>
+                    <otherwise>
+                        pay_status
+                    </otherwise>
+                </choose>
+            </foreach>
+            ELSE pay_status
+        END,
+
+        cancel_reason = CASE id
+            <foreach collection="orders" item="order">
+                WHEN #{order.id} THEN
+                <choose>
+                    <when test="order.cancelReason != null and order.cancelReason.trim() != ''">
+                        #{order.cancelReason}
+                    </when>
+                    <otherwise>
+                        cancel_reason
+                    </otherwise>
+                </choose>
+            </foreach>
+            ELSE cancel_reason
+        END,
+
+        cancel_time = CASE id
+            <foreach collection="orders" item="order">
+                WHEN #{order.id} THEN
+                <choose>
+                    <when test="order.cancelTime != null">
+                        #{order.cancelTime}
+                    </when>
+                    <otherwise>
+                        cancel_time
+                    </otherwise>
+                </choose>
+            </foreach>
+            ELSE cancel_time
+        END,
+
+        rejection_reason = CASE id
+            <foreach collection="orders" item="order">
+                WHEN #{order.id} THEN
+                <choose>
+                    <when test="order.rejectionReason != null and order.rejectionReason.trim() != ''">
+                        #{order.rejectionReason}
+                    </when>
+                    <otherwise>
+                        rejection_reason
+                    </otherwise>
+                </choose>
+            </foreach>
+            ELSE rejection_reason
+        END,
+
+        delivery_time = CASE id
+            <foreach collection="orders" item="order">
+                WHEN #{order.id} THEN
+                <choose>
+                    <when test="order.deliveryTime != null">
+                        #{order.deliveryTime}
+                    </when>
+                    <otherwise>
+                        delivery_time
+                    </otherwise>
+                </choose>
+            </foreach>
+            ELSE delivery_time
+        END
+
+        WHERE id IN
+            <foreach collection="orders" item="order" open="(" separator="," close=")">
+                #{order.id}
+            </foreach>
     </update>
 
     <!--

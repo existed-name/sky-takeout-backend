@@ -253,7 +253,9 @@ public interface OrderMapper {
     /**
      * 批量更新订单
      *
-     * @param orders 待更新的订单列表, 建议新建订单对象、不修改的字段设置为空
+     * @param orders 待更新的订单列表, <br>
+     *               1. <b>列表必须存在元素</b>
+     *               2. 建议新建订单对象、不修改的字段设置为空
      * @return 修改数据条数, 理论上 = {@code list.size}( 如果不含重复 id )
      */
     int updateBatchByIds( @Param( "orders" ) List< Orders > orders );

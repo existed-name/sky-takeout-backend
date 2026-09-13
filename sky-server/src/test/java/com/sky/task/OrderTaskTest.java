@@ -67,11 +67,14 @@ public class OrderTaskTest {
         // When
         orderTask.handlePaymentTimeoutOrders();
 
-        // Then: 验证 updateById 被调用，参数正确
-        ArgumentCaptor< Orders > captor = ArgumentCaptor.forClass( Orders.class );
-        verify( orderMapper ).updateById( captor.capture() );
+        // Then: 验证 updateBatchByIds 被调用，参数正确
+        @SuppressWarnings( "unchecked" )
+        ArgumentCaptor< List< Orders > > captor = ArgumentCaptor.forClass( List.class );
+        verify( orderMapper ).updateBatchByIds( captor.capture() );
 
-        Orders cancelled = captor.getValue();
+        List< Orders > batch = captor.getValue();
+        assertThat( batch ).hasSize( 1 );
+        Orders cancelled = batch.get( 0 );
         assertThat( cancelled.getId() ).isEqualTo( ORDER_ID_1 );
         assertThat( cancelled.getStatus() ).isEqualTo( OrderStatus.CANCELLED.getValue() );
         assertThat( cancelled.getCancelReason() ).isEqualTo( CANCEL_REASON );
@@ -95,7 +98,7 @@ public class OrderTaskTest {
         orderTask.handlePaymentTimeoutOrders();
 
         // Then
-        verify( orderMapper, never() ).updateById( any( Orders.class ) );
+        verify( orderMapper, never() ).updateBatchByIds( any() );
     }
 
     /**
@@ -144,16 +147,17 @@ public class OrderTaskTest {
         // When
         orderTask.handlePaymentTimeoutOrders();
 
-        // Then: updateById 被调 2 次
-        ArgumentCaptor< Orders > captor = ArgumentCaptor.forClass( Orders.class );
-        verify( orderMapper, times( 2 ) ).updateById( captor.capture() );
+        // Then: updateBatchByIds 被调 1 次，批次含 2 条订单
+        @SuppressWarnings( "unchecked" )
+        ArgumentCaptor< List< Orders > > captor = ArgumentCaptor.forClass( List.class );
+        verify( orderMapper ).updateBatchByIds( captor.capture() );
 
-        List< Orders > cancelledOrders = captor.getAllValues();
-        assertThat( cancelledOrders ).hasSize( 2 );
-        assertThat( cancelledOrders.get( 0 ).getId() ).isEqualTo( ORDER_ID_1 );
-        assertThat( cancelledOrders.get( 1 ).getId() ).isEqualTo( ORDER_ID_2 );
+        List< Orders > batch = captor.getValue();
+        assertThat( batch ).hasSize( 2 );
+        assertThat( batch.get( 0 ).getId() ).isEqualTo( ORDER_ID_1 );
+        assertThat( batch.get( 1 ).getId() ).isEqualTo( ORDER_ID_2 );
         // 两条都应该是取消状态
-        cancelledOrders.forEach( o -> {
+        batch.forEach( o -> {
             assertThat( o.getStatus() ).isEqualTo( OrderStatus.CANCELLED.getValue() );
             assertThat( o.getCancelReason() ).isEqualTo( CANCEL_REASON );
         } );

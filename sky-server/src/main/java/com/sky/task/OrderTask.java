@@ -72,6 +72,13 @@ public class OrderTask {
         log.info( "正在处理支付超时的订单, 当前时间 = {}, 创建时间早于 {} 的未支付订单判定为超时", now, deadline );
         List< PaymentTimeoutProjection > paymentTimeoutOrders = orderMapper.selectPaymentTimeoutProjectionsByStatusAndDeadline( OrderStatus.PENDING_PAYMENT.getValue(), deadline );
 
+        // 注意批量更新时, where id in( .. ) 不能为空, 传入空列表会报错, 需要提前判断
+        int size = paymentTimeoutOrders.size();
+        if ( size == 0 ){
+            log.info( "暂时没有支付超时的订单" );
+            return;
+        }
+
         List< Orders > ordersToBeCanceled = paymentTimeoutOrders.stream()
                 .map( order -> Orders.builder()
                         .id( order.getId() )
@@ -82,13 +89,8 @@ public class OrderTask {
                 )
                 .toList();
 
-//        orderMapper.updateBatchByIds( ordersToBeCanceled );
-        // TODO: 优化为 1 次性修改整批订单, 比如 CASE WHEN
-        for ( Orders order : ordersToBeCanceled ){
-            orderMapper.updateById( order );
-        }
-
-        log.info( "成功取消 {} 个支付超时的订单", ordersToBeCanceled.size() );
+        orderMapper.updateBatchByIds( ordersToBeCanceled );
+        log.info( "成功取消 {} 个支付超时的订单", size );
     }
 
 
