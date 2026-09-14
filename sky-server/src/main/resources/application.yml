@@ -35,6 +35,7 @@ logging:
         controller: info
         utils: info # debug
         task: info # debug
+        websocket: info # debug
 
 sky:
   # JwtProperties
