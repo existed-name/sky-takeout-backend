@@ -969,16 +969,30 @@ public class OrderServiceImpl implements OrderService {
     private void remindMerchantToAcceptOrder( Long id ){
         String orderNumber = orderMapper.selectNumberById( id );
         String content = String.format( "您有一个订单待处理, 订单号: %s, 请及时处理", orderNumber );
+        int messageType = WebSocketMessageType.NEW_ORDER_ALERT.getType();
+        sendMessageToMerchant( messageType, id, content );
+    }
+
+    /**
+     * 将传入的各参数组装为消息对象{@link WebSocketMessageVO}, json 序列化后
+     * 通过{@link WebSocketServer#sendToAllClients( String message ))}向商家发送提醒消息
+     *
+     * @param messageType 消息类型, {@link WebSocketMessageType}
+     * @param orderId 订单 id
+     * @param content 消息内容, 包含了订单号
+     * @throws IllegalStateException 当消息对象 json 序列化失败时抛出
+     */
+    private void sendMessageToMerchant( int messageType, Long orderId, String content ){
         WebSocketMessageVO webSocketMessageVO = WebSocketMessageVO.builder()
-                .type( WebSocketMessageType.NEW_ORDER_ALERT.getType() )
-                .orderId( id )
+                .type( messageType )
+                .orderId( orderId )
                 .content( content )
                 .build();
         String json = "";
         try {
             json = objectMapper.writeValueAsString( webSocketMessageVO );
         } catch ( JsonProcessingException e ){
-            log.error( "用户支付成功后组装提醒消息对象, 解析对象为 json 字符串时出错, 消息对象 = {}", webSocketMessageVO );
+            log.error( "向商家发送信息时, 消息对象 json 序列化失败, 消息对象 = {}", webSocketMessageVO );
             throw new IllegalStateException( e );
         }
         webSocketServer.sendToAllClients( json );
