@@ -272,4 +272,17 @@ public interface OrderMapper {
             WHERE status = #{status}
             """ )
     List< Long > selectIdsByStatus( @Param( "status" ) int status );
+
+    /**
+     * 查询某个订单的订单号
+     *
+     * @param id 订单 id
+     * @return 订单号, 订单不存在时返回 null
+     */
+    @Select( """
+            SELECT number
+            FROM orders
+            WHERE id = #{id}
+            """ )
+    String selectNumberById( @Param( "id" ) Long id );
 }

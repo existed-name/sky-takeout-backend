@@ -1,5 +1,7 @@
 package com.sky.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
@@ -21,6 +23,7 @@ import com.sky.entity.ShoppingCart;
 import com.sky.entity.User;
 import com.sky.enumeration.OrderPayStatus;
 import com.sky.enumeration.OrderStatus;
+import com.sky.enumeration.WebSocketMessageType;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
 import com.sky.exception.baiduMap.DistanceLimitExceededException;
@@ -61,6 +64,8 @@ import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
+import com.sky.vo.websocket.WebSocketMessageVO;
+import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,10 +99,12 @@ public class OrderServiceImpl implements OrderService {
     private final ShoppingCartConverter shoppingCartConverter;
     private final ShopInfoProperties shopInfoProperties;
     private final BaiduMapService baiduMapService;
+    private final WebSocketServer webSocketServer;
+    private final ObjectMapper objectMapper;
 
 
     // ==================== 构造器 ====================
-    public OrderServiceImpl( OrderConverter orderConverter, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper, ShoppingCartConverter shoppingCartConverter, ShopInfoProperties shopInfoProperties, BaiduMapService baiduMapService ){
+    public OrderServiceImpl( OrderConverter orderConverter, UserMapper userMapper, AddressBookMapper addressBookMapper, OrderMapper orderMapper, ShoppingCartMapper shoppingCartMapper, OrderDetailMapper orderDetailMapper, OrderCacheManager orderCacheManager, DishMapper dishMapper, SetmealMapper setmealMapper, ShoppingCartConverter shoppingCartConverter, ShopInfoProperties shopInfoProperties, BaiduMapService baiduMapService, WebSocketServer webSocketServer, ObjectMapper objectMapper ){
         this.orderConverter = orderConverter;
         this.userMapper = userMapper;
         this.addressBookMapper = addressBookMapper;
@@ -110,6 +117,8 @@ public class OrderServiceImpl implements OrderService {
         this.shoppingCartConverter = shoppingCartConverter;
         this.shopInfoProperties = shopInfoProperties;
         this.baiduMapService = baiduMapService;
+        this.webSocketServer = webSocketServer;
+        this.objectMapper = objectMapper;
     }
 
 
@@ -257,6 +266,13 @@ public class OrderServiceImpl implements OrderService {
         if ( row == 0 ){
             throwIfNotExistsOrNotMatches( id );
         }
+
+        /*
+            day10
+            * 用户支付成功后, websocket 服务端提醒商家界面客户端接单
+            * 暂不清楚需不需要专门的 WebSocketService、先整段代码写进来
+         */
+        remindMerchantToAcceptOrder( id );
 
         shoppingCartMapper.deleteByUserId( userId );
     }
@@ -943,6 +959,29 @@ public class OrderServiceImpl implements OrderService {
      */
     private void complete( Long id ){
         log.info( "确认完成派送中的订单, 订单 id = {}", id );
+    }
+
+    /**
+     * 用户支付成功后, websocket 服务端提醒商家界面客户端接单
+     *
+     * @param id 订单 id, 由调用方确保有效
+     */
+    private void remindMerchantToAcceptOrder( Long id ){
+        String orderNumber = orderMapper.selectNumberById( id );
+        String content = String.format( "您有一个订单待处理, 订单号: %s, 请及时处理", orderNumber );
+        WebSocketMessageVO webSocketMessageVO = WebSocketMessageVO.builder()
+                .type( WebSocketMessageType.NEW_ORDER_ALERT.getType() )
+                .orderId( id )
+                .content( content )
+                .build();
+        String json = "";
+        try {
+            json = objectMapper.writeValueAsString( webSocketMessageVO );
+        } catch ( JsonProcessingException e ){
+            log.error( "用户支付成功后组装提醒消息对象, 解析对象为 json 字符串时出错, 消息对象 = {}", webSocketMessageVO );
+            throw new IllegalStateException( e );
+        }
+        webSocketServer.sendToAllClients( json );
     }
 
 
