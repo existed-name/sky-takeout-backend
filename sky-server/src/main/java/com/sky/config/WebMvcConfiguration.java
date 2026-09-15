@@ -105,6 +105,15 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      * 设置静态资源映射
      */
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+        /*
+            * addResourceHandler: 找哪个/哪些东西
+            * addResourceLocations: 这个东西的文件夹位置
+              - `classpath:/` 类路径, 包括 `target/classes/` 和所有 jar 包
+              - `file:/` 本地磁盘文件
+              - `http://` 远程文件
+              - META-INF 第 3 方 jar 包
+         */
+        registry.addResourceHandler( "/websocket.html" ).addResourceLocations( "classpath:/static/" );
         registry.addResourceHandler("/doc.html").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
