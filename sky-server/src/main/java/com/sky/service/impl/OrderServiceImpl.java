@@ -800,6 +800,19 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
+    @Transactional( readOnly = true )
+    @Override
+    public void urgeAcceptByIdAndUserId( Long id, Long userId ){
+        if ( orderMapper.countByIdAndUserId( id, userId ) == 0L ){
+            throwIfNotExistsOrNotMatches( id );
+        }
+        // TODO: 增加订单状态判断, 待接单则催促接单、待派送则催促派送、其他状态不考虑催单
+        String orderNumber = orderMapper.selectNumberById( id );
+        String content = String.format( "用户提醒接单, 订单号: %s, 请及时处理", orderNumber );
+        int messageType = WebSocketMessageType.USER_URGENT_REQUEST.getType();
+        sendMessageToMerchant( messageType, id, content );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

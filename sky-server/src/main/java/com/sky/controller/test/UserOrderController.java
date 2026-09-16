@@ -64,6 +64,24 @@ public class UserOrderController {
         return Result.success();
     }
 
+    /**
+     * 测试用户催促商家接单
+     */
+    @ApiOperation( "测试用户催促商家接单" )
+    @PostMapping( "/{id}/urge-accept" )
+    public Result< Void > urgeAccept(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id,
+            @RequestParam( name = "userId", required = true )
+            @Positive( message = "用户 id 必须是正整数" )
+            Long userId
+    ){
+        log.info( "测试用户催促商家接单, 订单 id = {}, 用户 id = {}", id, userId );
+        orderService.urgeAcceptByIdAndUserId( id, userId );
+        return Result.success();
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

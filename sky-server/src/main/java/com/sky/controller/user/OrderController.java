@@ -186,6 +186,22 @@ public class OrderController {
         return Result.success(  );
     }
 
+    /**
+     * 用户催促商家接受订单
+     */
+    @ApiOperation( "用户催促商家接受订单" )
+    @PostMapping( "/{id}/urge-accept" )
+    public Result< Void > urgeAccept(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "userId = {} 的用户催促商家接受订单, 订单 id = {}", userId, id );
+        orderService.urgeAcceptByIdAndUserId( id, userId );
+        return Result.success(  );
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

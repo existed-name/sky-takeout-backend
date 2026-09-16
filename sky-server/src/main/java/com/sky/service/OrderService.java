@@ -13,10 +13,6 @@ import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-
 public interface OrderService {
     /**
      * 用户端-用户下单、创建订单、返回订单必要数据
@@ -133,4 +129,12 @@ public interface OrderService {
      * @param id 订单 id
      */
     void completeById( Long id );
+
+    /**
+     * 用户催促商家接受订单
+     *
+     * @param id 订单 id
+     * @param userId 用户 id
+     */
+    void urgeAcceptByIdAndUserId( Long id, Long userId );
 }
