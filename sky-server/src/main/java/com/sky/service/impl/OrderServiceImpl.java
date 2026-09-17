@@ -27,6 +27,7 @@ import com.sky.enumeration.WebSocketMessageType;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
 import com.sky.exception.baiduMap.DistanceLimitExceededException;
+import com.sky.exception.common.TimeRangeInvalidException;
 import com.sky.exception.order.OrderAcceptFailedException;
 import com.sky.exception.order.OrderCancelFailedException;
 import com.sky.exception.order.OrderCompleteFailedException;
@@ -64,12 +65,15 @@ import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
+import com.sky.vo.report.TurnoverReportItemVO;
+import com.sky.vo.report.TurnoverReportVO;
 import com.sky.vo.websocket.WebSocketMessageVO;
 import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -811,6 +815,27 @@ public class OrderServiceImpl implements OrderService {
         String content = String.format( "用户提醒接单, 订单号: %s, 请及时处理", orderNumber );
         int messageType = WebSocketMessageType.USER_URGENT_REQUEST.getType();
         sendMessageToMerchant( messageType, id, content );
+    }
+
+    @Transactional( readOnly = true )
+    @Override
+    public TurnoverReportVO reportTurnoverByDate( LocalDate begin, LocalDate end ){
+        if ( begin.isAfter( end ) ){
+            /*
+                begin.compareTo( end ) > 0
+                我想的话也可以不抛异常, 查数据库的时候交换 2 个日期参数的位置, 或者互换数值
+                不过 ai 建议显式抛异常, 除非业务允许互换数值
+             */
+            throw new TimeRangeInvalidException( MessageConstant.BEGIN_TIME_GREATER_THAN_END_TIME );
+        }
+
+        // sql 筛选时排除 end 截止日期, 所以为了能够查到 end 这一天, 就把截止时间设为 end + 1
+        LocalDate endDateExclusive = end.plusDays( 1 );
+        List< TurnoverReportItemVO > itemVOList = orderMapper.sumAmountGroupByDate( begin, endDateExclusive );
+        TurnoverReportVO turnoverReportVO = TurnoverReportVO.builder()
+                .items( itemVOList )
+                .build();
+        return turnoverReportVO;
     }
 
 

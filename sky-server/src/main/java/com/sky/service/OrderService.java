@@ -12,6 +12,9 @@ import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
+import com.sky.vo.report.TurnoverReportVO;
+
+import java.time.LocalDate;
 
 public interface OrderService {
     /**
@@ -137,4 +140,13 @@ public interface OrderService {
      * @param userId 用户 id
      */
     void urgeAcceptByIdAndUserId( Long id, Long userId );
+
+    /**
+     * 管理端统计指定时间范围内的营业额
+     *
+     * @param begin 起始时间( 包含 )
+     * @param end 截止时间( 包含 )
+     * @return 时间范围内, 每天的营业额数据
+     */
+    TurnoverReportVO reportTurnoverByDate( LocalDate begin, LocalDate end );
 }

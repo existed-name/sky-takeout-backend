@@ -7,6 +7,7 @@ import com.sky.entity.Orders;
 import com.sky.projection.order.PaymentTimeoutProjection;
 import com.sky.projection.order.StatusProjection;
 import com.sky.vo.order.OrderHistoryItemVO;
+import com.sky.vo.report.TurnoverReportItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
@@ -15,6 +16,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -285,4 +287,14 @@ public interface OrderMapper {
             WHERE id = #{id}
             """ )
     String selectNumberById( @Param( "id" ) Long id );
+
+    /**
+     * 统计指定时间范围内, 每天的总营业额
+     *
+     * @param begin 起始时间( 包含 )
+     * @param endExclusive 截止时间( <b>不包含</b> ),
+     *                     由调用方确认 begin <= endExclusive
+     * @return 时间范围内, 每天的营业额数据项列表
+     */
+    List< TurnoverReportItemVO > sumAmountGroupByDate( @Param( "begin" ) LocalDate begin, @Param( "endExclusive" ) LocalDate endExclusive );
 }

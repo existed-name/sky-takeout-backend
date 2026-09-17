@@ -262,4 +262,20 @@
         WHERE id = #{id}
     </select>
 
+    <!--
+    统计指定时间范围内, 每天的总营业额
+    -->
+    <select id="sumAmountGroupByDate" resultType="com.sky.vo.report.TurnoverReportItemVO">
+        SELECT date( checkout_time ) AS date, sum( amount ) AS turnover
+        FROM orders
+        WHERE #{begin} &lt;= checkout_time AND checkout_time &lt; #{endExclusive}
+        GROUP BY date
+        <!--
+        日期比较,
+        '2026-09-17' 字符串会自动补全时间 = '2026-09-17 00:00:00'
+        常量日期必须加单引号, 否则 2026-09-17 会解析成 2000 数字
+        但 #{...} 无需加引号, where ? <= checkout_time 可以直接把参数设置进去
+        -->
+    </select>
+
 </mapper>
