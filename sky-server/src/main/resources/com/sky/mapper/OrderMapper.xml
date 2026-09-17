@@ -264,11 +264,14 @@
 
     <!--
     统计指定时间范围内, 每天的总营业额
+    只查询已完成、没被取消的订单
     -->
-    <select id="sumAmountGroupByDate" resultType="com.sky.vo.report.TurnoverReportItemVO">
+    <select id="sumAmountByStatusAndGroupByDate" resultType="com.sky.vo.report.TurnoverReportItemVO">
         SELECT date( checkout_time ) AS date, sum( amount ) AS turnover
         FROM orders
-        WHERE #{begin} &lt;= checkout_time AND checkout_time &lt; #{endExclusive}
+        WHERE status = #{status} AND
+            #{begin} &lt;= checkout_time AND
+            checkout_time &lt; #{endExclusive}
         GROUP BY date
         <!--
         日期比较,

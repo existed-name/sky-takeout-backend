@@ -142,7 +142,7 @@ public interface OrderService {
     void urgeAcceptByIdAndUserId( Long id, Long userId );
 
     /**
-     * 管理端统计指定时间范围内的营业额
+     * 管理端统计指定时间范围内的营业额, <b>只查询已完成、没被取消的订单</b>
      *
      * @param begin 起始时间( 包含 )
      * @param end 截止时间( 包含 )

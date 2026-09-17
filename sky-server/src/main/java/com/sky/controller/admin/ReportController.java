@@ -66,7 +66,7 @@ public class ReportController {
             LocalDate end
     ){
         Long empId = BaseContext.getCurrentId();
-        log.info( "id = {} 的员工查看时间范围 {} ~ {} 的营业额统计数据", empId, begin, end );
+        log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的营业额统计数据", empId, begin, end );
         TurnoverReportVO turnoverReportVO = orderService.reportTurnoverByDate( begin, end );
         return Result.success( turnoverReportVO );
     }

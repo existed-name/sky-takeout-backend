@@ -291,10 +291,11 @@ public interface OrderMapper {
     /**
      * 统计指定时间范围内, 每天的总营业额
      *
-     * @param begin 起始时间( 包含 )
+     * @param status 订单状态, <b>只查询已完成、没被取消的订单</b>{@link com.sky.enumeration.OrderStatus#COMPLETED}
+     * @param begin        起始时间( 包含 )
      * @param endExclusive 截止时间( <b>不包含</b> ),
      *                     由调用方确认 begin <= endExclusive
      * @return 时间范围内, 每天的营业额数据项列表
      */
-    List< TurnoverReportItemVO > sumAmountGroupByDate( @Param( "begin" ) LocalDate begin, @Param( "endExclusive" ) LocalDate endExclusive );
+    List< TurnoverReportItemVO > sumAmountByStatusAndGroupByDate( @Param( "status" ) int status, @Param( "begin" ) LocalDate begin, @Param( "endExclusive" ) LocalDate endExclusive );
 }

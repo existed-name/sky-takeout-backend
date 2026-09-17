@@ -831,7 +831,8 @@ public class OrderServiceImpl implements OrderService {
 
         // sql 筛选时排除 end 截止日期, 所以为了能够查到 end 这一天, 就把截止时间设为 end + 1
         LocalDate endDateExclusive = end.plusDays( 1 );
-        List< TurnoverReportItemVO > itemVOList = orderMapper.sumAmountGroupByDate( begin, endDateExclusive );
+        List< TurnoverReportItemVO > itemVOList = orderMapper.sumAmountByStatusAndGroupByDate(
+                OrderStatus.COMPLETED.getValue(), begin, endDateExclusive );
         TurnoverReportVO turnoverReportVO = TurnoverReportVO.builder()
                 .items( itemVOList )
                 .build();
