@@ -4,6 +4,7 @@ import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.report.TurnoverReportVO;
+import com.sky.vo.report.UserReportVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +70,25 @@ public class ReportController {
         log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的营业额统计数据", empId, begin, end );
         TurnoverReportVO turnoverReportVO = orderService.reportTurnoverByDate( begin, end );
         return Result.success( turnoverReportVO );
+    }
+
+    /**
+     * 统计指定时间范围的用户量
+     */
+    @ApiOperation( "统计指定时间范围的用户量" )
+    @GetMapping( "/user-statistics" )
+    public Result< UserReportVO > userStatistics(
+            @RequestParam( name = "begin", required = true )
+            @DateTimeFormat( pattern = "yyyy-MM-dd[ HH:mm:ss]" )
+            LocalDate begin,
+            @RequestParam( name = "end", required = true )
+            @DateTimeFormat( pattern = "yyyy-MM-dd[ HH:mm:ss]" )
+            LocalDate end
+    ){
+        Long empId = BaseContext.getCurrentId();
+        log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的用户量统计数据", empId, begin, end );
+        UserReportVO userReportVO = orderService.reportUserStatisticsByDate( begin, end );
+        return Result.success( userReportVO );
     }
 
 

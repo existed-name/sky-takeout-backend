@@ -3,11 +3,16 @@ package com.sky.mapper;
 import com.sky.annotation.AutoFill;
 import com.sky.entity.User;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.report.UserCountItemVO;
+import com.sky.vo.report.UserGrowthItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -47,4 +52,21 @@ public interface UserMapper {
             WHERE id = #{id}
             """ )
     User selectById( @Param( "id" ) Long userId );
+
+    /**
+     * 统计某一天之前的总用户量( 不包含这天 )
+     *
+     * @param dateExclusive 日期节点, <b>不包含这一天, 通常 = 业务截止日期 + 1 天</b>
+     * @return 用户量数据项, <b>不包含日期字段、由调用方手动设置当天日期</b>
+     */
+    UserCountItemVO countAllBeforeDate( @Param( "dateExclusive" ) LocalDate dateExclusive );
+
+    /**
+     * 查询指定时间范围内, 每天的新增用户量
+     *
+     * @param begin 起始时间( 包含当天 )
+     * @param endExclusive <b>截止时间的第 2 天</b>( 不包含当天 )
+     * @return 时间范围内, 每天的日期和新增用户量
+     */
+    List< UserGrowthItemVO > countGroupByDate( @Param( "begin" ) LocalDate begin, @Param( "endExclusive" ) LocalDate endExclusive );
 }

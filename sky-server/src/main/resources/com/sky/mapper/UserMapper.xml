@@ -4,5 +4,32 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sky.mapper.UserMapper">
 
+    <!--
+    统计截止到某一天的总用户量
+    -->
+    <select id="countAllBeforeDate" resultType="com.sky.vo.report.UserCountItemVO">
+        SELECT count( * ) AS total
+        FROM user
+        WHERE create_time &lt; #{dateExclusive}
+    </select>
+
+    <!--
+    查询指定时间范围内, 每天的新增用户量
+    -->
+    <select id="countGroupByDate" resultType="com.sky.vo.report.UserGrowthItemVO">
+
+        SELECT date( create_time ) AS date, count( * ) AS growth
+        FROM user
+        WHERE #{begin} &lt;= create_time AND create_time &lt; #{endExclusive}
+        GROUP BY date( create_time )
+        <!--
+        * 之所以不在 WHERE 筛选的时候把 create_time 转换为 date 类型,
+          是为了方便以后给 create_time 加索引、筛选性能更好
+        * 而分组的时候必须按日期分组、所以把 create_time 转换为 date 类型
+        * 并且由于不是所有的 SQL 支持 group by 后面接别名字段
+          所以这里 group by 用的完整 date( .. )
+        -->
+
+    </select>
 
 </mapper>

@@ -67,6 +67,9 @@ import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
 import com.sky.vo.report.TurnoverReportItemVO;
 import com.sky.vo.report.TurnoverReportVO;
+import com.sky.vo.report.UserCountItemVO;
+import com.sky.vo.report.UserGrowthItemVO;
+import com.sky.vo.report.UserReportVO;
 import com.sky.vo.websocket.WebSocketMessageVO;
 import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +79,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -830,6 +834,44 @@ public class OrderServiceImpl implements OrderService {
                 .items( itemVOList )
                 .build();
         return turnoverReportVO;
+    }
+
+    @Transactional( readOnly = true )
+    @Override
+    public UserReportVO reportUserStatisticsByDate( LocalDate begin, LocalDate end ){
+        throwIfBeginIsAfterEnd( begin, end );
+        /*
+            * 每天的用户增量可以一次性在数据库查到
+              - 但是如果某天没有新增用户( growth = 0 )、就会忽略那一天的数据项
+              - TODO: 如果业务要求后端提供每天的用户增量( 包括 0 )、就需要补充日期和 0
+            * 而每天的用户总量暂时考虑循环单次查询
+              - 需要拿到[ begin, end ]时间范围内各个日期去查询
+              - TODO: 优化为一次性查出时间范围内每天的总用户量
+         */
+        List< UserCountItemVO > userCountItemVOList = new ArrayList<>();
+        for(
+                // 用临时变量避免修改 begin、影响方法内其他用到 begin 的地方
+                LocalDate targetDate = begin;
+             ! targetDate.isAfter( end );
+             // 怪不得之前第 1 轮循环后卡住了, 原来是忘了加日期需要复制给原来的变量
+             targetDate = targetDate.plusDays( 1 ) )
+        {
+            // 注意: sql 查询会排除参数所在的日期, 为了保留这一天、需要给传进去的日期参数 + 1 天
+            LocalDate dateExclusive = targetDate.plusDays( 1 );
+            UserCountItemVO userCountItemVO = userMapper.countAllBeforeDate( dateExclusive );
+            // mapper 只查了用户量, 业务类设置对应的日期
+            userCountItemVO.setDate( targetDate );
+            userCountItemVOList.add( userCountItemVO );
+        }
+
+        LocalDate endExclusive = end.plusDays( 1 );
+        List< UserGrowthItemVO > userGrowthItemVOList = userMapper.countGroupByDate( begin, endExclusive );
+
+        UserReportVO userReportVO = UserReportVO.builder()
+                .userCountList( userCountItemVOList )
+                .userGrowthList( userGrowthItemVOList )
+                .build();
+        return userReportVO;
     }
 
 
