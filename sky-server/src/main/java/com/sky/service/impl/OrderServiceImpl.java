@@ -820,14 +820,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional( readOnly = true )
     @Override
     public TurnoverReportVO reportTurnoverByDate( LocalDate begin, LocalDate end ){
-        if ( begin.isAfter( end ) ){
-            /*
-                begin.compareTo( end ) > 0
-                我想的话也可以不抛异常, 查数据库的时候交换 2 个日期参数的位置, 或者互换数值
-                不过 ai 建议显式抛异常, 除非业务允许互换数值
-             */
-            throw new TimeRangeInvalidException( MessageConstant.BEGIN_TIME_GREATER_THAN_END_TIME );
-        }
+        throwIfBeginIsAfterEnd( begin, end );
 
         // sql 筛选时排除 end 截止日期, 所以为了能够查到 end 这一天, 就把截止时间设为 end + 1
         LocalDate endDateExclusive = end.plusDays( 1 );
@@ -1035,6 +1028,24 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException( e );
         }
         webSocketServer.sendToAllClients( json );
+    }
+
+    /**
+     * 起始时间不能超过截止时间, 否则抛业务异常
+     *
+     * @param begin 起始时间
+     * @param end 截止时间
+     * @throws TimeRangeInvalidException 当起始时间超过截止时间时
+     */
+    private void throwIfBeginIsAfterEnd( LocalDate begin, LocalDate end ){
+        if ( begin.isAfter( end ) ){
+            /*
+                begin.compareTo( end ) > 0
+                我想的话也可以不抛异常, 查数据库的时候交换 2 个日期参数的位置, 或者互换数值
+                不过 ai 建议显式抛异常, 除非业务允许互换数值
+             */
+            throw new TimeRangeInvalidException( MessageConstant.BEGIN_TIME_GREATER_THAN_END_TIME );
+        }
     }
 
 
