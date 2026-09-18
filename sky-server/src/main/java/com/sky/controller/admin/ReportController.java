@@ -52,7 +52,7 @@ public class ReportController {
      */
     @ApiOperation( "统计指定时间范围内的营业额" )
     @GetMapping( "/turnover-statistics" )
-    public Result< TurnoverReportVO > reportTurnoverStatistics(
+    public Result< TurnoverReportVO > turnoverStatistics(
             @RequestParam( name = "begin", required = true )
             /*
                 iso = DateTimeFormat.ISO.DATE 会严格匹配 "yyyy-MM-dd",
