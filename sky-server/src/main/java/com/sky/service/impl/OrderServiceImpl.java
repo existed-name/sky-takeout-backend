@@ -896,8 +896,12 @@ public class OrderServiceImpl implements OrderService {
         long totalOrderCount = orderMapper.countAll();
         long totalValidOrderCount = orderMapper.countByStatus( OrderStatus.COMPLETED.getValue() );
 
+        double orderCompletionRate = 0;
+        // 注意对除数判断非 0
+        if ( totalValidOrderCount != 0L ){
+            orderCompletionRate = totalValidOrderCount * 1.0 / totalOrderCount;
+        }
         // 这里保留 4 位小数, 交给前端转为百分数, 比如 0.8222 → 82.22%
-        double orderCompletionRate = totalValidOrderCount * 1.0 / totalOrderCount;
         String format = String.format( "%.4f", orderCompletionRate );
         orderCompletionRate = Double.parseDouble( format );
 
