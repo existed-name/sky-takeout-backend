@@ -6,6 +6,7 @@ import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
 import com.sky.constant.StatusConstant;
+import com.sky.constant.TimeConstant;
 import com.sky.convertor.OrderConverter;
 import com.sky.convertor.ShoppingCartConverter;
 import com.sky.dto.order.AdminOrderCancelDTO;
@@ -832,7 +833,7 @@ public class OrderServiceImpl implements OrderService {
         throwIfBeginIsAfterEnd( begin, end );
 
         // sql 筛选时排除 end 截止日期, 所以为了能够查到 end 这一天, 就把截止时间设为 end + 1
-        LocalDate endDateExclusive = end.plusDays( 1 );
+        LocalDate endDateExclusive = TimeConstant.getTomorrow( end );
         List< TurnoverReportItemVO > itemVOList = orderMapper.sumAmountByStatusAndGroupByDate(
                 OrderStatus.COMPLETED.getValue(), begin, endDateExclusive );
         TurnoverReportVO turnoverReportVO = TurnoverReportVO.builder()
@@ -869,7 +870,7 @@ public class OrderServiceImpl implements OrderService {
             userCountItemVOList.add( userCountItemVO );
         }
 
-        LocalDate endExclusive = end.plusDays( 1 );
+        LocalDate endExclusive = TimeConstant.getTomorrow( end );
         List< UserGrowthItemVO > userGrowthItemVOList = userMapper.countGroupByDate( begin, endExclusive );
 
         UserReportVO userReportVO = UserReportVO.builder()
@@ -890,7 +891,7 @@ public class OrderServiceImpl implements OrderService {
              4. 累计有效订单量
              5. 累计订单完成率
          */
-        LocalDate endExclusive = end.plusDays( 1 );
+        LocalDate endExclusive = TimeConstant.getTomorrow( end );
         List< OrderCountItemVO > orderCountItemVOList = orderMapper.countGroupByDate( begin, endExclusive );
         List< OrderValidCountItemVO > orderValidCountItemVOList = orderMapper.countByStatusAndGroupByDate(
                 OrderStatus.COMPLETED.getValue(), begin, endExclusive
@@ -925,7 +926,7 @@ public class OrderServiceImpl implements OrderService {
             注意订单状态 = 已完成
             靠 SQL 查出已完成的订单的商品 name 和 number 数量
          */
-        LocalDate endExclusive = end.plusDays( 1 );
+        LocalDate endExclusive = TimeConstant.getTomorrow( end );
         List< SalesItemVO > salesItemVOList = orderDetailMapper.sumNumberTopNByStatusAndDateAndGroupByName(
                 OrderStatus.COMPLETED.getValue(),
                 topN,
