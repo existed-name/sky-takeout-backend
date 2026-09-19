@@ -68,6 +68,8 @@ import com.sky.vo.order.OrderSubmitVO;
 import com.sky.vo.report.OrderCountItemVO;
 import com.sky.vo.report.OrderReportVO;
 import com.sky.vo.report.OrderValidCountItemVO;
+import com.sky.vo.report.SalesItemVO;
+import com.sky.vo.report.SalesReportVO;
 import com.sky.vo.report.TurnoverReportItemVO;
 import com.sky.vo.report.TurnoverReportVO;
 import com.sky.vo.report.UserCountItemVO;
@@ -913,6 +915,27 @@ public class OrderServiceImpl implements OrderService {
                 .orderCompletionRate( orderCompletionRate )
                 .build();
         return orderReportVO;
+    }
+
+    @Transactional( readOnly = true )
+    @Override
+    public SalesReportVO reportSalesStatistics( Integer topN, LocalDate begin, LocalDate end ){
+        throwIfBeginIsAfterEnd( begin, end );
+        /*
+            注意订单状态 = 已完成
+            靠 SQL 查出已完成的订单的商品 name 和 number 数量
+         */
+        LocalDate endExclusive = end.plusDays( 1 );
+        List< SalesItemVO > salesItemVOList = orderDetailMapper.sumNumberTopNByStatusAndDateAndGroupByName(
+                OrderStatus.COMPLETED.getValue(),
+                topN,
+                begin,
+                endExclusive
+        );
+        SalesReportVO salesReportVO = SalesReportVO.builder()
+                .items( salesItemVOList )
+                .build();
+        return salesReportVO;
     }
 
 

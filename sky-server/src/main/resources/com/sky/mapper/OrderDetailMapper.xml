@@ -28,4 +28,66 @@
                 </foreach>
     </select>
 
+    <!--
+    统计某种状态的订单, 销售量排在前 N 位的商品
+    -->
+    <select id="sumNumberTopNByStatusAndDateAndGroupByName" resultType="com.sky.vo.report.SalesItemVO">
+        <!--
+        * SQL 核心思路:
+          按照 name 分组拿到单个商品, 再对单个订单详情的数据量求和
+        * 最开始想直接分组, 但是考虑到 order_detail 只能存旧的 name,
+          如果商家改动了 name, 就会有冲突名字、数据量不统一
+        * 于是就需要查询 dish, setmeal 的实际 name
+          于是就把 order_detail, dish, setmeal 3 表联合
+        * 从内往外套
+        -->
+        SELECT coalesce( temp_dish.name, temp_setmeal.name ) AS name,
+            sum( number ) AS sales_count
+        FROM
+            (
+                <!--
+                从订单详情筛出需要的字段
+                -->
+                SELECT dish_id, setmeal_id, number
+                FROM order_detail
+                WHERE order_id IN (
+                    <!--
+                    筛选已完成的订单
+                    同时指定时间范围
+                    -->
+                    SELECT id
+                    FROM orders
+                    WHERE status = #{status} AND
+                        #{begin} &lt;= order_time AND
+                        order_time &lt; #{endExclusive}
+                )
+            ) AS temp_detail
+            <!--
+            LEFT JOIN 保留订单详情的字段
+            -->
+            LEFT JOIN (
+                SELECT id, name
+                FROM dish
+            ) AS temp_dish
+            ON temp_detail.dish_id = temp_dish.id
+            <!--
+            把 3 张表合并, 取核心的 name 菜品/套餐名、number 销售数量
+            -->
+            LEFT JOIN (
+                SELECT id, name
+                FROM setmeal
+            ) AS temp_setmeal
+            ON temp_detail.setmeal_id = temp_setmeal.id
+
+        <!--
+        标准 SQL
+        where 不支持用字段别名
+        group by, having 只有部分 SQL 可以( mysql )
+        order by 支持
+        -->
+        GROUP BY coalesce( temp_dish.name, temp_setmeal.name )
+        ORDER BY sales_count DESC, name ASC
+        LIMIT #{limit}
+    </select>
+
 </mapper>

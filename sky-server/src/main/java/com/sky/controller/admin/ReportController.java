@@ -4,17 +4,20 @@ import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.report.OrderReportVO;
+import com.sky.vo.report.SalesReportVO;
 import com.sky.vo.report.TurnoverReportVO;
 import com.sky.vo.report.UserReportVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 
 /**
@@ -22,6 +25,7 @@ import java.time.LocalDate;
  *
  * @CreateTime 2026/9/17 6:33
  */
+@Validated
 @Slf4j
 @Api( tags = "数据统计报告接口" )
 @RestController( "/adminReportController" )
@@ -109,6 +113,28 @@ public class ReportController {
         log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的订单统计数据", empId, begin, end );
         OrderReportVO orderReportVO = orderService.reportOrderStatisticsByDate( begin, end );
         return Result.success( orderReportVO );
+    }
+
+    /**
+     * 销量统计
+     */
+    @ApiOperation( "销量统计" )
+    @GetMapping( "/sales-statistics" )
+    public Result< SalesReportVO > salesStatistics(
+            @RequestParam( name = "topN", required = false, defaultValue = "10" )
+            @Positive( message = "topN 必须是正整数, 表示查询销量排名前 N 位的数据")
+            Integer topN,
+            @RequestParam( name = "begin", required = true )
+            @DateTimeFormat( pattern = "yyyy-MM-dd[ HH:mm:ss]" )
+            LocalDate begin,
+            @RequestParam( name = "end", required = true )
+            @DateTimeFormat( pattern = "yyyy-MM-dd[ HH:mm:ss]" )
+            LocalDate end
+    ){
+        Long empId = BaseContext.getCurrentId();
+        log.info( "id = {} 的员工查看销量统计数据", empId );
+        SalesReportVO salesReportVO = orderService.reportSalesStatistics( topN, begin, end );
+        return Result.success( salesReportVO );
     }
 
 
