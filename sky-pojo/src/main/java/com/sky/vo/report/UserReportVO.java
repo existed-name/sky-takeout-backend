@@ -36,13 +36,27 @@ public class UserReportVO implements Serializable {
 
     /** 时间范围内, 每天的总用户量 */
     @ApiModelProperty( value = "时间范围内, 每天的总用户量", example = """
-            
+            [
+                {
+                    "date": "2026-05-30",
+                    "total": 0
+                },
+                 {
+                    "date": "2026-05-31",
+                    "total": 2
+                }
+            ]
             """)
     private List< UserCountItemVO > userCountList = new ArrayList<>();
 
     /** 时间范围内, 每天相比昨天的新增用户量 */
     @ApiModelProperty( value = "时间范围内, 每天相比昨天的新增用户量", example = """
-            
+            [
+                {
+                    "date": "2025-09-18",
+                    "growth": 2
+                }
+            ]
             """)
     private List< UserGrowthItemVO > userGrowthList = new ArrayList<>();
 }
