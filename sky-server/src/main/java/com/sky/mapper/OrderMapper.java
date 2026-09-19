@@ -7,6 +7,8 @@ import com.sky.entity.Orders;
 import com.sky.projection.order.PaymentTimeoutProjection;
 import com.sky.projection.order.StatusProjection;
 import com.sky.vo.order.OrderHistoryItemVO;
+import com.sky.vo.report.OrderCountItemVO;
+import com.sky.vo.report.OrderValidCountItemVO;
 import com.sky.vo.report.TurnoverReportItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
@@ -298,4 +300,41 @@ public interface OrderMapper {
      * @return 时间范围内, 每天的营业额数据项列表
      */
     List< TurnoverReportItemVO > sumAmountByStatusAndGroupByDate( @Param( "status" ) int status, @Param( "begin" ) LocalDate begin, @Param( "endExclusive" ) LocalDate endExclusive );
+
+    /**
+     * 统计指定时间范围内, 每天的订单数量
+     *
+     * @param begin 起始日期( 包含当天 )
+     * @param endExclusive 截止日期的第 2 天( 不包含当天 )
+     * @return 每天的日期和订单数量
+     */
+    List< OrderCountItemVO> countGroupByDate(
+            @Param( "begin" ) LocalDate begin,
+            @Param( "endExclusive" ) LocalDate endExclusive
+    );
+
+    /**
+     * 统计时间范围内, 每天某种状态的订单数量
+     *
+     * @param status 订单状态, 比如已完成、未退款, {@link com.sky.enumeration.OrderStatus#COMPLETED}
+     * @param begin 起始日期( 包含当天 )
+     * @param endExclusive 截止日期的第 2 天( 不包含当天 )
+     * @return 每天的日期和订单数量
+     */
+    List< OrderValidCountItemVO> countByStatusAndGroupByDate(
+            @Param( "status" ) int status,
+            @Param( "begin" ) LocalDate begin,
+            @Param( "endExclusive" ) LocalDate endExclusive
+    );
+
+    /**
+     * 统计所有订单数量
+     *
+     * @return 订单总数
+     */
+    @Select( """
+            SELECT count( * )
+            FROM orders
+            """ )
+    long countAll();
 }

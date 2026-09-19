@@ -3,6 +3,7 @@ package com.sky.controller.admin;
 import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
+import com.sky.vo.report.OrderReportVO;
 import com.sky.vo.report.TurnoverReportVO;
 import com.sky.vo.report.UserReportVO;
 import io.swagger.annotations.Api;
@@ -89,6 +90,25 @@ public class ReportController {
         log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的用户量统计数据", empId, begin, end );
         UserReportVO userReportVO = orderService.reportUserStatisticsByDate( begin, end );
         return Result.success( userReportVO );
+    }
+
+    /**
+     * 订单数据统计
+     */
+    @ApiOperation( "订单数据统计" )
+    @GetMapping( "/order-statistics" )
+    public Result< OrderReportVO > orderStatistics(
+            @RequestParam( name = "begin", required = true )
+            @DateTimeFormat( pattern = "yyyy-MM-dd[ HH:mm:ss]" )
+            LocalDate begin,
+            @RequestParam( name = "end", required = true )
+            @DateTimeFormat( pattern = "yyyy-MM-dd[ HH:mm:ss]" )
+            LocalDate end
+    ){
+        Long empId = BaseContext.getCurrentId();
+        log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的订单统计数据", empId, begin, end );
+        OrderReportVO orderReportVO = orderService.reportOrderStatisticsByDate( begin, end );
+        return Result.success( orderReportVO );
     }
 
 

@@ -65,6 +65,9 @@ import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
+import com.sky.vo.report.OrderCountItemVO;
+import com.sky.vo.report.OrderReportVO;
+import com.sky.vo.report.OrderValidCountItemVO;
 import com.sky.vo.report.TurnoverReportItemVO;
 import com.sky.vo.report.TurnoverReportVO;
 import com.sky.vo.report.UserCountItemVO;
@@ -872,6 +875,40 @@ public class OrderServiceImpl implements OrderService {
                 .userGrowthList( userGrowthItemVOList )
                 .build();
         return userReportVO;
+    }
+
+    @Transactional( readOnly = true )
+    @Override
+    public OrderReportVO reportOrderStatisticsByDate( LocalDate begin, LocalDate end ){
+        throwIfBeginIsAfterEnd( begin, end );
+        /*
+             1. 每天的订单量
+             2. 每天的有效订单量
+             3. 累计订单总量
+             4. 累计有效订单量
+             5. 累计订单完成率
+         */
+        LocalDate endExclusive = end.plusDays( 1 );
+        List< OrderCountItemVO > orderCountItemVOList = orderMapper.countGroupByDate( begin, endExclusive );
+        List< OrderValidCountItemVO > orderValidCountItemVOList = orderMapper.countByStatusAndGroupByDate(
+                OrderStatus.COMPLETED.getValue(), begin, endExclusive
+        );
+        long totalOrderCount = orderMapper.countAll();
+        long totalValidOrderCount = orderMapper.countByStatus( OrderStatus.COMPLETED.getValue() );
+
+        // 这里保留 4 位小数, 交给前端转为百分数, 比如 0.8222 → 82.22%
+        double orderCompletionRate = totalValidOrderCount * 1.0 / totalOrderCount;
+        String format = String.format( "%.4f", orderCompletionRate );
+        orderCompletionRate = Double.parseDouble( format );
+
+        OrderReportVO orderReportVO = OrderReportVO.builder()
+                .orderCountList( orderCountItemVOList )
+                .validOrderCountList( orderValidCountItemVOList )
+                .totalOrderCount( totalOrderCount )
+                .validOrderCount( totalValidOrderCount )
+                .orderCompletionRate( orderCompletionRate )
+                .build();
+        return orderReportVO;
     }
 
 

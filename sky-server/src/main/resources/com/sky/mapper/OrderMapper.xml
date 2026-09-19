@@ -281,4 +281,27 @@
         -->
     </select>
 
+    <!--
+    统计指定时间范围内, 每天的订单数量
+    -->
+    <select id="countGroupByDate" resultType="com.sky.vo.report.OrderCountItemVO">
+        SELECT date( order_time ) AS date, count( * ) AS count
+        FROM orders
+        WHERE #{begin} &lt;= order_time AND
+            order_time &lt; #{endExclusive}
+        GROUP BY date( order_time )
+    </select>
+
+    <!--
+    统计时间范围内, 每天某种状态的订单数
+    -->
+    <select id="countByStatusAndGroupByDate" resultType="com.sky.vo.report.OrderValidCountItemVO">
+        SELECT date( order_time ) AS date, count( * ) AS count
+        FROM orders
+        WHERE status = #{status} AND
+            #{begin} &lt;= order_time AND
+            order_time &lt; #{endExclusive}
+        GROUP BY date( order_time )
+    </select>
+
 </mapper>

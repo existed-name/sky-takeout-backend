@@ -12,6 +12,7 @@ import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
+import com.sky.vo.report.OrderReportVO;
 import com.sky.vo.report.TurnoverReportVO;
 import com.sky.vo.report.UserReportVO;
 
@@ -159,4 +160,20 @@ public interface OrderService {
      * @return 时间范围内, 每天的用户总量和用户增量
      */
     UserReportVO reportUserStatisticsByDate( LocalDate begin, LocalDate end );
+
+    /**
+     * 订单数据统计
+     * <pre>
+     *     1. 每天的订单量
+     *     2. 每天的有效订单量
+     *     3. 累计订单总量
+     *     4. 累计有效订单量
+     *     5. 累计订单完成率
+     * </pre>
+     *
+     * @param begin 起始时间( 包含当天 )
+     * @param end 截止时间( 包含当天 )
+     * @return 订单统计数据
+     */
+    OrderReportVO reportOrderStatisticsByDate( LocalDate begin, LocalDate end );
 }
