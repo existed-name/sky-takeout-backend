@@ -3,6 +3,7 @@ package com.sky.controller.admin;
 import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
+import com.sky.service.ReportService;
 import com.sky.vo.report.OrderReportVO;
 import com.sky.vo.report.SalesReportVO;
 import com.sky.vo.report.TurnoverReportVO;
@@ -40,11 +41,13 @@ public class ReportController {
 
     // ==================== 实例变量 ====================
     private final OrderService orderService;
+    private final ReportService reportService;
 
 
     // ==================== 构造器 ====================
-    public ReportController( OrderService orderService ){
+    public ReportController( OrderService orderService, ReportService reportService ){
         this.orderService = orderService;
+        this.reportService = reportService;
     }
 
 
@@ -73,7 +76,7 @@ public class ReportController {
     ){
         Long empId = BaseContext.getCurrentId();
         log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的营业额统计数据", empId, begin, end );
-        TurnoverReportVO turnoverReportVO = orderService.reportTurnoverByDate( begin, end );
+        TurnoverReportVO turnoverReportVO = reportService.reportTurnoverByDate( begin, end );
         return Result.success( turnoverReportVO );
     }
 
@@ -92,7 +95,7 @@ public class ReportController {
     ){
         Long empId = BaseContext.getCurrentId();
         log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的用户量统计数据", empId, begin, end );
-        UserReportVO userReportVO = orderService.reportUserStatisticsByDate( begin, end );
+        UserReportVO userReportVO = reportService.reportUserStatisticsByDate( begin, end );
         return Result.success( userReportVO );
     }
 
@@ -111,7 +114,7 @@ public class ReportController {
     ){
         Long empId = BaseContext.getCurrentId();
         log.info( "id = {} 的员工查看时间范围 [ {} , {} ] 的订单统计数据", empId, begin, end );
-        OrderReportVO orderReportVO = orderService.reportOrderStatisticsByDate( begin, end );
+        OrderReportVO orderReportVO = reportService.reportOrderStatisticsByDate( begin, end );
         return Result.success( orderReportVO );
     }
 
@@ -133,7 +136,7 @@ public class ReportController {
     ){
         Long empId = BaseContext.getCurrentId();
         log.info( "id = {} 的员工查看销量统计数据", empId );
-        SalesReportVO salesReportVO = orderService.reportSalesStatistics( topN, begin, end );
+        SalesReportVO salesReportVO = reportService.reportSalesStatistics( topN, begin, end );
         return Result.success( salesReportVO );
     }
 
