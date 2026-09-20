@@ -141,7 +141,7 @@ public class ReportServiceImpl implements ReportService {
             return 0;
         }
 
-        double orderCompletionRate = 0;
+        double orderCompletionRate = validOrderCount * 1.0 / orderCount;
         // 这里保留 4 位小数, 交给前端转为百分数, 比如 0.8222 → 82.22%
         String format = String.format( "%.4f", orderCompletionRate );
         orderCompletionRate = Double.parseDouble( format );
