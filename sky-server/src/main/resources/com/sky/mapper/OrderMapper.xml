@@ -272,7 +272,7 @@
         WHERE status = #{status} AND
             #{begin} &lt;= checkout_time AND
             checkout_time &lt; #{endExclusive}
-        GROUP BY date
+        GROUP BY date( checkout_time )
         <!--
         日期比较,
         '2026-09-17' 字符串会自动补全时间 = '2026-09-17 00:00:00'
