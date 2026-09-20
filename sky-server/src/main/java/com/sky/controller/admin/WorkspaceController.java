@@ -61,7 +61,7 @@ public class WorkspaceController {
     ){
         Long empId = BaseContext.getCurrentId();
         log.info( "id = {} 的管理员查看日期 = {} 的工作台运营数据", empId, date );
-        DataOverviewVO dataOverviewVO = workspaceService.getDataOverviewByDate( date, date );
+        DataOverviewVO dataOverviewVO = workspaceService.overviewDataByTimeRange( date, date );
         return Result.success( dataOverviewVO );
     }
 

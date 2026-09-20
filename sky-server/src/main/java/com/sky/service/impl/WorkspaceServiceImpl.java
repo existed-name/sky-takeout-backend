@@ -50,7 +50,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Transactional( readOnly = true )
     @Override
-    public DataOverviewVO getDataOverviewByDate( LocalDate begin, LocalDate end ){
+    public DataOverviewVO overviewDataByTimeRange( LocalDate begin, LocalDate end ){
         /*
             1. 新增用户量
             2. 有效订单数

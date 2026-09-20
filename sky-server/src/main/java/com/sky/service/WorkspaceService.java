@@ -18,7 +18,7 @@ public interface WorkspaceService {
      * @param end 截止时间( 包含当天 )
      * @return 统计数据封装对象
      */
-    DataOverviewVO getDataOverviewByDate( LocalDate begin, LocalDate end );
+    DataOverviewVO overviewDataByTimeRange( LocalDate begin, LocalDate end );
 
     /**
      * 订单数据总览, <b>没有筛选时间范围、某天日期</b>
