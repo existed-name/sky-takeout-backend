@@ -4,6 +4,7 @@ import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.WorkspaceService;
 import com.sky.vo.workspace.DataOverviewVO;
+import com.sky.vo.workspace.OrderOverviewVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * 管理端工作台数据统计接口
@@ -63,6 +63,17 @@ public class WorkspaceController {
         log.info( "id = {} 的管理员查看日期 = {} 的工作台运营数据", empId, date );
         DataOverviewVO dataOverviewVO = workspaceService.getDataOverviewByDate( date, date );
         return Result.success( dataOverviewVO );
+    }
+
+    /**
+     * 订单数据总览
+     */
+    @GetMapping( "/overview/orders" )
+    public Result< OrderOverviewVO > overviewOrders(){
+        Long empId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员查看订单数据总览", empId );
+        OrderOverviewVO orderOverviewVO = workspaceService.overviewOrders(  );
+        return Result.success( orderOverviewVO );
     }
 
 

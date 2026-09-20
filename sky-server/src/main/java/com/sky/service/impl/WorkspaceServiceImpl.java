@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.sky.dto.order.OrderStatusCount;
 import com.sky.enumeration.OrderStatus;
 import com.sky.enumeration.Time;
 import com.sky.mapper.OrderMapper;
@@ -11,6 +12,7 @@ import com.sky.vo.report.OrderValidCountItemVO;
 import com.sky.vo.report.TurnoverReportItemVO;
 import com.sky.vo.report.UserGrowthItemVO;
 import com.sky.vo.workspace.DataOverviewVO;
+import com.sky.vo.workspace.OrderOverviewVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -133,6 +136,45 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         return dataOverviewVO;
     }
 
+    @Transactional( readOnly = true )
+    @Override
+    public OrderOverviewVO overviewOrders(){
+        /*
+                1. 待接单数量
+                2. 待派送数量
+                3. 已完成数量
+                4. 已取消数量
+                5. 全部订单数量
+         */
+        Map< Integer, OrderStatusCount > statusToCountMap = orderMapper.countGroupByStatus();
+        long waitingOrders = getCountByStatus(
+                statusToCountMap,
+                OrderStatus.TO_BE_CONFIRMED.getValue()
+        );
+        long deliveredOrders = getCountByStatus(
+                statusToCountMap,
+                OrderStatus.CONFIRMED.getValue()
+        );
+        long completedOrders = getCountByStatus(
+                statusToCountMap,
+                OrderStatus.COMPLETED.getValue()
+        );
+        long cancelledOrders = getCountByStatus(
+                statusToCountMap,
+                OrderStatus.CANCELLED.getValue()
+        );
+
+        long allOrders = orderMapper.countAll();
+        OrderOverviewVO orderOverviewVO = OrderOverviewVO.builder()
+                .waitingOrders( waitingOrders )
+                .deliveredOrders( deliveredOrders )
+                .completedOrders( completedOrders )
+                .cancelledOrders( cancelledOrders )
+                .allOrders( allOrders )
+                .build();
+        return orderOverviewVO;
+    }
+
 
 
     // ==================== 私有辅助方法 ====================
@@ -167,4 +209,21 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         return averageCustomerUnitPrice;
     }
 
+    /**
+     * 获取指定状态的订单数量
+     * <p>
+     *     <b>由调用方确保参数有效</b>
+     * </p>
+     *
+     * @param statusToCountMap 数据来源, 订单状态数量统计 Map
+     * @param orderStatus 订单状态数值, {@link OrderStatus}
+     * @return 订单数量, <b>订单状态无效、未统计到该状态订单数量时, 返回 0</b>
+     */
+    private Long getCountByStatus( Map< Integer, OrderStatusCount> statusToCountMap, int orderStatus ){
+        OrderStatusCount orderStatusCount = statusToCountMap.get( orderStatus );
+        if ( orderStatusCount == null ){
+            return 0L;
+        }
+        return orderStatusCount.getCount();
+    }
 }

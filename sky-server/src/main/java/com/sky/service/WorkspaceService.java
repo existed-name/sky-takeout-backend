@@ -1,6 +1,7 @@
 package com.sky.service;
 
 import com.sky.vo.workspace.DataOverviewVO;
+import com.sky.vo.workspace.OrderOverviewVO;
 
 import java.time.LocalDate;
 
@@ -18,4 +19,11 @@ public interface WorkspaceService {
      * @return 统计数据封装对象
      */
     DataOverviewVO getDataOverviewByDate( LocalDate begin, LocalDate end );
+
+    /**
+     * 订单数据总览, <b>没有筛选时间范围、某天日期</b>
+     *
+     * @return 各个状态的订单数量
+     */
+    OrderOverviewVO overviewOrders();
 }
