@@ -1,12 +1,14 @@
 package com.sky.mapper;
 
 import com.sky.annotation.AutoFill;
+import com.sky.dto.GoodsStatusCount;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
@@ -14,6 +16,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface SetmealMapper {
@@ -186,5 +189,16 @@ public interface SetmealMapper {
      */
     long countByIds( @Param( "ids" ) List< Long > setmealIdList );
 
-
+    /**
+     * 统计所有状态的套餐数量
+     *
+     * @return 数量统计 Map, 可获取指定状态的封装对象、拿到对应的统计数量
+     */
+    @Select( """
+            SELECT status, count( * ) AS count
+            FROM setmeal
+            GROUP BY status
+            """ )
+    @MapKey( "status" )
+    Map< Integer, GoodsStatusCount > countGroupByStatus();
 }

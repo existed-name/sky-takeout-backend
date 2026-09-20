@@ -3,6 +3,7 @@ package com.sky.service;
 import com.sky.vo.workspace.DataOverviewVO;
 import com.sky.vo.workspace.DishOverviewVO;
 import com.sky.vo.workspace.OrderOverviewVO;
+import com.sky.vo.workspace.SetmealOverviewVO;
 
 import java.time.LocalDate;
 
@@ -34,4 +35,11 @@ public interface WorkspaceService {
      * @return 起售、停售菜品数量
      */
     DishOverviewVO overviewDishes();
+
+    /**
+     * 套餐数据总览
+     *
+     * @return 起售、停售套餐数量
+     */
+    SetmealOverviewVO overviewSetmeals();
 }

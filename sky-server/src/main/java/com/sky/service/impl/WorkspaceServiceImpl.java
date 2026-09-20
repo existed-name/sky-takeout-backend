@@ -7,6 +7,7 @@ import com.sky.enumeration.OrderStatus;
 import com.sky.enumeration.Time;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.service.WorkspaceService;
@@ -17,6 +18,7 @@ import com.sky.vo.report.UserGrowthItemVO;
 import com.sky.vo.workspace.DataOverviewVO;
 import com.sky.vo.workspace.DishOverviewVO;
 import com.sky.vo.workspace.OrderOverviewVO;
+import com.sky.vo.workspace.SetmealOverviewVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,14 +43,16 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private final OrderMapper orderMapper;
     private final ReportService reportService;
     private final DishMapper dishMapper;
+    private final SetmealMapper setmealMapper;
 
 
     // ==================== 构造器 ====================
-    public WorkspaceServiceImpl( UserMapper userMapper, OrderMapper orderMapper, ReportService reportService, DishMapper dishMapper ){
+    public WorkspaceServiceImpl( UserMapper userMapper, OrderMapper orderMapper, ReportService reportService, DishMapper dishMapper, SetmealMapper setmealMapper ){
         this.userMapper = userMapper;
         this.orderMapper = orderMapper;
         this.reportService = reportService;
         this.dishMapper = dishMapper;
+        this.setmealMapper = setmealMapper;
     }
 
 
@@ -203,6 +207,27 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         return dishOverviewVO;
     }
 
+    @Transactional( readOnly = true )
+    @Override
+    public SetmealOverviewVO overviewSetmeals(){
+        /*
+            停售、起售套餐数量
+         */
+        Map< Integer, GoodsStatusCount > statusToCountMap = setmealMapper.countGroupByStatus();
+        long onSale = getCountByGoodsStatus(
+                statusToCountMap,
+                GoodsStatus.ON_SALE.getStatus()
+        );
+        long discontinued = getCountByGoodsStatus(
+                statusToCountMap,
+                GoodsStatus.DISCONTINUED.getStatus()
+        );
+        SetmealOverviewVO setmealOverviewVO = SetmealOverviewVO.builder()
+                .onSale( onSale )
+                .discontinued( discontinued )
+                .build();
+        return setmealOverviewVO;
+    }
 
 
     // ==================== 私有辅助方法 ====================
