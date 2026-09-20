@@ -1,8 +1,11 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsStatusCount;
 import com.sky.dto.order.OrderStatusCount;
+import com.sky.enumeration.GoodsStatus;
 import com.sky.enumeration.OrderStatus;
 import com.sky.enumeration.Time;
+import com.sky.mapper.DishMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
@@ -12,6 +15,7 @@ import com.sky.vo.report.OrderValidCountItemVO;
 import com.sky.vo.report.TurnoverReportItemVO;
 import com.sky.vo.report.UserGrowthItemVO;
 import com.sky.vo.workspace.DataOverviewVO;
+import com.sky.vo.workspace.DishOverviewVO;
 import com.sky.vo.workspace.OrderOverviewVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,13 +40,15 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private final UserMapper userMapper;
     private final OrderMapper orderMapper;
     private final ReportService reportService;
+    private final DishMapper dishMapper;
 
 
     // ==================== 构造器 ====================
-    public WorkspaceServiceImpl( UserMapper userMapper, OrderMapper orderMapper, ReportService reportService ){
+    public WorkspaceServiceImpl( UserMapper userMapper, OrderMapper orderMapper, ReportService reportService, DishMapper dishMapper ){
         this.userMapper = userMapper;
         this.orderMapper = orderMapper;
         this.reportService = reportService;
+        this.dishMapper = dishMapper;
     }
 
 
@@ -147,19 +153,19 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 5. 全部订单数量
          */
         Map< Integer, OrderStatusCount > statusToCountMap = orderMapper.countGroupByStatus();
-        long waitingOrders = getCountByStatus(
+        long waitingOrders = getCountByOrderStatus(
                 statusToCountMap,
                 OrderStatus.TO_BE_CONFIRMED.getValue()
         );
-        long deliveredOrders = getCountByStatus(
+        long deliveredOrders = getCountByOrderStatus(
                 statusToCountMap,
                 OrderStatus.CONFIRMED.getValue()
         );
-        long completedOrders = getCountByStatus(
+        long completedOrders = getCountByOrderStatus(
                 statusToCountMap,
                 OrderStatus.COMPLETED.getValue()
         );
-        long cancelledOrders = getCountByStatus(
+        long cancelledOrders = getCountByOrderStatus(
                 statusToCountMap,
                 OrderStatus.CANCELLED.getValue()
         );
@@ -173,6 +179,28 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .allOrders( allOrders )
                 .build();
         return orderOverviewVO;
+    }
+
+    @Transactional( readOnly = true )
+    @Override
+    public DishOverviewVO overviewDishes(){
+        /*
+            停售、起售菜品数量
+         */
+        Map< Integer, GoodsStatusCount > statusToCountMap = dishMapper.countGroupByStatus();
+        long onSale = getCountByGoodsStatus(
+                statusToCountMap,
+                GoodsStatus.ON_SALE.getStatus()
+        );
+        long discontinued = getCountByGoodsStatus(
+                statusToCountMap,
+                GoodsStatus.DISCONTINUED.getStatus()
+        );
+        DishOverviewVO dishOverviewVO = DishOverviewVO.builder()
+                .onSale( onSale )
+                .discontinued( discontinued )
+                .build();
+        return dishOverviewVO;
     }
 
 
@@ -219,11 +247,29 @@ public class WorkspaceServiceImpl implements WorkspaceService {
      * @param orderStatus 订单状态数值, {@link OrderStatus}
      * @return 订单数量, <b>订单状态无效、未统计到该状态订单数量时, 返回 0</b>
      */
-    private Long getCountByStatus( Map< Integer, OrderStatusCount> statusToCountMap, int orderStatus ){
+    private long getCountByOrderStatus( Map< Integer, OrderStatusCount> statusToCountMap, int orderStatus ){
         OrderStatusCount orderStatusCount = statusToCountMap.get( orderStatus );
         if ( orderStatusCount == null ){
             return 0L;
         }
         return orderStatusCount.getCount();
+    }
+
+    /**
+     * 获取指定状态的商品数量
+     * <p>
+     *     <b>由调用方确保参数有效</b>
+     * </p>
+     *
+     * @param statusToCountMap 数据来源, 商品状态数量统计 Map
+     * @param goodsStatus 商品状态数值, {@link GoodsStatus}
+     * @return 商品数量, <b>商品状态无效、未统计到该状态商品数量时, 返回 0</b>
+     */
+    private long getCountByGoodsStatus( Map< Integer, GoodsStatusCount > statusToCountMap, int goodsStatus ){
+        GoodsStatusCount goodsStatusCount = statusToCountMap.get( goodsStatus );
+        if ( goodsStatusCount == null ){
+            return 0L;
+        }
+        return goodsStatusCount.getCount();
     }
 }

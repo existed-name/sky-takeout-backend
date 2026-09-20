@@ -2,16 +2,19 @@ package com.sky.mapper;
 
 import com.sky.annotation.AutoFill;
 import com.sky.dto.DishPageQueryDTO;
+import com.sky.dto.GoodsStatusCount;
 import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface DishMapper {
@@ -150,4 +153,17 @@ public interface DishMapper {
      * 统计一批 id 对应存在的数据条数, 用于和 idList 长度比较判断<b>是否有数据被删除或不存在</b>
      */
     long countByIds( @Param( "ids" ) List< Long > dishIdList );
+
+    /**
+     * 统计所有状态的菜品数量
+     *
+     * @return 数量统计 Map, 可获取指定状态的封装对象、拿到对应的统计数量
+     */
+    @Select( """
+            SELECT status, count( * ) AS count
+            FROM dish
+            GROUP BY status
+            """ )
+    @MapKey( "status" )
+    Map< Integer, GoodsStatusCount > countGroupByStatus();
 }
