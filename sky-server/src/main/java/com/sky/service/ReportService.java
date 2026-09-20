@@ -49,6 +49,19 @@ public interface ReportService {
     OrderReportVO reportOrderStatisticsByDate( LocalDate begin, LocalDate end );
 
     /**
+     * 计算订单完成率公共逻辑, 订单完成率 = 有效订单数量 / 订单总数
+     * <p>
+     *     保留到小数点后 4 位, 由调用方或者前端转换为百分数<br>
+     *     <b>由调用方确保参数有效, 并且有效订单数量、订单总数均为同一天或者同一时间范围</b>
+     * </p>
+     *
+     * @param validOrderCount 有效订单数量( 已完成的订单 )
+     * @param orderCount 订单总数
+     * @return 订单完成率, <b>当订单量 = 0 时返回 0</b>
+     */
+    double calcOrderCompletionRate( long validOrderCount, long orderCount );
+
+    /**
      * 统计时间范围内的销量, 主要记录排名前多少位的商品、销售量
      *
      * @param topN  排名前多少位

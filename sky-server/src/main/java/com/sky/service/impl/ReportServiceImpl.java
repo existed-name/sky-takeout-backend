@@ -122,14 +122,7 @@ public class ReportServiceImpl implements ReportService {
         long totalOrderCount = orderMapper.countAll();
         long totalValidOrderCount = orderMapper.countByStatus( OrderStatus.COMPLETED.getValue() );
 
-        double orderCompletionRate = 0;
-        // 注意对除数判断非 0
-        if ( totalValidOrderCount != 0L ){
-            orderCompletionRate = totalValidOrderCount * 1.0 / totalOrderCount;
-        }
-        // 这里保留 4 位小数, 交给前端转为百分数, 比如 0.8222 → 82.22%
-        String format = String.format( "%.4f", orderCompletionRate );
-        orderCompletionRate = Double.parseDouble( format );
+        double orderCompletionRate = calcOrderCompletionRate( totalValidOrderCount, totalOrderCount );
 
         OrderReportVO orderReportVO = OrderReportVO.builder()
                 .orderCountList( orderCountItemVOList )
@@ -139,6 +132,20 @@ public class ReportServiceImpl implements ReportService {
                 .orderCompletionRate( orderCompletionRate )
                 .build();
         return orderReportVO;
+    }
+
+    @Override
+    public double calcOrderCompletionRate( long validOrderCount, long orderCount ){
+        // 注意对除数判断非 0
+        if ( orderCount == 0L ){
+            return 0;
+        }
+
+        double orderCompletionRate = 0;
+        // 这里保留 4 位小数, 交给前端转为百分数, 比如 0.8222 → 82.22%
+        String format = String.format( "%.4f", orderCompletionRate );
+        orderCompletionRate = Double.parseDouble( format );
+        return orderCompletionRate;
     }
 
     @Transactional( readOnly = true )
