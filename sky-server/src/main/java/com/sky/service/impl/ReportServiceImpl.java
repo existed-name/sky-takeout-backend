@@ -1,7 +1,7 @@
 package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
-import com.sky.constant.TimeConstant;
+import com.sky.enumeration.Time;
 import com.sky.enumeration.OrderStatus;
 import com.sky.exception.common.TimeRangeInvalidException;
 import com.sky.mapper.OrderDetailMapper;
@@ -53,10 +53,10 @@ public class ReportServiceImpl implements ReportService {
     @Transactional( readOnly = true )
     @Override
     public TurnoverReportVO reportTurnoverByDate( LocalDate begin, LocalDate end ){
-        throwIfBeginIsAfterEnd( begin, end );
+        Time.throwIfBeginIsAfterEnd( begin, end );
 
         // sql 筛选时排除 end 截止日期, 所以为了能够查到 end 这一天, 就把截止时间设为 end + 1
-        LocalDate endDateExclusive = TimeConstant.getTomorrow( end );
+        LocalDate endDateExclusive = Time.getTomorrow( end );
         List< TurnoverReportItemVO > itemVOList = orderMapper.sumAmountByStatusAndGroupByDate(
                 OrderStatus.COMPLETED.getValue(), begin, endDateExclusive );
         TurnoverReportVO turnoverReportVO = TurnoverReportVO.builder()
@@ -68,7 +68,7 @@ public class ReportServiceImpl implements ReportService {
     @Transactional( readOnly = true )
     @Override
     public UserReportVO reportUserStatisticsByDate( LocalDate begin, LocalDate end ){
-        throwIfBeginIsAfterEnd( begin, end );
+        Time.throwIfBeginIsAfterEnd( begin, end );
         /*
             * 每天的用户增量可以一次性在数据库查到
               - 但是如果某天没有新增用户( growth = 0 )、就会忽略那一天的数据项
@@ -93,7 +93,7 @@ public class ReportServiceImpl implements ReportService {
             userCountItemVOList.add( userCountItemVO );
         }
 
-        LocalDate endExclusive = TimeConstant.getTomorrow( end );
+        LocalDate endExclusive = Time.getTomorrow( end );
         List< UserGrowthItemVO > userGrowthItemVOList = userMapper.countGroupByDate( begin, endExclusive );
 
         UserReportVO userReportVO = UserReportVO.builder()
@@ -106,7 +106,7 @@ public class ReportServiceImpl implements ReportService {
     @Transactional( readOnly = true )
     @Override
     public OrderReportVO reportOrderStatisticsByDate( LocalDate begin, LocalDate end ){
-        throwIfBeginIsAfterEnd( begin, end );
+        Time.throwIfBeginIsAfterEnd( begin, end );
         /*
              1. 每天的订单量
              2. 每天的有效订单量
@@ -114,7 +114,7 @@ public class ReportServiceImpl implements ReportService {
              4. 累计有效订单量
              5. 累计订单完成率
          */
-        LocalDate endExclusive = TimeConstant.getTomorrow( end );
+        LocalDate endExclusive = Time.getTomorrow( end );
         List< OrderCountItemVO > orderCountItemVOList = orderMapper.countGroupByDate( begin, endExclusive );
         List< OrderValidCountItemVO > orderValidCountItemVOList = orderMapper.countByStatusAndGroupByDate(
                 OrderStatus.COMPLETED.getValue(), begin, endExclusive
@@ -144,12 +144,12 @@ public class ReportServiceImpl implements ReportService {
     @Transactional( readOnly = true )
     @Override
     public SalesReportVO reportSalesStatistics( Integer topN, LocalDate begin, LocalDate end ){
-        throwIfBeginIsAfterEnd( begin, end );
+        Time.throwIfBeginIsAfterEnd( begin, end );
         /*
             注意订单状态 = 已完成
             靠 SQL 查出已完成的订单的商品 name 和 number 数量
          */
-        LocalDate endExclusive = TimeConstant.getTomorrow( end );
+        LocalDate endExclusive = Time.getTomorrow( end );
         List< SalesItemVO > salesItemVOList = orderDetailMapper.sumNumberTopNByStatusAndDateAndGroupByName(
                 OrderStatus.COMPLETED.getValue(),
                 topN,
@@ -165,22 +165,5 @@ public class ReportServiceImpl implements ReportService {
 
     // ==================== 私有辅助方法 ====================
 
-    /**
-     * 起始时间不能超过截止时间, 否则抛业务异常
-     *
-     * @param begin 起始时间
-     * @param end 截止时间
-     * @throws TimeRangeInvalidException 当起始时间超过截止时间时
-     */
-    private void throwIfBeginIsAfterEnd( LocalDate begin, LocalDate end ){
-        if ( begin.isAfter( end ) ){
-            /*
-                begin.compareTo( end ) > 0
-                我想的话也可以不抛异常, 查数据库的时候交换 2 个日期参数的位置, 或者互换数值
-                不过 ai 建议显式抛异常, 除非业务允许互换数值
-             */
-            throw new TimeRangeInvalidException( MessageConstant.BEGIN_TIME_GREATER_THAN_END_TIME );
-        }
-    }
 
 }
