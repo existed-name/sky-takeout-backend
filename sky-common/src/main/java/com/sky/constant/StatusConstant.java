@@ -7,6 +7,10 @@ import java.util.Set;
 
 /**
  * 状态常量，启用或者禁用
+ * @deprecated 新代码请迁移为新的枚举类<br>
+ *              1. 菜品/套餐状态{@link com.sky.enumeration.GoodsStatus}<br>
+ *              2. 店铺状态{@link com.sky.enumeration.ShopStatus}
+ *              3. 启用禁用状态{@link com.sky.enumeration.EnableStatus}
  */
 public class StatusConstant {
 
@@ -26,7 +30,10 @@ public class StatusConstant {
             ENABLE, DISABLE
     );
 
-    /** 菜品、套餐状态对应的字符串常量 */
+    /**
+     * 菜品、套餐状态对应的字符串常量
+     * @deprecated 新代码请使用{@link com.sky.enumeration.GoodsStatus}枚举获取状态描述
+     */
     public static final class SaleStatus {
         /** 起售(菜品/套餐) */
         public static final String ON_SALE = "起售";
@@ -44,7 +51,10 @@ public class StatusConstant {
         private SaleStatus(){}
     }
 
-    /** 店铺状态对应的字符串常量 */
+    /**
+     * 店铺状态对应的字符串常量
+     * @deprecated 新代码请使用{@link com.sky.enumeration.ShopStatus}枚举类
+     */
     public static final class ShopStatus {
         /** 店铺营业中 */
         public static final String OPEN = "营业中";
