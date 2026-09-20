@@ -68,6 +68,7 @@ public class WorkspaceController {
     /**
      * 订单数据总览
      */
+    @ApiOperation( "订单数据总览" )
     @GetMapping( "/overview/orders" )
     public Result< OrderOverviewVO > overviewOrders(){
         Long empId = BaseContext.getCurrentId();
