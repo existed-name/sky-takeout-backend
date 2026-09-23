@@ -104,7 +104,7 @@ public class OrderServiceImplTest {
                 orderConverter, userMapper, addressBookMapper, orderMapper,
                 shoppingCartMapper, orderDetailMapper, null,
                 null, null, null,
-                shopInfoProperties, baiduMapService
+                shopInfoProperties, baiduMapService, null, null
         );
     }
 
