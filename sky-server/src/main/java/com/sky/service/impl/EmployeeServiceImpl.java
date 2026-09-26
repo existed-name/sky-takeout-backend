@@ -128,6 +128,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeMapper.insert( employee );
     }
 
+    @Transactional( readOnly = true )
     @Override
     public PageResult page( EmployeePageQueryDTO pageQueryDTO ){
         PageUtil.validateParamsAndStartPage( pageQueryDTO.getPage(), pageQueryDTO.getPageSize() );

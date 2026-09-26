@@ -27,6 +27,8 @@ public interface EmployeeService {
 
     /**
      * 分页查询员工
+     * @param pageQueryDTO 条件分页查询参数
+     * @return 查询结果
      */
     PageResult page( EmployeePageQueryDTO pageQueryDTO );
 

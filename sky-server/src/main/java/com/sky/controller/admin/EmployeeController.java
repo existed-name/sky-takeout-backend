@@ -95,10 +95,9 @@ public class EmployeeController {
      */
     @GetMapping( "/page" )
     @ApiOperation( value = "条件分页查询员工" )
-    public Result< PageResult > page(
-            @NotNull( message = "分页查询参数不能为空" )
-            EmployeePageQueryDTO pageQueryDTO ){
-        log.info( "条件分页查询员工, 查询参数: {}", pageQueryDTO );
+    public Result< PageResult > page( @Valid EmployeePageQueryDTO pageQueryDTO ){
+        Long empId = BaseContext.getCurrentId();
+        log.info( "id = {} 的员工条件分页查询员工信息, 查询参数 = {}", empId, pageQueryDTO );
         PageResult pageResult = employeeService.page( pageQueryDTO );
         return Result.success( pageResult );
     }
