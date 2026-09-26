@@ -3,6 +3,8 @@ package com.sky.mapper;
 import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderStatusCount;
 import com.sky.dto.order.UserOrderPageQueryDTO;
+import com.sky.dto.report.OrderCompletionRateItem;
+import com.sky.dto.report.UnitPriceItem;
 import com.sky.entity.Orders;
 import com.sky.projection.order.PaymentTimeoutProjection;
 import com.sky.projection.order.StatusProjection;
@@ -18,6 +20,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -295,7 +298,7 @@ public interface OrderMapper {
      *
      * @param status 订单状态, <b>只查询已完成、没被取消的订单</b>{@link com.sky.enumeration.OrderStatus#COMPLETED}
      * @param begin        起始时间( 包含 )
-     * @param endExclusive 截止时间( <b>不包含</b> ),
+     * @param endExclusive 截止日期的第 2 天( <b>不包含</b> ),
      *                     由调用方确认 begin <= endExclusive
      * @return 时间范围内, 每天的营业额数据项列表
      */
@@ -337,4 +340,91 @@ public interface OrderMapper {
             FROM orders
             """ )
     long countAll();
+
+    /**
+     * 统计指定时间范围内的总营业额
+     *
+     * @param status 订单状态, <b>只查询已完成、没被取消的订单</b>{@link com.sky.enumeration.OrderStatus#COMPLETED}
+     * @param begin        起始时间( 包含 )
+     * @param endExclusive 截止日期的第 2 天( <b>不包含</b> ),
+     *                     由调用方确认 begin <= endExclusive
+     * @return 时间范围内的营业额数据
+     */
+    BigDecimal sumAmountByStatusAndDateRange(
+            @Param( "status" ) int status,
+            @Param( "begin" ) LocalDate begin,
+            @Param( "endExclusive" ) LocalDate endExclusive
+    );
+
+    /**
+     * 统计指定时间范围内, 某种状态的订单数量
+     *
+     * @param status 订单状态, {@link com.sky.enumeration.OrderStatus}
+     * @param begin        起始时间( 包含 )
+     * @param endExclusive 截止日期的第 2 天( <b>不包含</b> ),
+     *                     由调用方确认 begin <= endExclusive
+     * @return 时间范围内某种状态的订单数量
+     */
+    long countByStatusAndDateRange(
+            @Param( "status" ) int status,
+            @Param( "begin" ) LocalDate begin,
+            @Param( "endExclusive" ) LocalDate endExclusive
+    );
+
+    /**
+     * 统计指定时间范围内的订单总数
+     *
+     * @param begin        起始时间( 包含 )
+     * @param endExclusive 截止日期的第 2 天( <b>不包含</b> ),
+     *                     由调用方确认 begin <= endExclusive
+     * @return 该时间段的订单总数
+     */
+    @Select( """
+        SELECT count( * )
+        FROM orders
+        WHERE #{begin} <= order_time
+            AND order_time < #{endExclusive}
+        """ )
+    long countByDateRange(
+            @Param( "begin" ) LocalDate begin,
+            @Param( "endExclusive" ) LocalDate endExclusive
+    );
+
+    /**
+     * 计算时间范围内, 某种状态的订单占该时间段总订单的比率, 通常用于计算订单完成率
+     *
+     * @param status       订单状态, 通常是已完成{@link com.sky.enumeration.OrderStatus#COMPLETED}
+     * @param begin        起始时间( 包含 )
+     * @param endExclusive 截止日期的第 2 天( <b>不包含</b> ),
+     *                     由调用方确认 begin <= endExclusive
+     * @param scale 保留小数位数
+     * @return 订单占比( 小数 )
+     */
+    List< OrderCompletionRateItem > calcRateByStatusAndGroupByDate(
+            @Param( "status" ) int status,
+            @Param( "begin" ) LocalDate begin,
+            @Param( "endExclusive" ) LocalDate endExclusive,
+            @Param( "scale" ) int scale
+    );
+
+    /**
+     * 计算指定时间范围内, 每天的平均客单价
+     * <p>
+     *     平均客单价 = 营业额 / 有效订单数,
+     *     内部统计出每天营业额、有效订单数, 再进行计算
+     * </p>
+     *
+     * @param status       订单状态, <b>只查询已完成、没被取消的订单</b>{@link com.sky.enumeration.OrderStatus#COMPLETED}
+     * @param begin        起始时间( 包含 )
+     * @param endExclusive 截止日期的第 2 天( <b>不包含</b> ),
+     *                     由调用方确认 begin <= endExclusive
+     * @param scale 保留小数位数
+     * @return 每天的日期和平均客单价
+     */
+    List< UnitPriceItem > calcUnitPriceByStatusAndGroupByDate(
+            @Param( "status" ) int status,
+            @Param( "begin" ) LocalDate begin,
+            @Param( "endExclusive" ) LocalDate endExclusive,
+            @Param( "scale" ) int scale
+);
 }

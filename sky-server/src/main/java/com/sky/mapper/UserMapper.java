@@ -69,4 +69,19 @@ public interface UserMapper {
      * @return 时间范围内, 每天的日期和新增用户量
      */
     List< UserGrowthItemVO > countGroupByDate( @Param( "begin" ) LocalDate begin, @Param( "endExclusive" ) LocalDate endExclusive );
+
+    /**
+     * 统计时间范围内创建的用户总数
+     *
+     * @param begin 起始时间( 包含当天 )
+     * @param endExclusive <b>截止时间的第 2 天</b>( 不包含当天 )
+     * @return 该段时间的新增用户总数
+     */
+    @Select( """
+            SELECT count( * )
+            FROM user
+            WHERE #{begin} <= create_time AND
+                  create_time < #{endExclusive}
+            """ )
+    long countAllByDateRange( @Param( "begin" ) LocalDate begin, @Param( "endExclusive" ) LocalDate endExclusive );
 }

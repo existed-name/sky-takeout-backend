@@ -282,6 +282,17 @@
     </select>
 
     <!--
+    统计指定时间范围内的总营业额
+    -->
+    <select id="sumAmountByStatusAndDateRange" resultType="java.math.BigDecimal">
+        SELECT sum( amount )
+        FROM orders
+        WHERE status = #{status}
+            AND #{begin} &lt;= checkout_time
+            AND checkout_time &lt; #{endExclusive}
+    </select>
+
+    <!--
     统计指定时间范围内, 每天的订单数量
     -->
     <select id="countGroupByDate" resultType="com.sky.vo.report.OrderCountItemVO">
@@ -302,6 +313,77 @@
             #{begin} &lt;= order_time AND
             order_time &lt; #{endExclusive}
         GROUP BY date( order_time )
+    </select>
+
+    <!--
+    统计指定时间范围内, 某种状态的订单数
+    -->
+    <select id="countByStatusAndDateRange" resultType="java.lang.Long">
+        SELECT count( * )
+        FROM orders
+        WHERE status = #{status} AND
+            #{begin} &lt;= order_time AND
+            order_time &lt; #{endExclusive}
+    </select>
+
+    <!--
+    计算时间范围内, 某种状态的订单占该时间段总订单的比率
+    -->
+    <select id="calcRateByStatusAndGroupByDate" resultType="com.sky.dto.report.OrderCompletionRateItem">
+        <!--
+            * SQL 思路
+            * 分别写出计算分子、分母的 SQL
+            * 然后写出计算目标值的 SQL
+            * 有了 3 个部分, 看出规律, 就把内部分子、分母作为子表、联合
+            * 最后再考虑怎么保留小数位数
+        -->
+        SELECT round( statusCount / totalCount, #{scale} )
+        FROM (
+            (
+                SELECT count( * ) AS statusCount
+                FROM orders
+                WHERE status = #{status} AND
+                    #{begin} &lt;= order_time AND
+                    order_time &lt; #{endExclusive}
+            ) AS status_count
+            INNER JOIN (
+                SELECT count( * ) AS totalCount
+                FROM orders
+                WHERE #{begin} &lt;= order_time AND
+                    order_time &lt; #{endExclusive}
+            ) AS total_count
+        )
+        <!--
+        AS temp
+        注意这里 FROM 不需要给表设置别名, FROM 里面已经设好别名了
+        -->
+    </select>
+
+    <!--
+    计算指定时间范围内, 每天的平均客单价
+    -->
+    <select id="calcUnitPriceByStatusAndGroupByDate" resultType="com.sky.dto.report.UnitPriceItem">
+        <!--
+            * 拆分部分、再组合
+            * 每天的营业额
+            * 每天的有效订单数
+            * 根据日期合并营业额、有效订单数 2 个表
+            * 计算平均客单价
+            * 保留小数位数
+            * 并且发现营业额、有效订单数的查询条件完全一样, 于是直接合并结构, 取消联表
+        -->
+        SELECT date AS date,
+            round( dailyTurnover / dailyValidCount, #{scale} ) AS unitPrice
+        FROM (
+            SELECT date( order_time ) AS date,
+                sum( amount ) AS dailyTurnover,
+                count( * ) AS dailyValidCount
+            FROM orders
+            WHERE status = #{status} AND
+                #{begin} &lt;= order_time AND
+                order_time &lt; #{endExclusive}
+            GROUP BY date( order_time )
+        ) AS temp
     </select>
 
 </mapper>

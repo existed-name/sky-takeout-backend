@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.context.BaseContext;
+import com.sky.enumeration.BusinessTerminology;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.service.ReportService;
@@ -11,6 +12,7 @@ import com.sky.vo.report.UserReportVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +20,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.Positive;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
 /**
@@ -138,6 +143,47 @@ public class ReportController {
         log.info( "id = {} 的员工查看销量统计数据", empId );
         SalesReportVO salesReportVO = reportService.reportSalesStatistics( topN, begin, end );
         return Result.success( salesReportVO );
+    }
+
+    /**
+     * 导出指定时间范围的运营数据报表
+     *
+     * @param response 响应体, 用于写入文件返回前端
+     */
+    @ApiOperation( "导出指定时间范围的运营数据报表" )
+    @GetMapping( "/export" )
+    public void export(
+        HttpServletResponse response,
+        @RequestParam( name = "begin", required = true )
+        @DateTimeFormat( pattern = "yyyy-MM-dd[ HH:mm:ss]" )
+        LocalDate begin,
+        @RequestParam( name = "end", required = true )
+        @DateTimeFormat( pattern = "yyyy-MM-dd[ HH:mm:ss]" )
+        LocalDate end
+    ){
+        Long empId = BaseContext.getCurrentId();
+        log.info( "id = {} 的员工导出时间范围 [ {} , {} ] 的运营数据报表", empId, begin, end );
+        /*
+            * 现象:
+              - ApiFox 拿到 1 个 response.zip, 没看到 excel
+              - 问 ai , 把 .zip 改成 .xlsx 就行了
+              - 然后他说需要显示设置响应体参数
+            * 后来发现 ApiFox 下载的始终是 response.xlsx, 不是指定的名字
+              - 找 ai 改一下就好了
+         */
+        // 生成下载文件名
+        // URLEncoder 会把空格编码成 “+”，再替换成 “%20”，更符合 URL 编码习惯
+        String fileName = URLEncoder.encode(
+                BusinessTerminology.BUSINESS_DATA_EXCEL.getName() + ".xlsx",
+                StandardCharsets.UTF_8
+        ).replaceAll("\\+", "%20");
+
+        // 设置响应类型：Excel xlsx 文件的 MIME 类型
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        // 设置响应头：attachment 表示下载附件；filename 指定下载文件名
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+        reportService.exportExcelByTimeRange( response, begin, end );
     }
 
 

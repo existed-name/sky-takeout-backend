@@ -4,7 +4,10 @@ import com.sky.vo.report.OrderReportVO;
 import com.sky.vo.report.SalesReportVO;
 import com.sky.vo.report.TurnoverReportVO;
 import com.sky.vo.report.UserReportVO;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -70,4 +73,28 @@ public interface ReportService {
      * @return 销量统计数据
      */
     SalesReportVO reportSalesStatistics( Integer topN, LocalDate begin, LocalDate end );
+
+    /**
+     * 导出指定时间范围的运营数据报表
+     *
+     * @param response Http 响应体, 用于获取输出流、输出 Excel 文件,
+     *                 <b>由 controller 设置响应头、响应类型, 确保能返回正常的 .xlsx 文件</b>
+     * @param begin    起始时间( 包含当天 )
+     * @param end      截止时间( 包含当天 )
+     */
+    void exportExcelByTimeRange( HttpServletResponse response, LocalDate begin, LocalDate end );
+
+    /**
+     * 平均客单价 = 营业额 / 有效订单数量
+     * <p>
+     *     由调用方确保参数有效、非空,
+     *     并且营业额、有效订单数量应当是同一天或者同一时间范围的数据
+     * </p>
+     *
+     * @param turnover 营业额
+     * @param validOrderCount 有效订单数量
+     * @param scale           保留小数位数
+     * @return 计算结果, <b>有效订单数量 = 0 时返回 0</b>
+     */
+    BigDecimal calcAverageCustomerUnitPrice( BigDecimal turnover, long validOrderCount, int scale );
 }
