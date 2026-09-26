@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.account;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 账号被锁定异常

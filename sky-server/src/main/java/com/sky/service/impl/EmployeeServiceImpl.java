@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
@@ -8,59 +9,100 @@ import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
-import com.sky.exception.AccountLockedException;
-import com.sky.exception.AccountNotFoundException;
-import com.sky.exception.PasswordErrorException;
+import com.sky.enumeration.EnableStatus;
+import com.sky.exception.account.AccountLockedException;
+import com.sky.exception.NotFoundException;
+import com.sky.exception.account.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
+import com.sky.projection.employee.EmployeeLoginProjection;
+import com.sky.properties.JwtProperties;
 import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
+import com.sky.utils.JwtUtil;
 import com.sky.utils.PageUtil;
+import com.sky.vo.EmployeeLoginVO;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-    @Autowired
-    private EmployeeMapper employeeMapper;
+    private final EmployeeMapper employeeMapper;
+    private final JwtProperties jwtProperties;
 
-    /**
-     * 员工登录
-     *
-     * @param employeeLoginDTO
-     * @return
-     */
-    public Employee login(EmployeeLoginDTO employeeLoginDTO) {
+    public EmployeeServiceImpl( EmployeeMapper employeeMapper, JwtProperties jwtProperties ){
+        this.employeeMapper = employeeMapper;
+        this.jwtProperties = jwtProperties;
+    }
+
+    @Transactional( readOnly = true )
+    @Override
+    public EmployeeLoginVO login( EmployeeLoginDTO employeeLoginDTO ){
+        /*
+            思路
+            1. 登录信息提供了账号密码
+            2. 由于账号全局唯一, 先判断是否存在该账号
+               * 直接拿账号查出实体来看
+            3. 看密码对不对
+            4. 看账号状态, 是否停用
+            5. 没问题, 就组装 jwt
+         */
         String username = employeeLoginDTO.getUsername();
         String password = employeeLoginDTO.getPassword();
 
-        //1、根据用户名查询数据库中的数据
-        Employee employee = employeeMapper.getByUsername(username);
-
-        //2、处理各种异常情况（用户名不存在、密码不对、账号被锁定）
-        if (employee == null) {
-            //账号不存在
-            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+        EmployeeLoginProjection employeeLoginProjection = employeeMapper.selectLoginProjectionByUsername( username );
+        if ( employeeLoginProjection == null ){
+            throw new NotFoundException( MessageConstant.ACCOUNT_NOT_FOUND );
         }
 
-        // 进行md5加密，然后再进行密码比对
-        password = DigestUtils.md5DigestAsHex(password.getBytes());
-        if (!password.equals(employee.getPassword())) {
-            //密码错误
-            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+        // 比较特殊的是, 存进数据库的是加密密码, 而前端传的是原始密码, 所以对比之前需要先把密码转换一下
+        password = DigestUtils.md5DigestAsHex( password.getBytes() );
+        if ( ! password.equals( employeeLoginProjection.getPassword() ) ){
+            throw new PasswordErrorException( MessageConstant.PASSWORD_ERROR );
         }
 
-        if ( employee.getStatus().equals( StatusConstant.DISABLE ) ) {
-            //账号被锁定
-            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
+        if ( EnableStatus.isDisabled( employeeLoginProjection.getStatus() ) ){
+            throw new AccountLockedException( MessageConstant.ACCOUNT_LOCKED );
         }
 
-        //3、返回实体对象
-        return employee;
+        /*
+            教程提供了 JwtUtil, 以后也可以直接调用类似的框架/工具
+            直接对着工具函数的参数列表凑出参数就行
+            密钥、ttl 由 application.yaml 管理
+            登录信息是用户表数据信息
+         */
+        Map< String, Object > employeeJwtClaims = new HashMap<>();
+        Long id = employeeLoginProjection.getId();
+        String name = employeeLoginProjection.getName();
+        /*
+            这里想过提取常量, 但是字段一变、也不好即时生效
+            但如果用反射拿取变量名, 性能不太好
+            直接硬编码 map 的 key, 也没问题
+            等等, 发现我以前还真的做了一个常量类...
+         */
+        employeeJwtClaims.put( JwtClaimsConstant.EMP_ID, id );
+        // username 可放可不放, 简单情况 id 就够了
+//        employeeJwtClaims.put( JwtClaimsConstant.USERNAME, username );
+
+        String jwt = JwtUtil.createJWT(
+                jwtProperties.getAdminSecretKey(),
+                jwtProperties.getAdminTtl(),
+                employeeJwtClaims
+        );
+
+        EmployeeLoginVO employeeLoginVO = EmployeeLoginVO.builder()
+                .id( id )
+                .username( username )
+                .name( name )
+                .token( jwt )
+                .build();
+        return employeeLoginVO;
     }
 
     @Override

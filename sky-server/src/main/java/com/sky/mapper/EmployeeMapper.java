@@ -4,6 +4,7 @@ import com.sky.annotation.AutoFill;
 import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
+import com.sky.projection.employee.EmployeeLoginProjection;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -14,16 +15,6 @@ import java.util.List;
 
 @Mapper
 public interface EmployeeMapper {
-
-    /**
-     * 根据用户名查询员工
-     */
-    @Select( """
-            SELECT id, name, username, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user
-            from employee
-            where username = #{username}
-            """)
-    Employee getByUsername( @Param( "username" ) String username );
 
     /**
      * 新增员工
@@ -57,4 +48,17 @@ public interface EmployeeMapper {
      */
     @AutoFill( value = OperationType.UPDATE )
     void update( Employee employee );
+
+    /**
+     * 根据员工账号用户名查询登录相关的信息
+     *
+     * @param username 用户名
+     * @return 登录相关字段
+     */
+    @Select( """
+            SELECT id, username, name, password, status
+            FROM employee
+            WHERE username = #{username}
+            """ )
+    EmployeeLoginProjection selectLoginProjectionByUsername( @Param( "username" ) String username );
 }

@@ -1,17 +1,14 @@
 package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
-import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
-import com.sky.properties.JwtProperties;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
-import com.sky.utils.JwtUtil;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.EmployeeLoginVO;
 import io.swagger.annotations.Api;
@@ -30,57 +27,41 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * 员工管理接口
+ * 员工管理接口,
+ * <p>
+ * 注意修改接口前缀路径、登录端点路径, 需要同步{@link com.sky.constant.InterceptorConstant.Admin#REGISTRY_EXCLUDE_PATHS},
+ * 避免访问登录端点被拦截
+ * </p>
  */
 @Validated
 @RestController
-@RequestMapping("/admin/employee")
+@RequestMapping("/admin/employees")
 @Slf4j
 @Api(tags = "员工相关接口")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
-    private final JwtProperties jwtProperties;
 
-    public EmployeeController( EmployeeService employeeService, JwtProperties jwtProperties ){
+    public EmployeeController( EmployeeService employeeService ){
         this.employeeService = employeeService;
-        this.jwtProperties = jwtProperties;
     }
 
     /**
      * 登录
      * <br>
-     * TODO: 补充登录日志记录 + 重构登录逻辑到 Service
+     * TODO: 根据实际需求新增登录日志
      */
     @PostMapping("/login")
     @ApiOperation(value = "员工登录")
     public Result<EmployeeLoginVO> login(
             @RequestBody // 由于 RequestBody 自带 required = true，所以不需要 NotNull 判空
-            @Valid EmployeeLoginDTO employeeLoginDTO) {
-        log.info("员工登录：{}", employeeLoginDTO);
-
-        Employee employee = employeeService.login(employeeLoginDTO);
-
-        //登录成功后，生成jwt令牌
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.EMP_ID, employee.getId());
-        String token = JwtUtil.createJWT(
-                jwtProperties.getAdminSecretKey(),
-                jwtProperties.getAdminTtl(),
-                claims);
-
-        EmployeeLoginVO employeeLoginVO = EmployeeLoginVO.builder()
-                .id(employee.getId())
-                .userName(employee.getUsername())
-                .name(employee.getName())
-                .token(token)
-                .build();
-
-        return Result.success(employeeLoginVO);
+            @Valid EmployeeLoginDTO employeeLoginDTO
+    ){
+        log.info( "员工登录, 登录信息 = {}", employeeLoginDTO );
+        EmployeeLoginVO employeeLoginVO = employeeService.login( employeeLoginDTO );
+        return Result.success( employeeLoginVO );
     }
 
     /**

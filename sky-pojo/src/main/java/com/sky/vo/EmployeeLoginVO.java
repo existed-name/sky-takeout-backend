@@ -26,7 +26,7 @@ public class EmployeeLoginVO implements Serializable {
 
     /** 用户名 */
     @ApiModelProperty(value = "用户名", example = "admin")
-    private String userName;
+    private String username;
 
     /** 姓名 */
     @ApiModelProperty(value = "姓名", example = "张三")

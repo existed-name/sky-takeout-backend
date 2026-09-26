@@ -8,15 +8,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * Jwt 工具类, 用于生成、解析 jwt 字符串
+ *
+ * @UpateTime 2026/9/26 14:??
+ */
 public class JwtUtil {
     /**
-     * 生成jwt
+     * 生成jwt,
      * 使用Hs256算法, 私匙使用固定秘钥
      *
-     * @param secretKey jwt秘钥
-     * @param ttlMillis jwt过期时间(毫秒)
-     * @param claims    设置的信息
-     * @return
+     * @param secretKey 密钥, 由配置文件注入
+     * @param ttlMillis time-to-live, 存活时间( 过期时间, 毫秒 ), 由配置文件注入
+     * @param claims    jwt 需要包含的登录信息 Map, 比如 id, username, 由调用方设置
+     * @return jwt token 字符串
      */
     public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {
         // 指定签名的时候使用的签名算法，也就是header那部分
