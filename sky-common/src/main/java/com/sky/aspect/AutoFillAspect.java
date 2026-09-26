@@ -12,6 +12,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 
@@ -90,21 +91,42 @@ public class AutoFillAspect {
     // ==================== 私有辅助方法 ====================
 
     /**
-     *     提取公共反射逻辑，减少重复
+     * 提取公共反射逻辑，减少重复, <b>由调用方保证参数有效、非空</b>,
+     * 内部没有 catch 所有反射获取方法、调用方法抛出的异常, 需要调用方处理剩下的异常
      *
      * @param entity 要修改字段的实体对象，也就是 @AutoFill 注解方法的参数
      * @param methodName 实体对象的方法名
      * @param value 实体对象调用方法的参数
+     * @return 方法调用结果, <b>可能为空</b>
      */
-    private void invokeMethod(Object entity, String methodName, Object value) throws Exception {
-        // Declared 表示声明的所有方法(所有权限修饰符)
-        // 不加 Declared 就只能 public
-        Method method = entity.getClass()
-                .getDeclaredMethod( methodName,
-                        value.getClass() // 必须加参数类型，否则报错找不到方法
-                        // 参数类型直接从传进来的 value 获取，就不需要单独传类型了
-                );
+    private Object invokeMethod( Object entity, String methodName, Object value ) throws RuntimeException {
+        Method method = null;
+        Class< ? > entityClass = entity.getClass();
+        try {
+            // Declared 表示声明的所有方法(所有权限修饰符)
+            // 不加 Declared 就只能 public
+            method = entityClass.getDeclaredMethod(
+                        methodName,
+                        // 必须加参数类型，否则报错找不到方法
+                        value.getClass() // 参数类型直接从传进来的 value 获取，就不需要单独传类型了
+                    );
+        } catch ( NoSuchMethodException e ){
+            log.error( "反射没有找到指定的方法, 类 = {}, 方法名 = {}", entityClass, methodName );
+            throw new RuntimeException( e );
+        }
         // 调用方法: 该方法所属的对象、方法参数
-        method.invoke(entity, value);
+        try {
+            Object result = method.invoke( entity, value );
+            return result;
+        } catch ( IllegalAccessException e ){
+            log.error( "反射访问方法的权限不够, 类 = {}, 方法名 = {}", entityClass, methodName );
+            throw new RuntimeException( e );
+        } catch ( IllegalArgumentException e ){
+            log.error( "反射访问方法的参数无效, 类 = {}, 方法名 = {}, 参数 = {}", entityClass, methodName, value );
+            throw new RuntimeException( e );
+        } catch ( InvocationTargetException e ){
+            log.error( "反射调用方法失败, 类 = {}, 方法名 = {}, 参数 = {}", entityClass, methodName, value );
+            throw new RuntimeException( e );
+        }
     }
 }
