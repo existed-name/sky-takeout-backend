@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
+import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
@@ -79,10 +80,13 @@ public class EmployeeController {
     @PostMapping
     @ApiOperation( value = "新增员工" )
     @LogOperation( description = "新增员工", operationType = OperationType.INSERT )
-    public Result< Void > save( @Validated( value = ValidationGroups.Create.class )
-            @RequestBody EmployeeDTO dto ){
-        log.info( "新增员工: {}", dto );
-        employeeService.save( dto );
+    public Result< Void > save(
+            @Validated( value = ValidationGroups.Create.class )
+            @RequestBody EmployeeDTO dto
+    ){
+        Long creatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的员工创建新员工数据: {}", creatorId, dto );
+        employeeService.save( creatorId, dto );
         return Result.success(  );
     }
 

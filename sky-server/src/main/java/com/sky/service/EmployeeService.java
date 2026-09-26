@@ -19,8 +19,11 @@ public interface EmployeeService {
 
     /**
      * 新增员工
+     *
+     * @param creatorId 创建人 id
+     * @param employeeDTO 创建的员工信息
      */
-    void save( EmployeeDTO dto );
+    void save( Long creatorId, EmployeeDTO employeeDTO );
 
     /**
      * 分页查询员工

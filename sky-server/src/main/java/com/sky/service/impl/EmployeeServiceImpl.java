@@ -106,37 +106,25 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void save( EmployeeDTO employeeDTO ){
-        // 按照 Tlias 的叫法是 CurrentHolder, 苍穹外卖里是 BaseContext
-        Long createUserId = BaseContext.getCurrentId();
+    public void save( Long creatorId, EmployeeDTO employeeDTO ){
         /*
-        Employee employee = Employee.builder()
-                .id( null ) // 其实不需要显示设置 id 为 null
-                .username( employeeDTO.getUsername() )
-                .name( employeeDTO.getName() )
-                .password( PasswordConstant.DEFAULT_PASSWORD )
-                .phone( employeeDTO.getPhone() )
-                .sex( employeeDTO.getSex() )
-                .idNumber( employeeDTO.getIdNumber() )
-                .status( StatusConstant.ENABLE )
-                .createTime( LocalDateTime.now() )
-                .updateTime( LocalDateTime.now() )
-                .createUser( createUserId )
-                .updateUser( createUserId )
-                .build();
+            提醒点
+            密码加密储存
+            设置账号启用状态
+            设置审计字段,
+              - 我在考虑应不应该要注解自动填写
+              - 一方面容易忘记给 Mapper 方法写注解
+              - 一方面审计字段重复性很大, 而且我更想显式 service 设置、参数注入 creatorId
+              - 最后还是遵守这个项目的规范, 用注解
          */
         Employee employee = new Employee();
         BeanUtils.copyProperties( employeeDTO, employee );
 
         // 注意进行md5加密，再存入数据库
-        employee.setPassword( DigestUtils.md5DigestAsHex( PasswordConstant.DEFAULT_PASSWORD.getBytes() )  );
-        employee.setStatus( StatusConstant.ENABLE );
-
-//        employee.setCreateTime( LocalDateTime.now() );
-//        employee.setUpdateTime( LocalDateTime.now() );
-//        employee.setCreateUser( createUserId );
-//        employee.setUpdateUser( createUserId );
-
+        employee.setPassword( DigestUtils.md5DigestAsHex(
+                PasswordConstant.DEFAULT_PASSWORD.getBytes()
+        )  );
+        employee.setStatus( EnableStatus.ENABLED.getStatus() );
         employeeMapper.insert( employee );
     }
 
