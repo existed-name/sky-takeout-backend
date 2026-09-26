@@ -4,6 +4,7 @@ import com.sky.dto.GoodsStatusCount;
 import com.sky.dto.order.OrderStatusCount;
 import com.sky.enumeration.GoodsStatus;
 import com.sky.enumeration.OrderStatus;
+import com.sky.enumeration.Scale;
 import com.sky.enumeration.Time;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.OrderMapper;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -131,8 +131,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         /*
             5. 平均客单价 = 营业额 / 有效订单数量
          */
-        BigDecimal averageCustomerUnitPrice = calcAverageCustomerUnitPrice(
-                turnover, validOrderCount, 2
+        BigDecimal averageCustomerUnitPrice = reportService.calcAverageCustomerUnitPrice(
+                turnover, validOrderCount, Scale.COMMON_AMOUNT.getValue()
         );
 
         DataOverviewVO dataOverviewVO = DataOverviewVO.builder()
@@ -231,36 +231,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 
     // ==================== 私有辅助方法 ====================
-    /**
-     * 平均客单价 = 营业额 / 有效订单数量
-     * <p>
-     *     由调用方确保参数有效、非空,
-     *     并且营业额、有效订单数量应当是同一天或者同一时间范围的数据
-     * </p>
-     *
-     * @param turnover 营业额
-     * @param validOrderCount 有效订单数量
-     * @param scale           保留小数位数
-     * @return 计算结果, <b>有效订单数量 = 0 时返回 0</b>
-     */
-    private BigDecimal calcAverageCustomerUnitPrice( BigDecimal turnover, long validOrderCount, int scale ){
-        // 除数不能为 0
-        if ( validOrderCount == 0L ){
-            return BigDecimal.ZERO;
-        }
 
-        BigDecimal averageCustomerUnitPrice = turnover.divide(
-                BigDecimal.valueOf( validOrderCount ),
-                /*
-                    IDEA 警告
-                    'BigDecimal.divide()' called without a rounding mode argument
-                    没指定精度/舍入模式，运行时可能炸（无法精确表示就会抛异常
-                 */
-                scale, // 保留小数位数
-                RoundingMode.HALF_UP
-        );
-        return averageCustomerUnitPrice;
-    }
 
     /**
      * 获取指定状态的订单数量
