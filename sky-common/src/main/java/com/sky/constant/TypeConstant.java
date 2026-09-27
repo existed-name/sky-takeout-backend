@@ -8,6 +8,7 @@ import java.util.Map;
  * 而某种类型(菜品/套餐)，又可以细分类，叫做 category，<b>注意区分 category, type</b>
  *
  * @CreateTime 2026/6/7 17:12
+ * @deprecated 新代码请使用更好管理的{@link com.sky.enumeration.CategoryType}
  */
 public class TypeConstant {
     // ==================== 常量 ====================

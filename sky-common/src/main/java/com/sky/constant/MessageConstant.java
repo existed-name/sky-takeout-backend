@@ -78,6 +78,7 @@ public class MessageConstant {
     public static final String ADDRESS_IS_BLANK = "进行地理编码的地址不能为空";
     public static final String BEGIN_TIME_GREATER_THAN_END_TIME = "起始时间不能超过截止时间";
     public static final String EMPLOYEE_NOT_FOUND = "该员工不存在";
+    public static final String CATEGORY_TYPE_INVALID = "商品分类的类型参数无效";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )
