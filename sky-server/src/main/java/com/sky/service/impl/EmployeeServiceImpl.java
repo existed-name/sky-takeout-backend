@@ -18,6 +18,7 @@ import com.sky.properties.JwtProperties;
 import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
 import com.sky.utils.JwtUtil;
+import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.vo.EmployeeLoginVO;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
@@ -148,14 +149,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setStatus( status );
         // AOP 补充审计字段
         int row = employeeMapper.update( employee );
-        throwIfNotFound( row );
+        NotFoundUtil.throwIfNotUpdated( row, MessageConstant.EMPLOYEE_NOT_FOUND );
     }
 
     @Transactional( readOnly = true )
     @Override
     public EmployeeVO getById( Long id ){
         EmployeeVO employeeVO = employeeMapper.selectVOById( id );
-        throwIfNotFound( employeeVO );
+        NotFoundUtil.throwIfNotFound( employeeVO, MessageConstant.EMPLOYEE_NOT_FOUND );
         return employeeVO;
     }
 
@@ -172,30 +173,9 @@ public class EmployeeServiceImpl implements EmployeeService {
          */
         Employee employee = employeeConverter.toEntity( employeeDTO );
         int row = employeeMapper.update( employee );
-        throwIfNotFound( row );
+        NotFoundUtil.throwIfNotUpdated( row, MessageConstant.EMPLOYEE_NOT_FOUND );
     }
 
-    /**
-     * mapper 根据 id 查询到的对象为 null 时( 不存在 )抛出业务异常
-     *
-     * @param selectResult mapper 查询结果对象
-     */
-    private void throwIfNotFound( Object selectResult ){
-        if ( selectResult == null ){
-            throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
-        }
-    }
-
-    /**
-     * mapper 根据 id 修改数据, 修改行数为 0 时( 数据不存在 )抛出业务异常
-     *
-     * @param row 修改行数
-     */
-    private void throwIfNotFound( int row ){
-        if ( row == 0 ){
-            throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
-        }
-    }
 
 
 }
