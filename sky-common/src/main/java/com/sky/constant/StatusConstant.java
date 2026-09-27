@@ -79,7 +79,7 @@ public class StatusConstant {
      */
     public static void validateStatus( Integer status ){
         if ( ! VALID_STATUS.contains( status ) ){
-            throw new StatusParamInvalidException( MessageConstant.INVALID_STATUS_PARAM );
+            throw new StatusParamInvalidException( MessageConstant.STATUS_PARAM_INVALID );
         }
     }
 

@@ -35,7 +35,7 @@ public class MessageConstant {
 
     public static final String DISH_NOT_FOUND = "菜品不存在";
 
-    public static final String INVALID_STATUS_PARAM = "状态参数无效";
+    public static final String STATUS_PARAM_INVALID = "状态参数无效";
 
     public static final String SETMEAL_NOT_FOUND = "套餐不存在";
     public static final String UNKNOWN_SYSTEM_ERROR = "未知系统异常";

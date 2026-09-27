@@ -88,7 +88,7 @@ public enum EnableStatus {
     public static void throwIfInvalid( Integer status ){
         if ( ! isValid( status ) ){
             throw new StatusParamInvalidException(
-                    MessageConstant.INVALID_STATUS_PARAM
+                    MessageConstant.STATUS_PARAM_INVALID
             );
         }
     }
