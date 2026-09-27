@@ -7,7 +7,7 @@ public class MessageConstant {
 
     public static final String PASSWORD_ERROR = "密码错误";
     public static final String ACCOUNT_NOT_FOUND = "账号不存在";
-    public static final String ACCOUNT_LOCKED = "账号被锁定";
+    public static final String ACCOUNT_LOCKED = "账号被锁定, 请联系管理员启用账号";
     public static final String UNKNOWN_ERROR = "未知错误";
     public static final String USER_NOT_LOGIN = "用户未登录";
     public static final String CATEGORY_BE_RELATED_BY_SETMEAL = "当前分类关联了套餐,不能删除";
@@ -35,7 +35,7 @@ public class MessageConstant {
 
     public static final String DISH_NOT_FOUND = "菜品不存在";
 
-    public static final String INVALID_STATUS_PARAM = "状态参数不合法";
+    public static final String INVALID_STATUS_PARAM = "状态参数无效";
 
     public static final String SETMEAL_NOT_FOUND = "套餐不存在";
     public static final String UNKNOWN_SYSTEM_ERROR = "未知系统异常";

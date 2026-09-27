@@ -3,11 +3,9 @@ package com.sky.service.impl;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
-import com.sky.constant.StatusConstant;
-import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
-import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.dto.employee.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.enumeration.EnableStatus;
 import com.sky.exception.account.AccountLockedException;
@@ -136,9 +134,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         return PageUtil.buildPageResult( employeeList );
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void updateStatus( Long id, Integer status ){
-        StatusConstant.validateStatus( status );
+        EnableStatus.throwIfInvalid( status );
         Employee employee = new Employee();
         employee.setId( id );
         employee.setStatus( status );

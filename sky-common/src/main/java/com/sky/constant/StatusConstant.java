@@ -1,8 +1,7 @@
 package com.sky.constant;
 
-import com.sky.exception.InvalidStatusParamException;
+import com.sky.exception.StatusParamInvalidException;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -76,11 +75,11 @@ public class StatusConstant {
 
 
     /**
-     * 检验状态参数是否有效, <b>无效则抛出 {@link com.sky.exception.InvalidStatusParamException}</b>
+     * 检验状态参数是否有效, <b>无效则抛出 {@link StatusParamInvalidException}</b>
      */
     public static void validateStatus( Integer status ){
         if ( ! VALID_STATUS.contains( status ) ){
-            throw new InvalidStatusParamException( MessageConstant.INVALID_STATUS_PARAM );
+            throw new StatusParamInvalidException( MessageConstant.INVALID_STATUS_PARAM );
         }
     }
 

@@ -4,7 +4,8 @@ import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
-import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.dto.employee.EmployeePageQueryDTO;
+import com.sky.dto.employee.EmployeeStatusDTO;
 import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -105,16 +105,30 @@ public class EmployeeController {
     /**
      * 修改员工状态(启用/禁用账号)
      */
-    @PutMapping( "/status/{status}" )
+    @PutMapping( "/{id}/status" )
     @ApiOperation( value = "修改员工状态(启用/禁用账号)" )
     @LogOperation( description = "修改员工状态(启用/禁用账号)", operationType = OperationType.UPDATE )
     public Result< Void > updateStatus(
-            @RequestParam( name = "id" )
-            @NotNull( message = "员工 id 不能为空" )
-            @Positive( message = "员工 id 必须是正整数" ) Long id,
-            @PathVariable( name = "status" )
-            @NotNull( message = "员工状态不能为空" ) Integer status ){
-        log.info( "修改 id = {} 的员工账号状态为: {}", id, status );
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "员工 id 必须是正整数" )
+            Long id,
+            @RequestBody @Valid
+            EmployeeStatusDTO employeeStatusDTO
+    ){
+        /*
+            单纯改状态用 PUT
+            请求路径选择 5 > 2 > 其他
+            id 定位而不是 query 参数
+            URI 通常保持不变, status 由于可变更推荐放请求体
+            1. /{id}/status?status=x
+            2. /{id}/status/{status}
+            3. /status?id=xx&status=yy
+            4. /status/{status}?id=xx  教程
+            5. /{id}/status + RequestBody  现在
+         */
+        Long operatorId = BaseContext.getCurrentId();
+        Integer status = employeeStatusDTO.getStatus();
+        log.info( "id = {} 的员工修改 id = {} 的员工账号状态为: {}", operatorId, id, status );
         employeeService.updateStatus( id, status );
         return Result.success();
     }

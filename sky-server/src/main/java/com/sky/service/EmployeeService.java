@@ -2,7 +2,7 @@ package com.sky.service;
 
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
-import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.dto.employee.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.result.PageResult;
 import com.sky.vo.EmployeeLoginVO;
@@ -34,6 +34,8 @@ public interface EmployeeService {
 
     /**
      * 修改员工状态(启用/禁用账号)
+     * @param id 目标员工的 id
+     * @param status 账号状态, {@link com.sky.enumeration.EnableStatus}
      */
     void updateStatus( Long id, Integer status );
 

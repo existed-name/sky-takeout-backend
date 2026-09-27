@@ -1,5 +1,7 @@
 package com.sky.enumeration;
 
+import com.sky.constant.MessageConstant;
+import com.sky.exception.StatusParamInvalidException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -41,7 +43,7 @@ public enum EnableStatus {
      * @throws IllegalArgumentException 当启用状态参数无效时
      */
     public static EnableStatus toInstance( Integer status ){
-        throwIfInvalid( status );
+        requireValid( status );
         return statusToInstanceMap.get( status );
     }
 
@@ -69,10 +71,24 @@ public enum EnableStatus {
      * @param status 状态数值
      * @throws IllegalArgumentException 当启用状态参数无效时
      */
-    public static void throwIfInvalid( Integer status ){
+    private static void requireValid( Integer status ){
         if ( ! isValid( status ) ){
             throw new IllegalArgumentException(
                     String.format( "无效的启用状态: status = %s", status )
+            );
+        }
+    }
+
+    /**
+     * 检验启用状态是否有效, 无效则抛出 JDK 原生异常
+     *
+     * @param status 状态数值
+     * @throws IllegalArgumentException 当启用状态参数无效时
+     */
+    public static void throwIfInvalid( Integer status ){
+        if ( ! isValid( status ) ){
+            throw new StatusParamInvalidException(
+                    MessageConstant.INVALID_STATUS_PARAM
             );
         }
     }
