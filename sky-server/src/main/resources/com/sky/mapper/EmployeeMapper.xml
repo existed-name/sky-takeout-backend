@@ -3,9 +3,18 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.EmployeeMapper">
 
+    <!--
+    完整字段, 可复用到查询完整实体对象
+    -->
+    <sql id="BaseColumns">
+        id, name, username, password,
+        phone, sex, id_number, status,
+        create_time, update_time, create_user, update_user
+    </sql>
+
 <!--    条件分页查询员工 -->
     <select id="selectByQuery" resultType="com.sky.entity.Employee">
-        SELECT id, name, username, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user
+        SELECT <include refid="BaseColumns"/>
         FROM employee
         <where>
             <if test="queryParam.name != null and queryParam.name != ''">
@@ -15,7 +24,16 @@
         ORDER BY create_time DESC
     </select>
 
-<!--    修改员工信息-->
+    <!--
+    查询员工详细信息
+    -->
+    <select id="selectById" resultType="com.sky.entity.Employee">
+        SELECT <include refid="BaseColumns"/>
+        FROM employee
+        WHERE id = #{id}
+    </select>
+
+    <!--    修改员工信息-->
     <update id="update">
         UPDATE employee
         <set>
