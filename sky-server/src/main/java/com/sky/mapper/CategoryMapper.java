@@ -1,15 +1,15 @@
 package com.sky.mapper;
 
 import com.sky.annotation.AutoFill;
-import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.category.CategoryPageQueryItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -26,11 +26,6 @@ public interface CategoryMapper {
     @AutoFill( value = OperationType.INSERT )
     @Options( useGeneratedKeys = true, keyProperty = "id" )
     int insert( Category category );
-
-    /**
-     * 对分类进行条件查询 + PageHelper 分页
-     */
-    List< Category> selectByQuery( CategoryPageQueryDTO categoryPageQueryDTO );
 
     /**
      * 根据 id 删除分类
@@ -63,4 +58,12 @@ public interface CategoryMapper {
      * <b>SQL 直接根据 status 筛选，传参不能为空</b>
      */
     List< Category> selectByTypeAndStatus( @Param( "type" ) Integer type, @Param( "status" ) Integer enable );
+
+    /**
+     * 条件查询分类, 由 PageHelper 完成分页
+     *
+     * @param categoryPageQueryDTO 查询条件
+     * @return 分页查询数据项列表
+     */
+    List< CategoryPageQueryItemVO > selectItemVOListByQuery( @Param( "query" ) CategoryPageQueryDTO categoryPageQueryDTO );
 }

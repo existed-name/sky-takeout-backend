@@ -4,7 +4,7 @@ import com.sky.annotation.LogOperation;
 import com.sky.constant.TypeConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.category.CategoryDTO;
-import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
@@ -75,7 +75,8 @@ public class CategoryController {
     @GetMapping
     @ApiOperation( value = "对分类进行条件分页查询" )
     public Result< PageResult > page( @Valid CategoryPageQueryDTO categoryPageQueryDTO ){
-        log.info( "对分类进行条件分页查询，查询参数: {}", categoryPageQueryDTO );
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员条件分页查询商品分类, 查询参数 = {}", operatorId, categoryPageQueryDTO );
         PageResult pageResult = categoryService.page( categoryPageQueryDTO );
         return Result.success( pageResult );
     }

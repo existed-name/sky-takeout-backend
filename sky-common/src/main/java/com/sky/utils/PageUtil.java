@@ -28,8 +28,9 @@ public class PageUtil {
 
     /**
      * 检验分页参数并开启 PageHelper
-     * <br>
-     * <b>注意只对第 1 次 SQL 查询有效</b>
+     * <p>
+     * 注意: <b>只对第 1 次 SQL 查询有效; 自动把不合法的分页参数设置为默认值</b>
+     * </p>
      *
      * @param page 页码 - 从第 page 页开始
      * @param pageSize 需要查询的页数

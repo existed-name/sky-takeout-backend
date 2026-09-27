@@ -4,15 +4,25 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sky.mapper.CategoryMapper">
 
-<!--    对分类进行条件查询 + PageHelper 分页-->
-    <select id="selectByQuery" resultType="com.sky.entity.Category">
-        SELECT id, type, name, sort, status, create_time, update_time, create_user, update_user
+    <!--
+    数据库表完整字段, 可复用
+    -->
+    <sql id="BaseColumns">
+        id, type, name, sort, status,
+        create_time, update_time, create_user, update_user
+    </sql>
+
+    <!--
+    条件查询分类, 由 PageHelper 完成分页
+    -->
+    <select id="selectItemVOListByQuery" resultType="com.sky.vo.category.CategoryPageQueryItemVO">
+        SELECT id, type, name, sort, create_time
         FROM category
         <where>
-            <if test="name != null and name != ''">name LIKE concat( '%', #{name}, '%' )</if>
-            <if test="type != null">AND type = #{type}</if>
+            <if test="query.name != null and query.name != ''">name LIKE concat( '%', #{query.name}, '%' )</if>
+            <if test="query.type != null">AND type = #{query.type}</if>
         </where>
-        ORDER BY sort ASC, create_time DESC
+        ORDER BY sort ASC, create_time DESC, id DESC
     </select>
 
 <!--    修改分类信息,包括修改分类状态(启用/禁用) -->
@@ -55,4 +65,5 @@
         </where>
         ORDER BY sort ASC, create_time DESC
     </select>
+
 </mapper>

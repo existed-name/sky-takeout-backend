@@ -1,7 +1,7 @@
 package com.sky.service;
 
 import com.sky.dto.category.CategoryDTO;
-import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.result.PageResult;
 
@@ -19,7 +19,10 @@ public interface CategoryService {
     void save( Long operatorId, CategoryDTO categoryDTO );
 
     /**
-     * <b>管理端</b>: 对分类进行条件分页查询
+     * 管理端条件分页查询商品分类
+     *
+     * @param categoryPageQueryDTO 查询条件
+     * @return 分页包装数据链表
      */
     PageResult page( CategoryPageQueryDTO categoryPageQueryDTO );
 

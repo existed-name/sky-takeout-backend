@@ -4,7 +4,7 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.convertor.CategoryConverter;
 import com.sky.dto.category.CategoryDTO;
-import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.enumeration.CategoryType;
 import com.sky.enumeration.EnableStatus;
@@ -15,6 +15,7 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
 import com.sky.utils.PageUtil;
+import com.sky.vo.category.CategoryPageQueryItemVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,9 +67,15 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional( readOnly = true )
     @Override
     public PageResult page( CategoryPageQueryDTO categoryPageQueryDTO ){
+        // 业务检验查询参数
+        Integer type = categoryPageQueryDTO.getType();
+        if ( type != null ){
+            CategoryType.throwIfInvalid( type );
+        }
+
         PageUtil.validateParamsAndStartPage( categoryPageQueryDTO.getPage(), categoryPageQueryDTO.getPageSize() );
-        List< Category > categoryList = categoryMapper.selectByQuery( categoryPageQueryDTO );
-        return PageUtil.buildPageResult( categoryList );
+        List< CategoryPageQueryItemVO > categoryPageQueryItemVOList = categoryMapper.selectItemVOListByQuery( categoryPageQueryDTO );
+        return PageUtil.buildPageResult( categoryPageQueryItemVOList );
     }
 
     @Transactional( rollbackFor = Exception.class )
