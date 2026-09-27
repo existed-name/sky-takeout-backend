@@ -156,11 +156,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional( readOnly = true )
     @Override
     public EmployeeVO getById( Long id ){
-        Employee entity = employeeMapper.selectById( id );
-        if ( entity == null ){
+        EmployeeVO employeeVO = employeeMapper.selectVOById( id );
+        if ( employeeVO == null ){
             throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
         }
-        EmployeeVO employeeVO = employeeConverter.toVO( entity );
         return employeeVO;
     }
 

@@ -6,6 +6,7 @@ import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
 import com.sky.projection.employee.EmployeeLoginProjection;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
+import com.sky.vo.employee.EmployeeVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -30,7 +31,7 @@ public interface EmployeeMapper {
     void insert( Employee employee );
 
     /**
-     * 根据 id 查询员工信息
+     * 根据 id 查询完整员工信息
      */
     Employee selectById( @Param( "id" ) Long id );
 
@@ -60,4 +61,12 @@ public interface EmployeeMapper {
      * @return 分页展示数据链表
      */
     List< EmployeePageQueryItemVO > selectItemVOListByQuery( @Param( "query" ) EmployeePageQueryDTO pageQueryDTO );
+
+    /**
+     * 查询员工详情展示信息
+     *
+     * @param id 员工 id
+     * @return 员工展示信息
+     */
+    EmployeeVO selectVOById( @Param( "id" ) Long id );
 }

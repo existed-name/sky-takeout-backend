@@ -35,6 +35,15 @@
         ORDER BY create_time DESC, id DESC
     </select>
 
+    <!--
+    查询员工详情展示信息
+    -->
+    <select id="selectVOById" resultType="com.sky.vo.employee.EmployeeVO">
+        SELECT id, name, username, phone, sex, id_number
+        FROM employee
+        WHERE id = #{id}
+    </select>
+
     <!--    修改员工信息-->
     <update id="update">
         UPDATE employee
