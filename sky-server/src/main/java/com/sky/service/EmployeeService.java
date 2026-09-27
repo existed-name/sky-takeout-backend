@@ -49,6 +49,9 @@ public interface EmployeeService {
 
     /**
      * 修改员工信息
+     *
+     * @param operatorId 操作人 id
+     * @param employeeDTO 需要更新的信息
      */
-    void update( EmployeeDTO employeeDTO );
+    void update( Long operatorId, EmployeeDTO employeeDTO );
 }

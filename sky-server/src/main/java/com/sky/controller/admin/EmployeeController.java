@@ -154,10 +154,14 @@ public class EmployeeController {
     @PutMapping
     @ApiOperation( "修改员工信息" )
     @LogOperation( description = "修改员工信息", operationType = OperationType.UPDATE )
-    public Result< Void > update( @RequestBody
-            @Validated( value = ValidationGroups.Update.class ) EmployeeDTO employeeDTO ){
-        log.info( "修改员工信息为: {}", employeeDTO );
-        employeeService.update( employeeDTO );
+    public Result< Void > update(
+            @RequestBody
+            @Validated( value = ValidationGroups.Update.class )
+            EmployeeDTO employeeDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员修改员工信息 = {}", operatorId, employeeDTO );
+        employeeService.update( operatorId, employeeDTO );
         return Result.success(  );
     }
 }

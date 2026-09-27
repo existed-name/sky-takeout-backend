@@ -163,13 +163,22 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeVO;
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
-    public void update( EmployeeDTO employeeDTO ){
-        Employee employee = employeeMapper.selectById( employeeDTO.getId() );
-        BeanUtils.copyProperties( employeeDTO, employee );
-//        employee.setUpdateTime( LocalDateTime.now() );
-//        employee.setUpdateUser( BaseContext.getCurrentId() );
-        employeeMapper.update( employee );
+    public void update( Long operatorId, EmployeeDTO employeeDTO ){
+        /*
+            * 修改信息逻辑
+                修改、创建员工, 都应该传入实体类而不是 dto
+                于是就需要把 dto 数据复制到实体类
+                进而用到了 MapStructConverter 进行转换映射
+                BeanUtils 反射性能不太好
+            * 另外这里的 operatorId 只是起到提醒作用, 审计字段由 aop 自动填写
+         */
+        Employee employee = employeeConverter.toEntity( employeeDTO );
+        int row = employeeMapper.update( employee );
+        if ( row == 0 ){
+            throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
+        }
     }
 
 }

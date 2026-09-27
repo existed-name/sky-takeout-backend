@@ -1,10 +1,12 @@
 package com.sky.convertor;
 
 import com.sky.config.GlobalMappingConfiguration;
+import com.sky.dto.EmployeeDTO;
 import com.sky.entity.Employee;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
 import com.sky.vo.employee.EmployeeVO;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -42,5 +44,18 @@ public interface EmployeeConverter {
      * @return 列表展示数据项
      */
     EmployeePageQueryItemVO toPageQueryItemVO( Employee entity );
-    
+
+    /**
+     * 把员工 dto 转换为实体类
+     *
+     * @param employeeDTO 员工信息 dto
+     * @return 实体对象
+     */
+    @Mapping( target = "status", ignore = true )
+    @Mapping( target = "password", ignore = true )
+    @Mapping( target = "createTime", ignore = true )
+    @Mapping( target = "updateTime", ignore = true )
+    @Mapping( target = "createUser", ignore = true )
+    @Mapping( target = "updateUser", ignore = true )
+    Employee toEntity( EmployeeDTO employeeDTO );
 }
