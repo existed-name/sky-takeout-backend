@@ -22,9 +22,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.stream.Collectors;
 
 /**
@@ -188,6 +187,31 @@ public class GlobalExceptionHandler {
         String filedName = split[ databaseFiledNameIdx ];
         log.warn( "数据库字段 {} 不可重复", filedName );
         return Result.error( filedValue + MessageConstant.ALREADY_EXISTS );
+    }
+
+    /**
+     * 兜底处理没有遵守数据库字段约束抛出的异常
+     * <p>
+     *     注意: 该方法可能并不会生效, 它会被包装成 DuplicateKeyException, 通过 getCause 拿到,
+     *     所以处理 DuplicateKeyException 就够了
+     * </p>
+     */
+    @ExceptionHandler( value = SQLIntegrityConstraintViolationException.class )
+    public Result< String > handleSqlConstraintViolation( SQLIntegrityConstraintViolationException ex ){
+        /*
+            已经能够处理 DuplicateKeyException 输出日志信息, 不过还是会输出违规异常
+            ### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry 'admin' for key 'employee.idx_username'
+            ### The error may exist in com/sky/mapper/EmployeeMapper.xml
+            ### The error may involve defaultParameterMap
+            ### The error occurred while setting parameters
+            ### SQL: UPDATE employee          SET name = ?,             username = ?,             phone = ?,             sex = ?,                          id_number = ?,             update_time = ?,             update_user = ?          WHERE id = ?
+            ### Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry 'admin' for key 'employee.idx_username'
+            ; Duplicate entry 'admin' for key 'employee.idx_username'; nested exception is java.sql.SQLIntegrityConstraintViolationException: Duplicate entry 'admin' for key 'employee.idx_username'(String), 317(Integer), 2026-09-27T12:08:40.331882300(LocalDateTime)
+            后来问 AI 原来这个是 mybatis 输出的日志
+         */
+        String message = ex.getMessage();
+        log.warn( "违反数据库字段约束, 异常信息 = {}", message );
+        return Result.error( "不符合数据约束, 可能是数据重复或未遵守其他约束" );
     }
 
     /**
