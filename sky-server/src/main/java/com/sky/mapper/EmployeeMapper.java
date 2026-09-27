@@ -47,7 +47,7 @@ public interface EmployeeMapper {
      * 修改员工信息，包括修改分类状态(启用/禁用)
      */
     @AutoFill( value = OperationType.UPDATE )
-    void update( Employee employee );
+    int update( Employee employee );
 
     /**
      * 根据员工账号用户名查询登录相关的信息

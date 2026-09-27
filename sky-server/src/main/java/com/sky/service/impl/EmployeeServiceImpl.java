@@ -142,7 +142,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setId( id );
         employee.setStatus( status );
         // AOP 补充审计字段
-        employeeMapper.update( employee );
+        int row = employeeMapper.update( employee );
+        if ( row == 0 ){
+            throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
+        }
     }
 
     @Override
