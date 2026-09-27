@@ -22,7 +22,6 @@ import com.sky.utils.PageUtil;
 import com.sky.vo.EmployeeLoginVO;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
 import com.sky.vo.employee.EmployeeVO;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
@@ -108,6 +107,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeLoginVO;
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public void save( Long creatorId, EmployeeDTO employeeDTO ){
         /*
@@ -120,10 +120,10 @@ public class EmployeeServiceImpl implements EmployeeService {
               - 一方面审计字段重复性很大, 而且我更想显式 service 设置、参数注入 creatorId
               - 最后还是遵守这个项目的规范, 用注解
          */
-        Employee employee = new Employee();
-        BeanUtils.copyProperties( employeeDTO, employee );
+        Employee employee = employeeConverter.toEntity( employeeDTO );
 
         // 注意进行md5加密，再存入数据库
+        // TODO: 由配置文件注入默认密码; 或者前端显式设置密码而不是使用默认密码
         employee.setPassword( DigestUtils.md5DigestAsHex(
                 PasswordConstant.DEFAULT_PASSWORD.getBytes()
         )  );
@@ -148,18 +148,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setStatus( status );
         // AOP 补充审计字段
         int row = employeeMapper.update( employee );
-        if ( row == 0 ){
-            throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
-        }
+        throwIfNotFound( row );
     }
 
     @Transactional( readOnly = true )
     @Override
     public EmployeeVO getById( Long id ){
         EmployeeVO employeeVO = employeeMapper.selectVOById( id );
-        if ( employeeVO == null ){
-            throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
-        }
+        throwIfNotFound( employeeVO );
         return employeeVO;
     }
 
@@ -176,9 +172,30 @@ public class EmployeeServiceImpl implements EmployeeService {
          */
         Employee employee = employeeConverter.toEntity( employeeDTO );
         int row = employeeMapper.update( employee );
+        throwIfNotFound( row );
+    }
+
+    /**
+     * mapper 根据 id 查询到的对象为 null 时( 不存在 )抛出业务异常
+     *
+     * @param selectResult mapper 查询结果对象
+     */
+    private void throwIfNotFound( Object selectResult ){
+        if ( selectResult == null ){
+            throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
+        }
+    }
+
+    /**
+     * mapper 根据 id 修改数据, 修改行数为 0 时( 数据不存在 )抛出业务异常
+     *
+     * @param row 修改行数
+     */
+    private void throwIfNotFound( int row ){
         if ( row == 0 ){
             throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
         }
     }
+
 
 }
