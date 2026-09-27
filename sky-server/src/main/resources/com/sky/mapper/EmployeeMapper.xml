@@ -12,18 +12,6 @@
         create_time, update_time, create_user, update_user
     </sql>
 
-<!--    条件分页查询员工 -->
-    <select id="selectByQuery" resultType="com.sky.entity.Employee">
-        SELECT <include refid="BaseColumns"/>
-        FROM employee
-        <where>
-            <if test="queryParam.name != null and queryParam.name != ''">
-                name like concat( '%', #{queryParam.name}, '%' )
-            </if>
-        </where>
-        ORDER BY create_time DESC
-    </select>
-
     <!--
     查询员工详细信息
     -->
@@ -31,6 +19,20 @@
         SELECT <include refid="BaseColumns"/>
         FROM employee
         WHERE id = #{id}
+    </select>
+
+    <!--
+    条件查询用户数据链表, 由 PageHelper 自动分页
+    -->
+    <select id="selectItemVOListByQuery" resultType="com.sky.vo.employee.EmployeePageQueryItemVO">
+        SELECT id, name, username, phone, status, create_time, update_time
+        FROM employee
+        <where>
+            <if test="query.name != null and query.name != ''">
+                name like concat( '%', #{query.name}, '%' )
+            </if>
+        </where>
+        ORDER BY create_time DESC, id DESC
     </select>
 
     <!--    修改员工信息-->

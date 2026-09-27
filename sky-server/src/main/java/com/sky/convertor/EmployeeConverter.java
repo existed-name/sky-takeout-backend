@@ -2,8 +2,11 @@ package com.sky.convertor;
 
 import com.sky.config.GlobalMappingConfiguration;
 import com.sky.entity.Employee;
+import com.sky.vo.employee.EmployeePageQueryItemVO;
 import com.sky.vo.employee.EmployeeVO;
 import org.mapstruct.Mapper;
+
+import java.util.List;
 
 /**
  * 员工相关对象转换映射
@@ -23,4 +26,21 @@ public interface EmployeeConverter {
      * @return 员工详细信息展示对象
      */
     EmployeeVO toVO( Employee entity );
+
+    /**
+     * 循环调用{@link #toPageQueryItemVO(Employee)}把实体类链表转换为条件分页查询展示数据链表
+     *
+     * @param entities 实体对象链表
+     * @return 列表展示数据
+     */
+    List< EmployeePageQueryItemVO > toPageQueryItemVOList( List< Employee > entities );
+
+    /**
+     * 把实体类转换为条件分页查询数据项
+     *
+     * @param entity 实体对象
+     * @return 列表展示数据项
+     */
+    EmployeePageQueryItemVO toPageQueryItemVO( Employee entity );
+    
 }

@@ -5,6 +5,7 @@ import com.sky.dto.employee.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
 import com.sky.projection.employee.EmployeeLoginProjection;
+import com.sky.vo.employee.EmployeePageQueryItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -29,11 +30,6 @@ public interface EmployeeMapper {
     void insert( Employee employee );
 
     /**
-     * 条件查询员工 + PageHelper 分页
-     */
-    List< Employee> selectByQuery( @Param( "queryParam" ) EmployeePageQueryDTO pageQueryDTO );
-
-    /**
      * 根据 id 查询员工信息
      */
     Employee selectById( @Param( "id" ) Long id );
@@ -56,4 +52,12 @@ public interface EmployeeMapper {
             WHERE username = #{username}
             """ )
     EmployeeLoginProjection selectLoginProjectionByUsername( @Param( "username" ) String username );
+
+    /**
+     * 条件查询用户数据链表, 由 PageHelper 自动分页
+     *
+     * @param pageQueryDTO 查询条件
+     * @return 分页展示数据链表
+     */
+    List< EmployeePageQueryItemVO > selectItemVOListByQuery( @Param( "query" ) EmployeePageQueryDTO pageQueryDTO );
 }

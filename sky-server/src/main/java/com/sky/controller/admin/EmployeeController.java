@@ -92,7 +92,7 @@ public class EmployeeController {
     /**
      * 条件分页查询员工
      */
-    @GetMapping( "/page" )
+    @GetMapping
     @ApiOperation( value = "条件分页查询员工" )
     public Result< PageResult > page( @Valid EmployeePageQueryDTO pageQueryDTO ){
         Long empId = BaseContext.getCurrentId();

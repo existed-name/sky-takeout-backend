@@ -20,6 +20,7 @@ import com.sky.service.EmployeeService;
 import com.sky.utils.JwtUtil;
 import com.sky.utils.PageUtil;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeePageQueryItemVO;
 import com.sky.vo.employee.EmployeeVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -134,8 +135,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public PageResult page( EmployeePageQueryDTO pageQueryDTO ){
         PageUtil.validateParamsAndStartPage( pageQueryDTO.getPage(), pageQueryDTO.getPageSize() );
-        List< Employee > employeeList = employeeMapper.selectByQuery( pageQueryDTO );
-        return PageUtil.buildPageResult( employeeList );
+        List< EmployeePageQueryItemVO > employeePageQueryItemVOList = employeeMapper.selectItemVOListByQuery( pageQueryDTO );
+        return PageUtil.buildPageResult( employeePageQueryItemVOList );
     }
 
     @Transactional( rollbackFor = Exception.class )
