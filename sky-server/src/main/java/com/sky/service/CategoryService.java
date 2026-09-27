@@ -37,9 +37,13 @@ public interface CategoryService {
     void update( CategoryDTO categoryDTO );
 
     /**
-     * <b>管理端</b>: 修改分类状态(启用/禁用)
+     * 管理端修改商品分类启用状态
+     *
+     * @param operatorId 操作者 id
+     * @param id 分类 id
+     * @param status 启用状态, {@link com.sky.enumeration.EnableStatus}
      */
-    void updateStatus( Long id, Integer status );
+    void updateStatus( Long operatorId, Long id, Integer status );
 
     /**
      * <b>管理端</b>: 查询某种类型的所有分类

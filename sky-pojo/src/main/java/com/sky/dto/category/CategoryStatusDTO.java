@@ -1,0 +1,38 @@
+package com.sky.dto.category;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+import javax.validation.constraints.NotNull;
+
+/**
+ * 商品分类状态修改信息
+ *
+ * @CreateTime 2026/9/27 15:53
+ */
+@ApiModel( description = "商品分类状态修改信息" )
+@Data
+public class CategoryStatusDTO {
+    // ==================== 常量 ====================
+
+
+    // ==================== 静态变量 ====================
+
+
+    // ==================== 实例变量 ====================
+    /** 商品分类启用状态 */
+    @ApiModelProperty( value = "商品分类启用状态", example = "0", required = true )
+    @NotNull( message = "分类启用状态不能为空" )
+    private Integer status;
+
+
+    // ==================== 构造器 ====================
+
+
+    // ==================== 公有方法 ====================
+
+
+    // ==================== 私有辅助方法 ====================
+
+}

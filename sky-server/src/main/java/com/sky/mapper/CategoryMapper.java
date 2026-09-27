@@ -40,7 +40,7 @@ public interface CategoryMapper {
      * 修改分类信息，包括修改分类状态(启用/禁用)
      */
     @AutoFill( value = OperationType.UPDATE )
-    void update( Category category );
+    int update( @Param( "category" ) Category category );
 
     /**
      * 查询某种类型的所有分类

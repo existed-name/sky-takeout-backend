@@ -5,6 +5,7 @@ import com.sky.constant.TypeConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.category.CategoryPageQueryDTO;
+import com.sky.dto.category.CategoryStatusDTO;
 import com.sky.entity.Category;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
@@ -110,19 +111,22 @@ public class CategoryController {
     }
 
     /**
-     * 修改分类状态(启用/禁用)
+     * 修改分类启用状态
      */
-    @PutMapping( "/status/{status}" )
-    @ApiOperation( value = "修改分类状态(启用/禁用)" )
-    @LogOperation( description = "修改分类状态(启用/禁用)", operationType = OperationType.UPDATE )
+    @PutMapping( "/{id}/status" )
+    @ApiOperation( value = "修改分类启用状态" )
+    @LogOperation( description = "修改分类启用状态", operationType = OperationType.UPDATE )
     public Result< Void > updateStatus(
-            @RequestParam( name = "id" )
-            @NotNull( message = "分类 id 不能为空" )
-            @Positive( message = "分类 id 必须是正整数" ) Long id,
-            @PathVariable( name = "status" )
-            @NotNull( message = "分类状态不能为空" ) Integer status ){
-        log.info( "修改 id = {} 的分类状态为 {}", id, status );
-        categoryService.updateStatus( id, status );
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "分类 id 必须是正整数" )
+            Long id,
+            @RequestBody @Valid
+            CategoryStatusDTO categoryStatusDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        Integer status = categoryStatusDTO.getStatus();
+        log.info( "id = {} 的管理员修改 id = {} 的商品分类状态为 {}", operatorId, id, status );
+        categoryService.updateStatus( operatorId, id, status );
         return Result.success();
     }
 

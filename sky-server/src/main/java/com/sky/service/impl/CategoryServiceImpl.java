@@ -14,6 +14,7 @@ import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
+import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.vo.category.CategoryPageQueryItemVO;
 import org.springframework.beans.BeanUtils;
@@ -110,13 +111,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void updateStatus( Long id, Integer status ){
-        StatusConstant.validateStatus( status );
+    public void updateStatus( Long operatorId, Long id, Integer status ){
+        EnableStatus.throwIfInvalid( status );
         Category category = new Category();
         category.setId( id );
         category.setStatus( status );
         // AOP 填写审计字段
-        categoryMapper.update( category );
+        int row = categoryMapper.update( category );
+        NotFoundUtil.throwIfNotUpdated( row, MessageConstant.CATEGORY_NOT_FOUND );
     }
 
     @Transactional( readOnly = true )
