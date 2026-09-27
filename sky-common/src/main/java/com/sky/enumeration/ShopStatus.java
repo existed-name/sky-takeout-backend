@@ -61,7 +61,7 @@ public enum ShopStatus {
      * 判断店铺状态是否有效
      */
     public static boolean isValid( Integer status ){
-        return status == null || statusToInstanceMap.containsKey( status );
+        return status != null && statusToInstanceMap.containsKey( status );
     }
 
     /**

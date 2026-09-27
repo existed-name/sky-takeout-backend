@@ -62,7 +62,7 @@ public enum EnableStatus {
      * 判断启用状态是否有效
      */
     public static boolean isValid( Integer status ){
-        return status == null || statusToInstanceMap.containsKey( status );
+        return status != null && statusToInstanceMap.containsKey( status );
     }
 
     /**
@@ -80,10 +80,10 @@ public enum EnableStatus {
     }
 
     /**
-     * 检验启用状态是否有效, 无效则抛出 JDK 原生异常
+     * 检验启用状态是否有效, 无效则抛出业务异常
      *
      * @param status 状态数值
-     * @throws IllegalArgumentException 当启用状态参数无效时
+     * @throws StatusParamInvalidException 当启用状态参数无效时
      */
     public static void throwIfInvalid( Integer status ){
         if ( ! isValid( status ) ){
