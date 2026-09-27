@@ -6,13 +6,13 @@ import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.employee.EmployeePageQueryDTO;
 import com.sky.dto.employee.EmployeeStatusDTO;
-import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
 /**
@@ -138,13 +137,15 @@ public class EmployeeController {
      */
     @GetMapping( "/{id}" )
     @ApiOperation( "根据 id 查询员工信息" )
-    public Result< Employee > getInfo(
-            @PathVariable( name = "id" )
-            @NotNull( message = "员工 id 不能为空" )
-            @Positive( message = "员工 id 必须是正整数" ) Long id ){
-        log.info( "查询 id = {} 的员工信息", id );
-        Employee employee = employeeService.getById( id );
-        return Result.success( employee );
+    public Result< EmployeeVO > getInfo(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "员工 id 必须是正整数" )
+            Long id
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的员工查询 id = {} 的员工信息", operatorId, id );
+        EmployeeVO employeeVO = employeeService.getById( id );
+        return Result.success( employeeVO );
     }
 
     /**

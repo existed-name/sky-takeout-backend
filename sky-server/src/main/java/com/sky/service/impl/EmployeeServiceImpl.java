@@ -3,6 +3,7 @@ package com.sky.service.impl;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
+import com.sky.convertor.EmployeeConverter;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.employee.EmployeePageQueryDTO;
@@ -19,6 +20,7 @@ import com.sky.service.EmployeeService;
 import com.sky.utils.JwtUtil;
 import com.sky.utils.PageUtil;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeeVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,10 +35,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeMapper employeeMapper;
     private final JwtProperties jwtProperties;
+    private final EmployeeConverter employeeConverter;
 
-    public EmployeeServiceImpl( EmployeeMapper employeeMapper, JwtProperties jwtProperties ){
+    public EmployeeServiceImpl( EmployeeMapper employeeMapper, JwtProperties jwtProperties, EmployeeConverter employeeConverter ){
         this.employeeMapper = employeeMapper;
         this.jwtProperties = jwtProperties;
+        this.employeeConverter = employeeConverter;
     }
 
     @Transactional( readOnly = true )
@@ -148,9 +152,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
     }
 
+    @Transactional( readOnly = true )
     @Override
-    public Employee getById( Long id ){
-        return employeeMapper.selectById( id );
+    public EmployeeVO getById( Long id ){
+        Employee entity = employeeMapper.selectById( id );
+        if ( entity == null ){
+            throw new NotFoundException( MessageConstant.EMPLOYEE_NOT_FOUND );
+        }
+        EmployeeVO employeeVO = employeeConverter.toVO( entity );
+        return employeeVO;
     }
 
     @Override

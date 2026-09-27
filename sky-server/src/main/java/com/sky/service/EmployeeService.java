@@ -3,9 +3,9 @@ package com.sky.service;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.employee.EmployeePageQueryDTO;
-import com.sky.entity.Employee;
 import com.sky.result.PageResult;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeeVO;
 
 public interface EmployeeService {
 
@@ -41,8 +41,11 @@ public interface EmployeeService {
 
     /**
      * 根据 id 查询员工信息
+     *
+     * @param id 目标员工 id
+     * @return 员工详情展示对象
      */
-    Employee getById( Long id );
+    EmployeeVO getById( Long id );
 
     /**
      * 修改员工信息
