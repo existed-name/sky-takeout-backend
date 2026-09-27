@@ -1,6 +1,6 @@
 package com.sky.service;
 
-import com.sky.dto.CategoryDTO;
+import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.result.PageResult;
@@ -8,10 +8,15 @@ import com.sky.result.PageResult;
 import java.util.List;
 
 public interface CategoryService {
+
+
     /**
-     * <b>管理端</b>: 新增分类(菜品/套餐分类)
+     * 管理端新增分类(菜品/套餐分类)
+     *
+     * @param operatorId 操作者 id, 显式从 controller 注入而不是 service 自行获取
+     * @param categoryDTO 分类信息
      */
-    void save( CategoryDTO categoryDTO );
+    void save( Long operatorId, CategoryDTO categoryDTO );
 
     /**
      * <b>管理端</b>: 对分类进行条件分页查询

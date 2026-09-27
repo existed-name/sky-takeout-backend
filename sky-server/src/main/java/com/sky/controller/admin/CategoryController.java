@@ -2,7 +2,8 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.constant.TypeConstant;
-import com.sky.dto.CategoryDTO;
+import com.sky.context.BaseContext;
+import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.enumeration.OperationType;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.List;
@@ -31,7 +33,7 @@ import java.util.List;
 @Validated
 @Slf4j
 @RestController( "adminCategoryController" )
-@RequestMapping( "/admin/category" )
+@RequestMapping( "/admin/categories" )
 @Api( tags = "分类管理接口")
 public class CategoryController {
     // ==================== 常量 ====================
@@ -57,21 +59,22 @@ public class CategoryController {
     @PostMapping
     @ApiOperation( value = "新增分类(菜品/套餐分类)" )
     @LogOperation( description = "新增分类", operationType = OperationType.INSERT )
-    public Result< Void > save( @Validated( value = ValidationGroups.Create.class )
-            @RequestBody CategoryDTO categoryDTO ){
-        log.info( "新增分类: {}", categoryDTO );
-        categoryService.save( categoryDTO );
+    public Result< Void > save(
+            @Validated( value = ValidationGroups.Create.class )
+            @RequestBody CategoryDTO categoryDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员新增分类: {}", operatorId, categoryDTO );
+        categoryService.save( operatorId, categoryDTO );
         return Result.success();
     }
 
     /**
      * 对分类进行条件分页查询
      */
-    @GetMapping( "/page" )
+    @GetMapping
     @ApiOperation( value = "对分类进行条件分页查询" )
-    public Result< PageResult > page(
-            @NotNull( message = "分页查询参数不能为空" )
-             CategoryPageQueryDTO categoryPageQueryDTO ){
+    public Result< PageResult > page( @Valid CategoryPageQueryDTO categoryPageQueryDTO ){
         log.info( "对分类进行条件分页查询，查询参数: {}", categoryPageQueryDTO );
         PageResult pageResult = categoryService.page( categoryPageQueryDTO );
         return Result.success( pageResult );

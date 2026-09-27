@@ -25,7 +25,7 @@ public interface CategoryMapper {
             """ )
     @AutoFill( value = OperationType.INSERT )
     @Options( useGeneratedKeys = true, keyProperty = "id" )
-    void insert( Category category );
+    int insert( Category category );
 
     /**
      * 对分类进行条件查询 + PageHelper 分页

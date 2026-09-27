@@ -1,4 +1,4 @@
-package com.sky.dto;
+package com.sky.dto.category;
 
 import com.sky.validation.ValidationGroups;
 import io.swagger.annotations.ApiModel;

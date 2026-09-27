@@ -2,9 +2,12 @@ package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
-import com.sky.dto.CategoryDTO;
+import com.sky.convertor.CategoryConverter;
+import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
+import com.sky.enumeration.CategoryType;
+import com.sky.enumeration.EnableStatus;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
@@ -30,32 +33,33 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
     private final DishMapper dishMapper;
     private final SetmealMapper setmealMapper;
-
+    private final CategoryConverter categoryConverter;
 
 
     // ==================== 构造器 ====================
-    public CategoryServiceImpl( CategoryMapper categoryMapper, DishMapper dishMapper, SetmealMapper setmealMapper ){
+    public CategoryServiceImpl( CategoryMapper categoryMapper, DishMapper dishMapper, SetmealMapper setmealMapper, CategoryConverter categoryConverter ){
         this.categoryMapper = categoryMapper;
         this.dishMapper = dishMapper;
         this.setmealMapper = setmealMapper;
+        this.categoryConverter = categoryConverter;
     }
 
 
     // ==================== 公有方法 ====================
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void save( CategoryDTO categoryDTO ){
-        Category category = new Category();
-        BeanUtils.copyProperties( categoryDTO, category );
+    public void save( Long operatorId, CategoryDTO categoryDTO ){
+        /*
+            * 补充思路
+            * 业务检验 → dto 字段
+              - 主要是分类类型 type 必须有效
+            * 之后 converter 把 dto 转为实体类用于插入对象数据
+         */
+        CategoryType.throwIfInvalid( categoryDTO.getType() );
+        Category category = categoryConverter.toEntity( categoryDTO );
         // 分类: 默认禁用
-        category.setStatus( StatusConstant.DISABLE );
-//        category.setCreateTime( LocalDateTime.now() );
-//        category.setUpdateTime( LocalDateTime.now() );
-//
-//        Long currentUserId = BaseContext.getCurrentId();
-//        category.setCreateUser( currentUserId );
-//        category.setUpdateUser( currentUserId );
-
+        category.setStatus( EnableStatus.DISABLED.getStatus() );
+        // 由 AOP 自动填写审计字段, 手动填写时才用到 operatorId
         categoryMapper.insert( category );
     }
 
