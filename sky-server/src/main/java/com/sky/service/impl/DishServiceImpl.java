@@ -5,11 +5,13 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.RedisConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
+import com.sky.convertor.DishConverter;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.entity.Setmeal;
+import com.sky.enumeration.EnableStatus;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.NotFoundException;
 import com.sky.mapper.DishFlavorMapper;
@@ -21,6 +23,7 @@ import com.sky.utils.DishCacheManager;
 import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -32,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class DishServiceImpl implements DishService {
     // ==================== 常量 ====================
@@ -47,37 +51,54 @@ public class DishServiceImpl implements DishService {
     private final RedisTemplate< String, Object > redisTemplate;
     private final SetmealCacheManager setmealCacheManager;
     private final DishCacheManager dishCacheManager;
+    private final DishConverter dishConverter;
 
 
     // ==================== 构造器 ====================
-    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, SetmealCacheManager setmealCacheManager, DishCacheManager dishCacheManager ){
+    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, SetmealCacheManager setmealCacheManager, DishCacheManager dishCacheManager, DishConverter dishConverter ){
         this.dishMapper = dishMapper;
         this.dishFlavorMapper = dishFlavorMapper;
         this.setmealMapper = setmealMapper;
         this.redisTemplate = redisTemplate;
         this.setmealCacheManager = setmealCacheManager;
         this.dishCacheManager = dishCacheManager;
+        this.dishConverter = dishConverter;
     }
 
 
     // ==================== 公有方法 ====================
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void saveWithFlavor( DishDTO dishDTO ){
-        Dish dish = new Dish();
-        BeanUtils.copyProperties( dishDTO, dish );
+    public void saveWithFlavors( Long operatorId, DishDTO dishDTO ){
+        /*
+            * 业务逻辑
+              1. 新增菜品, 同时新增菜品关联的口味
+              2. 由于用户端使用缓存展示菜品数据, 改动菜品数据需要清理旧缓存
+            * 思路
+              - converter 把 dto 转实体对象用来插入数据
+              - 菜品字段设置默认值
+              - 拿出 dto 里面的菜品口味, 设置关联的菜品 id 逻辑外键再写入数据库
+              - 拼接 redis 键, 清理缓存
+         */
+        Dish dish = dishConverter.toEntity( dishDTO );
 
         // 注意部分字段如果没有设置值，需要手动设置默认值，比如 status 需要显示启用
         if ( dish.getStatus() == null ){
-            dish.setStatus( StatusConstant.ENABLE );
+            dish.setStatus( EnableStatus.ENABLED.getStatus() );
         }
 
         // 审计字段交给 AOP 处理
         dishMapper.insert( dish );
+        Long id = dish.getId();
+        if ( id == null ){
+            String message = "插入菜品数据时, 主键回填失败";
+            log.error( "{}, 菜品信息 = {}", message, dish );
+            throw new IllegalStateException( message );
+        }
 
         // 注意 Mapper 是否保存了所有内容: 实体类对象所有属性( DTO 属性 + 审计字段 ) + 关联内容 = 表数据
         // 新增菜品时 dishDTO.getId() 为 null，应该用主键回填后的 dish.getId()
-        saveDishFlavors( dish.getId(), dishDTO.getFlavors() );
+        saveDishFlavors( id, dishDTO.getFlavors() );
 
         /*
             精细修改缓存: 只修改该菜品所在的分类缓存, 也就需要拿到 RedisKey = 业务前缀:分类 id

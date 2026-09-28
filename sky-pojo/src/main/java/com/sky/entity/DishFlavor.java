@@ -18,14 +18,15 @@ public class DishFlavor implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /** 口味 id */
     private Long id;
-    //菜品id
+    /** 关联的菜品 id */
     private Long dishId;
 
-    //口味名称
+    /** 口味的名称/类型, 比如甜味、辣度、忌口 */
     private String name;
 
-    //口味数据list
+    /** 口味数据, 格式为 list.toString */
     private String value;
 
 }

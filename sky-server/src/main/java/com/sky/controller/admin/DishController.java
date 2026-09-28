@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
+import com.sky.context.BaseContext;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.enumeration.OperationType;
@@ -63,11 +64,13 @@ public class DishController {
     @ApiOperation( value = "新增菜品" )
     @LogOperation( description = "新增菜品", operationType = OperationType.INSERT )
     @PostMapping
-    public Result< Void > saveWithFlavor(
+    public Result< Void > saveWithFlavors(
             @Validated( value = ValidationGroups.Create.class )
-            @RequestBody  DishDTO dishDTO ){
-        log.info( "新增菜品: {}", dishDTO );
-        dishService.saveWithFlavor( dishDTO );
+            @RequestBody DishDTO dishDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员新增菜品: {}", operatorId, dishDTO );
+        dishService.saveWithFlavors( operatorId, dishDTO );
         return Result.success();
     }
 

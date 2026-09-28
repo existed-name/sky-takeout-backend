@@ -4,17 +4,18 @@ import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishVO;
-import org.apache.ibatis.annotations.Select;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 public interface DishService {
     /**
-     * <b>管理端</b>: 新增菜品
+     * 管理端新增菜品
+     *
+     * @param operatorId 操作者 id, 目前由 AOP 自动填写审计字段,
+     *                   <b>手动设置审计字段时才会用到该参数</b>
+     * @param dishDTO 菜品信息
      */
-    void saveWithFlavor( DishDTO dishDTO );
+    void saveWithFlavors( Long operatorId, DishDTO dishDTO );
 
     /**
      * <b>管理端</b>: 条件分页查询菜品

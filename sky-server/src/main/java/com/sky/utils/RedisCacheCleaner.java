@@ -70,8 +70,11 @@ public class RedisCacheCleaner {
      * @param redisKeyGenerator 方法引用，主要来自{@link com.sky.constant.RedisConstant}的组装 Key 方法
      *                          <br>
      *                          将 T 类型材料转换为 String 类型 Key
-     * @param id 用来拼接 Key 的原始材料(比如 categoryId, setmealId 等等)，{@code RedisKey = 业务前缀:id}
+     * @param id 用来拼接 Key 的原始材料(比如 categoryId, setmealId 等等)，
+     *          {@code RedisKey = 业务前缀:id},
+     *           <b>为空时直接结束该方法, </b>
      * @param <T> 原始材料的类型
+     * @throws IllegalArgumentException 当方法引用为空时
      */
     public < T > void generateAndDeleteKey( Function< T, String > redisKeyGenerator, T id ){
         validateRedisKeyGenerator( redisKeyGenerator );
@@ -118,6 +121,7 @@ public class RedisCacheCleaner {
      *                          <br>
      *                          将 T 类型材料转换为 String 类型 Key
      * @param <T> 原始材料的类型
+     * @throws IllegalArgumentException 当方法引用为空时
      */
     private < T > void validateRedisKeyGenerator( Function< T, String > redisKeyGenerator ){
         // 我觉得方法引用应该单出来判断，因为用来生成 key 的材料可为空(不删就是)，但是方法引用一定要准确
