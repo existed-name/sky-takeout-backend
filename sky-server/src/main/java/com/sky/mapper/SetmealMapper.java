@@ -22,10 +22,14 @@ import java.util.Map;
 public interface SetmealMapper {
 
     /**
-     * 根据分类id查询套餐的数量
+     * 查询某个分类关联的套餐数量
+     *
+     * @param categoryId 商品分类 id
      */
     @Select( """
-            select count( * ) from setmeal where category_id = #{categoryId}
+            select count( * )
+            from setmeal
+            where category_id = #{categoryId}
             """)
     long countByCategoryId( @Param( "categoryId" ) Long categoryId );
 

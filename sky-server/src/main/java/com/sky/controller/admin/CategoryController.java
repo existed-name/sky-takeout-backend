@@ -84,15 +84,17 @@ public class CategoryController {
     /**
      * 根据 id 删除分类
      */
-    @DeleteMapping
+    @DeleteMapping( "/{id}" )
     @ApiOperation( value = "根据 id 删除分类")
     @LogOperation( description = "删除分类", operationType = OperationType.DELETE )
     public Result< Void > delete(
-            @RequestParam( name = "id" )
-            @NotNull( message = "分类 id 不能为空" )
-            @Positive( message = "分类 id 必须是正整数" ) Long id ){
-        log.info( "删除 id = {} 的分类", id );
-        categoryService.deleteById( id );
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "分类 id 必须是正整数" )
+            Long id
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员删除 id = {} 的商品分类", operatorId, id );
+        categoryService.deleteById( operatorId, id );
         return Result.success();
     }
 

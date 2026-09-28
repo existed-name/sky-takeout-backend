@@ -20,10 +20,14 @@ import java.util.Map;
 public interface DishMapper {
 
     /**
-     * 根据分类id查询菜品数量
+     * 查询某个分类关联的菜品数量
+     *
+     * @param categoryId 商品分类 id
      */
     @Select( """
-            select count( * ) from dish where category_id = #{categoryId}
+            select count( * )
+            from dish where
+            category_id = #{categoryId}
             """)
     long countByCategoryId( @Param( "categoryId" ) Long categoryId );
 

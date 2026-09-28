@@ -30,12 +30,15 @@ public interface CategoryMapper {
 
     /**
      * 根据 id 删除分类
+     *
+     * @param id 分类 id
+     * @return 删除行数, 通常 = 1, 不存在时返回 0
      */
     @Delete( """
             DELETE FROM category
             WHERE id = #{id}
             """ )
-    void deleteById( @Param( "id" ) Long id );
+    int deleteById( @Param( "id" ) Long id );
 
     /**
      * 修改分类信息，包括修改分类状态(启用/禁用)

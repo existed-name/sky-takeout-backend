@@ -28,9 +28,12 @@ public interface CategoryService {
     PageResult page( CategoryPageQueryDTO categoryPageQueryDTO );
 
     /**
-     * <b>管理端</b>: 根据 id 删除分类
+     * 管理端删除某个商品分类
+     *
+     * @param operatorId 操作者 id, <b>当前为硬删除( 删除整条数据 ), 如果之后改为软删除( 打标记 ), 才需要记录审计字段</b>
+     * @param id 分类 id
      */
-    void deleteById( Long id );
+    void deleteById( Long operatorId, Long id );
 
     /**
      * 管理端修改商品分类信息

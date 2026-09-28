@@ -81,22 +81,30 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void deleteById( Long id ){
-        //查询当前分类是否关联了菜品，如果关联了就抛出业务异常
-        long count = dishMapper.countByCategoryId(id);
-        if(count > 0){
-            //当前分类下有菜品，不能删除
-            throw new DeletionNotAllowedException( MessageConstant.CATEGORY_BE_RELATED_BY_DISH);
+    public void deleteById( Long operatorId, Long id ){
+        /*
+            整理业务逻辑
+            任何删除操作都应该考虑是否有关联数据
+            而这里由于每个菜品、套餐必须放进指定的分类, 那么直接删掉分类就会导致它们所属的分类不存在,
+            于是对于关联了商品的分类, 考虑拒绝删除、避免残留脏数据
+
+            思路
+            查找该分类 id 是否关联了商品( 菜品、套餐 ), 没有关联再删除,
+            并且从删除行数判断改分类是否存在
+            做判断的技巧: 用 count 数数代替 select 查询
+         */
+        long dishCount = dishMapper.countByCategoryId( id );
+        if ( dishCount > 0L ){
+            throw new DeletionNotAllowedException( MessageConstant.CATEGORY_BE_RELATED_BY_DISH );
         }
 
-        //查询当前分类是否关联了套餐，如果关联了就抛出业务异常
-        count = setmealMapper.countByCategoryId(id);
-        if(count > 0){
-            //当前分类下有菜品，不能删除
-            throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_SETMEAL);
+        long setMealCount = setmealMapper.countByCategoryId( id );
+        if( setMealCount > 0L ){
+            throw new DeletionNotAllowedException( MessageConstant.CATEGORY_BE_RELATED_BY_SETMEAL );
         }
 
-        categoryMapper.deleteById( id );
+        int row = categoryMapper.deleteById( id );
+        NotFoundUtil.throwIfNotUpdated( row, MessageConstant.CATEGORY_NOT_FOUND );
     }
 
     @Transactional( rollbackFor = Exception.class )
