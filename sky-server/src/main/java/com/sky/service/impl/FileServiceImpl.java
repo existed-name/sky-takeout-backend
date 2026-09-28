@@ -2,12 +2,12 @@ package com.sky.service.impl;
 
 import com.sky.constant.FileConstant;
 import com.sky.constant.MessageConstant;
-import com.sky.exception.EmptyFileException;
+import com.sky.exception.FileEmptyException;
 import com.sky.exception.FileTypeNotSupportedException;
 import com.sky.exception.FileUploadFailedException;
-import com.sky.exception.InvalidFileNameException;
-import com.sky.exception.SizeLimitExceededException;
-import com.sky.service.UploadService;
+import com.sky.exception.FileNameInvalidException;
+import com.sky.exception.FileSizeLimitExceededException;
+import com.sky.service.FileService;
 import com.sky.utils.AliOssUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class UploadServiceImpl implements UploadService {
+public class FileServiceImpl implements FileService {
     // ==================== 常量 ====================
 
 
@@ -33,7 +33,7 @@ public class UploadServiceImpl implements UploadService {
 
 
     // ==================== 构造器 ====================
-    public UploadServiceImpl( AliOssUtil aliOssUtil ){
+    public FileServiceImpl( AliOssUtil aliOssUtil ){
         this.aliOssUtil = aliOssUtil;
     }
 
@@ -54,37 +54,48 @@ public class UploadServiceImpl implements UploadService {
             return aliOssUtil.upload( file.getBytes(), objectName );
         } catch ( IOException e ){
             log.error( "上传文件转换字节流失败" );
-            throw new FileUploadFailedException( MessageConstant.FILE_UPLOAD_FAIL );
+            throw new FileUploadFailedException( MessageConstant.FILE_UPLOAD_FAILED );
         }
     }
 
 
     // ==================== 私有辅助方法 ====================
+
+
     /**
      * 文件基础检验
+     *
+     * @param file 上传的文件
+     * @throws FileEmptyException 当文件为 null 或内容为空时
+     * @throws FileSizeLimitExceededException 当文件大小超过{@link FileConstant#MAX_SIZE}限制时
      */
     private void validateFile( MultipartFile file ){
         if ( file == null || file.isEmpty() ){
             // 注: isEmpty 包括了 bytes 数组长度为 0 的情况，不需要额外检查 bytes 数组
-            throw new EmptyFileException( MessageConstant.EMPTY_FILE );
+            throw new FileEmptyException( MessageConstant.FILE_EMPTY );
         }
 
         if ( file.getSize() > FileConstant.MAX_SIZE ){
-            throw new SizeLimitExceededException( MessageConstant.SIZE_LIMITED );
+            throw new FileSizeLimitExceededException( MessageConstant.FILE_SIZE_LIMITED );
         }
     }
 
 
     /**
      * 检验上传文件时，用来分类的业务目录前缀
+     *
+     * @param dir 业务目录前缀, {@link FileConstant.BusinessDir}
+     * @throws IllegalArgumentException 程序员自身传参错误:<br>
+     *                  1. 当传入的参数为 null 或空字符串时<br>
+     *                  2. 当传入的业务目录前缀无效时
      */
     private void validateDir( String dir ){
         if ( dir == null || dir.isBlank() ){
             // 由于是内部指定业务目录，是内部出错，应该用 JDK 系统异常
-            throw new IllegalArgumentException( MessageConstant.EMPTY_DIR );
+            throw new IllegalArgumentException( MessageConstant.FILE_DIR_EMPTY );
         }
         if ( ! FileConstant.BusinessDir.VALID_DIRS.contains( dir ) ){
-            throw new IllegalArgumentException( MessageConstant.INVALID_DIR );
+            throw new IllegalArgumentException( MessageConstant.FILE_DIR_INVALID );
         }
     }
 
@@ -92,19 +103,19 @@ public class UploadServiceImpl implements UploadService {
      * 提取并校验文件后缀名
      *
      * @param file MultipartFile 文件
-     * @return 合法的小写后缀名（例如：".jpg"）
+     * @return 合法的<b>小写</b>后缀名, {@link FileConstant#ALLOWED_IMAGE_TYPE}
      */
     private String extractAndValidateExtension(MultipartFile file) {
         // 原始文件名，例如： "avatar.png"
         String originalFilename = file.getOriginalFilename();
         if ( originalFilename == null || originalFilename.isBlank() ){
-            throw new InvalidFileNameException( MessageConstant.EMPTY_FILE_NAME );
+            throw new FileNameInvalidException( MessageConstant.FILE_NAME_EMPTY );
         }
 
         // 获取文件后缀，例如： ".png"
         // 先检查有没有点号
         if ( ! originalFilename.contains( "." ) ){
-            throw new InvalidFileNameException( MessageConstant.INVALID_FILE_EXTENSION );
+            throw new FileNameInvalidException( MessageConstant.FILE_EXTENSION_INVALID );
         }
         // lastIndexOf(".") 找到最后一个点的位置
         // substring(...) 从这个位置开始截取
@@ -116,7 +127,7 @@ public class UploadServiceImpl implements UploadService {
 
         // 校验文件类型是否支持( jpg、png、jpeg )
         if ( ! FileConstant.ALLOWED_IMAGE_TYPE.contains( extension ) ){
-            throw new FileTypeNotSupportedException( MessageConstant.INVALID_FILE_EXTENSION );
+            throw new FileTypeNotSupportedException( MessageConstant.FILE_EXTENSION_INVALID );
         }
 
         return extension;
@@ -127,16 +138,17 @@ public class UploadServiceImpl implements UploadService {
     /**
      * 生成规范的OSS对象路径。
      * <p>
-     * 格式：{目录前缀}/{yyyy}/{MM}/{dd}/{UUID}{扩展名}
+     * 格式：{业务目录前缀}/{yyyy}/{MM}/{dd}/{UUID}{扩展名}
      * <p>
      * 示例：
      * <pre>
      *   generateObjectName("avatar", ".jpg") → "avatar/2026/05/23/a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg"
      * </pre>
      *
-     * @param dir       业务目录前缀，如 "avatar"、"dish"、"setmeal"；不允许为空
-     * @param extension 文件扩展名，必须包含点号，如 ".jpg"、".png"；不允许为空
+     * @param dir       业务目录前缀{@link FileConstant.BusinessDir}，如 "avatar"、"dish"、"setmeal"；不允许为空
+     * @param extension 文件扩展名{@link FileConstant#ALLOWED_IMAGE_TYPE}，必须包含点号，如 ".jpg"、".png"；不允许为空
      * @return 规范的OSS对象完整路径
+     * @throws IllegalArgumentException 当业务目录前缀或者拓展名不合法时抛出
      */
     private String generateObjectName(String dir, String extension) {
         validateDir( dir );

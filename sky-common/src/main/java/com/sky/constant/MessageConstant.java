@@ -25,13 +25,13 @@ public class MessageConstant {
     public static final String ORDER_NOT_FOUND = "订单不存在";
 
     public static final String ALREADY_EXISTS = "已存在";
-    public static final String EMPTY_FILE = "文件不能为空";
-    public static final String FILE_UPLOAD_FAIL = "文件上传失败";
-    public static final String EMPTY_FILE_NAME = "文件名不能为空";
-    public static final String INVALID_FILE_EXTENSION = "文件后缀不合法";
-    public static final String SIZE_LIMITED = "文件大小超出限制";
-    public static final String EMPTY_DIR = "文件业务目录不能为空";
-    public static final String INVALID_DIR = "文件业务目录不合法";
+    public static final String FILE_EMPTY = "文件不能为空";
+    public static final String FILE_UPLOAD_FAILED = "文件上传失败";
+    public static final String FILE_NAME_EMPTY = "文件名不能为空";
+    public static final String FILE_EXTENSION_INVALID = "文件后缀不合法";
+    public static final String FILE_SIZE_LIMITED = "文件大小超出限制";
+    public static final String FILE_DIR_EMPTY = "文件业务目录不能为空";
+    public static final String FILE_DIR_INVALID = "文件业务目录不合法";
 
     public static final String DISH_NOT_FOUND = "菜品不存在";
 

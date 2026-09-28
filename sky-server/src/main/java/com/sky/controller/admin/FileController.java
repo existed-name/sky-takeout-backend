@@ -2,9 +2,10 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.constant.FileConstant;
+import com.sky.context.BaseContext;
 import com.sky.enumeration.OperationType;
 import com.sky.result.Result;
-import com.sky.service.UploadService;
+import com.sky.service.FileService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -32,13 +33,13 @@ public class FileController {
 
 
     // ==================== 实例变量 ====================
-    private final UploadService uploadService;
+    private final FileService fileService;
 
 
     // ==================== 构造器 ====================
 
-    public FileController( UploadService uploadService ){
-        this.uploadService = uploadService;
+    public FileController( FileService fileService ){
+        this.fileService = fileService;
     }
 
 
@@ -46,12 +47,16 @@ public class FileController {
     /**
      * 上传菜品图片
      */
-    @PostMapping( "/upload/dish" )
+    @PostMapping( "/dish" )
     @ApiOperation( value = "上传菜品图片" )
     @LogOperation( description = "上传菜品图片", operationType = OperationType.INSERT )
-    public Result< String > uploadDishImage( @NotNull( message = "上传的图片不能为空" ) MultipartFile file ){
-        log.info( "上传菜品图片: {}", file );
-        String url = uploadService.upload( file, FileConstant.BusinessDir.DISH );
+    public Result< String > uploadDishImage(
+            @NotNull( message = "上传的图片不能为空" )
+            MultipartFile file
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员上传菜品图片: {}", operatorId, file.getName() );
+        String url = fileService.upload( file, FileConstant.BusinessDir.DISH );
         return Result.success( url );
     }
 
@@ -59,12 +64,16 @@ public class FileController {
     /**
      * 上传套餐图片
      */
-    @PostMapping( "/upload/setmeal" )
+    @PostMapping( "/setmeal" )
     @ApiOperation( value = "上传套餐图片" )
     @LogOperation( description = "上传套餐图片", operationType = OperationType.INSERT )
-    public Result< String > uploadSetmealImage( @NotNull( message = "上传的图片不能为空" ) MultipartFile file ){
-        log.info( "上传套餐图片: {}", file );
-        String url = uploadService.upload( file, FileConstant.BusinessDir.SETMEAL );
+    public Result< String > uploadSetmealImage(
+            @NotNull( message = "上传的图片不能为空" )
+            MultipartFile file
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员上传套餐图片: {}", operatorId, file.getName() );
+        String url = fileService.upload( file, FileConstant.BusinessDir.SETMEAL );
         return Result.success( url );
     }
 
