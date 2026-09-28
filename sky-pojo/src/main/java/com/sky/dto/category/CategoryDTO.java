@@ -18,11 +18,12 @@ import java.io.Serializable;
 @ApiModel(description = "分类对象 DTO")
 public class CategoryDTO implements Serializable {
 
-    /** 主键 */
-    @ApiModelProperty(value = "主键", example = "1")
-    @NotNull( message = "分类 id 不能为空", groups = ValidationGroups.Update.class )
-    @Positive( message = "分类 id 必须是正整数", groups = ValidationGroups.Update.class )
-    private Long id;
+//    id 应该放进请求路径用来定位资源, 而不是放进 dto 和字段信息混在一起
+//    /** 主键 */
+//    @ApiModelProperty(value = "主键", example = "1")
+//    @NotNull( message = "分类 id 不能为空", groups = ValidationGroups.Update.class )
+//    @Positive( message = "分类 id 必须是正整数", groups = ValidationGroups.Update.class )
+//    private Long id;
 
     /** 类型：1 菜品分类 2 套餐分类 */
     @ApiModelProperty(value = "类型：1 菜品分类 2 套餐分类", example = "1")

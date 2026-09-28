@@ -101,7 +101,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void update( Long operatorId, CategoryDTO categoryDTO ){
+    public void updateById( Long operatorId, Long id, CategoryDTO categoryDTO ){
         /*
             思路
             业务检验字段 type
@@ -111,6 +111,7 @@ public class CategoryServiceImpl implements CategoryService {
          */
         CategoryType.throwIfInvalid( categoryDTO.getType() );
         Category category = categoryConverter.toEntity( categoryDTO );
+        category.setId( id );
         int row = categoryMapper.updateById( category );
         NotFoundUtil.throwIfNotUpdated( row, MessageConstant.CATEGORY_NOT_FOUND );
     }

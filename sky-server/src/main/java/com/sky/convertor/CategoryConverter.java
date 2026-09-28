@@ -20,6 +20,8 @@ public interface CategoryConverter {
      * @param categoryDTO 分类数据信息
      * @return 分类实体对象
      */
+    // 注意 dto 去掉 id 字段后不能映射 id, 就需要手动忽略该字段
+    @Mapping( target = "id", ignore = true )
     @Mapping( target = "status", ignore = true )
     @Mapping( target = "createTime", ignore = true )
     @Mapping( target = "updateTime", ignore = true )

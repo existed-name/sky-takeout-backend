@@ -1,12 +1,10 @@
 package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
-import com.sky.constant.TypeConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.dto.category.CategoryStatusDTO;
-import com.sky.entity.Category;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
@@ -101,16 +99,19 @@ public class CategoryController {
     /**
      * 修改分类信息
      */
-    @PutMapping
+    @PutMapping( "/{id}" )
     @ApiOperation( value = "修改分类信息" )
     @LogOperation( description = "修改分类信息", operationType = OperationType.UPDATE )
     public Result< Void > update(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "分类 id 必须是正整数" )
+            Long id,
             @Validated( ValidationGroups.Update.class )
             @RequestBody CategoryDTO categoryDTO
     ){
         Long operatorId = BaseContext.getCurrentId();
-        log.info( "id = {} 的管理员修改分类信息: {}", operatorId, categoryDTO );
-        categoryService.update( operatorId, categoryDTO );
+        log.info( "id = {} 的管理员修改 id = {} 的分类信息为 {}", operatorId, id, categoryDTO );
+        categoryService.updateById( operatorId, id, categoryDTO );
         return Result.success();
     }
 

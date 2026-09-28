@@ -35,10 +35,11 @@ public interface CategoryService {
     /**
      * 管理端修改商品分类信息
      *
-     * @param operatorId 操作者 id
+     * @param id 分类 id
+     * @param operatorId  操作者 id
      * @param categoryDTO 更新后的信息
      */
-    void update( Long operatorId, CategoryDTO categoryDTO );
+    void updateById( Long operatorId, Long id, CategoryDTO categoryDTO );
 
     /**
      * 管理端修改商品分类启用状态
