@@ -41,16 +41,6 @@
         WHERE id = #{category.id}
     </update>
 
-<!--    查询某种类型的所有分类-->
-    <select id="selectByType" resultType="com.sky.entity.Category">
-        SELECT id, type, name, sort, status, create_time, update_time, create_user, update_user
-        FROM category
-        <where>
-            <if test="type != null">type = #{type}</if>
-        </where>
-        ORDER BY sort ASC, create_time DESC
-    </select>
-
     <!--
      * 查询某种状态、某种类型对应的所有分类
      * <p>
@@ -66,6 +56,19 @@
             AND status = #{status}
         </where>
         ORDER BY sort ASC, create_time DESC
+    </select>
+
+    <!--
+    查询某种分类类型、启用状态对应的所有分类数据
+    -->
+    <select id="selectItemVOListByStatusAndType" resultType="com.sky.vo.category.CategoryListItemVO">
+        SELECT id, type, name
+        FROM category
+        <where>
+            status = #{status}
+            <if test="type != null">AND type = #{type}</if>
+        </where>
+        ORDER BY sort ASC, create_time DESC, id DESC
     </select>
 
 </mapper>

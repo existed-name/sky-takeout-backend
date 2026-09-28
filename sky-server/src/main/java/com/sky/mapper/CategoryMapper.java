@@ -4,6 +4,7 @@ import com.sky.annotation.AutoFill;
 import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.category.CategoryListItemVO;
 import com.sky.vo.category.CategoryPageQueryItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
@@ -43,14 +44,6 @@ public interface CategoryMapper {
     int update( @Param( "category" ) Category category );
 
     /**
-     * 查询某种类型的所有分类
-     * <p>
-     *     按照设定优先级升序排列，优先级相同按照创建时间降序排列
-     * </p>
-     */
-    List< Category> selectByType( @Param( "type" ) Integer type );
-
-    /**
      * 查询某种状态、某种类型对应的所有分类
      * <p>
      *     按照设定优先级升序排列，优先级相同按照创建时间降序排列
@@ -66,4 +59,16 @@ public interface CategoryMapper {
      * @return 分页查询数据项列表
      */
     List< CategoryPageQueryItemVO > selectItemVOListByQuery( @Param( "query" ) CategoryPageQueryDTO categoryPageQueryDTO );
+
+    /**
+     * 查询某种分类类型、启用状态对应的所有分类数据
+     * <p>
+     *     按照设定的业务优先级升序排列，优先级相同按照创建时间降序排列, 创建时间相同按照 id 降序排列
+     * </p>
+     * @param status 启用状态, {@link com.sky.enumeration.EnableStatus}
+     * @param type 分类类型, {@link com.sky.enumeration.CategoryType},
+     *               <b>为 null 时查询所有类型的分类</b>
+     * @return 分类列表数据
+     */
+    List< CategoryListItemVO > selectItemVOListByStatusAndType( @Param( "status" ) int status, @Param( "type" ) Integer type );
 }

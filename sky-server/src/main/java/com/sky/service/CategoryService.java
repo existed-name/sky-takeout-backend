@@ -4,6 +4,7 @@ import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.result.PageResult;
+import com.sky.vo.category.CategoryListItemVO;
 
 import java.util.List;
 
@@ -46,9 +47,12 @@ public interface CategoryService {
     void updateStatus( Long operatorId, Long id, Integer status );
 
     /**
-     * <b>管理端</b>: 查询某种类型的所有分类
+     * 管理端查询某种类型的所有启用分类
+     *
+     * @param type 分类类型, {@link com.sky.enumeration.CategoryType}
+     * @return 分类列表数据
      */
-    List< Category> listByType( Integer type );
+    List< CategoryListItemVO > listByType( Integer type );
 
     /**
      * <b>用户端</b>: 查询启用的所有分类(菜品/套餐分类)

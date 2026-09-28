@@ -16,6 +16,7 @@ import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
 import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
+import com.sky.vo.category.CategoryListItemVO;
 import com.sky.vo.category.CategoryPageQueryItemVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -123,10 +124,21 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional( readOnly = true )
     @Override
-    public List< Category > listByType( Integer type ){
-        // 不需要额外检验 type，动态 SQL 处理了 null 查所有，无效 type 也只是返回空数组
-        List< Category > categoryList = categoryMapper.selectByType( type );
-        return categoryList;
+    public List< CategoryListItemVO > listByType( Integer type ){
+        /*
+            搞清楚业务场景就好办了
+            下拉列表展示该类型的所有启用的分类
+            于是对于传了类型的情况, 可以检验 type 是否有效
+            没传类型, 直接在 sql 忽略 type
+            然后注意排序、筛选 status
+         */
+        if ( type != null ){
+            CategoryType.throwIfInvalid( type );
+        }
+        List< CategoryListItemVO > categoryListItemVOList = categoryMapper.selectItemVOListByStatusAndType(
+                EnableStatus.ENABLED.getStatus(), type
+        );
+        return categoryListItemVOList;
     }
 
     @Transactional( readOnly = true )

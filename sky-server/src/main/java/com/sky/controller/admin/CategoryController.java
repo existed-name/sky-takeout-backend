@@ -12,6 +12,7 @@ import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
 import com.sky.validation.ValidationGroups;
+import com.sky.vo.category.CategoryListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -132,14 +133,21 @@ public class CategoryController {
 
     /**
      * 查询某种类型的所有分类
+     * <p>
+     *     业务场景: 创建菜品、套餐需要选择分类,
+     *     此时就会下拉列表展示该类型的所有启用的分类
+     * </p>
      */
     @GetMapping( "/list" )
     @ApiOperation( value = "查询某种类型的所有分类" )
-    public Result< List< Category > > listByType(
-            @RequestParam( name = "type", required = false ) Integer type ){
-        log.info( "查询分类, type = {}, 业务描述 = {}", type, TypeConstant.toDescription( type ) );
-        List< Category > categoryList = categoryService.listByType( type );
-        return Result.success( categoryList );
+    public Result< List< CategoryListItemVO > > listByType(
+            @RequestParam( name = "type", required = false )
+            Integer type
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员根据分类类型查询商品分类, 类型参数 = {}", operatorId, type );
+        List< CategoryListItemVO > categoryListItemVOList = categoryService.listByType( type );
+        return Result.success( categoryListItemVOList );
     }
 
 
