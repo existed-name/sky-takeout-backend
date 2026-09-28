@@ -18,7 +18,6 @@ import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.vo.category.CategoryListItemVO;
 import com.sky.vo.category.CategoryPageQueryItemVO;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -102,23 +101,30 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void update( CategoryDTO categoryDTO ){
-        Category category = new Category();
-        BeanUtils.copyProperties( categoryDTO, category );
-//        category.setUpdateTime( LocalDateTime.now() );
-//        category.setUpdateUser( BaseContext.getCurrentId() );
-        categoryMapper.update( category );
+    public void update( Long operatorId, CategoryDTO categoryDTO ){
+        /*
+            思路
+            业务检验字段 type
+            用 converter 把 dto 转 entity
+            修改后拿到修改行数判断数据是否存在
+            审计字段交给 AOP, 以后需要手动设置再使用 operatorId
+         */
+        CategoryType.throwIfInvalid( categoryDTO.getType() );
+        Category category = categoryConverter.toEntity( categoryDTO );
+        int row = categoryMapper.updateById( category );
+        NotFoundUtil.throwIfNotUpdated( row, MessageConstant.CATEGORY_NOT_FOUND );
     }
 
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void updateStatus( Long operatorId, Long id, Integer status ){
         EnableStatus.throwIfInvalid( status );
-        Category category = new Category();
-        category.setId( id );
-        category.setStatus( status );
+        Category category = Category.builder()
+                .id( id )
+                .status( status )
+                .build();
         // AOP 填写审计字段
-        int row = categoryMapper.update( category );
+        int row = categoryMapper.updateById( category );
         NotFoundUtil.throwIfNotUpdated( row, MessageConstant.CATEGORY_NOT_FOUND );
     }
 

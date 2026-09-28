@@ -28,7 +28,7 @@
     <!--
     修改分类信息,包括修改分类状态(启用/禁用)
     -->
-    <update id="update">
+    <update id="updateById">
         UPDATE category
         <set>
             <if test="category.type != null">type = #{category.type},</if>

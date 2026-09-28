@@ -33,9 +33,12 @@ public interface CategoryService {
     void deleteById( Long id );
 
     /**
-     * <b>管理端</b>: 修改分类信息
+     * 管理端修改商品分类信息
+     *
+     * @param operatorId 操作者 id
+     * @param categoryDTO 更新后的信息
      */
-    void update( CategoryDTO categoryDTO );
+    void update( Long operatorId, CategoryDTO categoryDTO );
 
     /**
      * 管理端修改商品分类启用状态

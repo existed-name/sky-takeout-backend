@@ -104,10 +104,13 @@ public class CategoryController {
     @PutMapping
     @ApiOperation( value = "修改分类信息" )
     @LogOperation( description = "修改分类信息", operationType = OperationType.UPDATE )
-    public Result< Void > update( @Validated( ValidationGroups.Update.class )
-            @RequestBody CategoryDTO categoryDTO ){
-        log.info( "修改分类信息: {}", categoryDTO );
-        categoryService.update( categoryDTO );
+    public Result< Void > update(
+            @Validated( ValidationGroups.Update.class )
+            @RequestBody CategoryDTO categoryDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员修改分类信息: {}", operatorId, categoryDTO );
+        categoryService.update( operatorId, categoryDTO );
         return Result.success();
     }
 
