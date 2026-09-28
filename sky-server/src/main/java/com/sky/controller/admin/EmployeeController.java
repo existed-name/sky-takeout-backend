@@ -151,17 +151,20 @@ public class EmployeeController {
     /**
      * 修改员工信息
      */
-    @PutMapping
+    @PutMapping( "/{id}" )
     @ApiOperation( "修改员工信息" )
     @LogOperation( description = "修改员工信息", operationType = OperationType.UPDATE )
     public Result< Void > update(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "员工 id 必须是正整数" )
+            Long id,
             @RequestBody
             @Validated( value = ValidationGroups.Update.class )
             EmployeeDTO employeeDTO
     ){
         Long operatorId = BaseContext.getCurrentId();
-        log.info( "id = {} 的管理员修改员工信息 = {}", operatorId, employeeDTO );
-        employeeService.update( operatorId, employeeDTO );
+        log.info( "id = {} 的管理员修改 id = {} 的员工信息 = {}", operatorId, id, employeeDTO );
+        employeeService.updateById( operatorId, id, employeeDTO );
         return Result.success(  );
     }
 }

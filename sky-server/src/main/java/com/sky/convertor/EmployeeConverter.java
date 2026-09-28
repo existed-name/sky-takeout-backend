@@ -51,6 +51,7 @@ public interface EmployeeConverter {
      * @param employeeDTO 员工信息 dto
      * @return 实体对象
      */
+    @Mapping( target = "id", ignore = true )
     @Mapping( target = "status", ignore = true )
     @Mapping( target = "password", ignore = true )
     @Mapping( target = "createTime", ignore = true )

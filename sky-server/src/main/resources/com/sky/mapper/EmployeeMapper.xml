@@ -45,19 +45,19 @@
     </select>
 
     <!--    修改员工信息-->
-    <update id="update">
+    <update id="updateById">
         UPDATE employee
         <set>
-            <if test="name != null and name != ''">name = #{name},</if>
-            <if test="username != null and username != ''">username = #{username},</if>
-            <if test="phone != null and phone != ''">phone = #{phone},</if>
-            <if test="sex != null and sex != ''">sex = #{sex},</if>
-            <if test="status != null">status = #{status},</if>
-            <if test="idNumber != null and idNumber != ''">id_number = #{idNumber},</if>
-            <if test="updateTime != null">update_time = #{updateTime},</if>
-            <if test="updateUser != null">update_user = #{updateUser},</if>
+            <if test="emp.name != null and emp.name != ''">name = #{emp.name},</if>
+            <if test="emp.username != null and emp.username != ''">username = #{emp.username},</if>
+            <if test="emp.phone != null and emp.phone != ''">phone = #{emp.phone},</if>
+            <if test="emp.sex != null and emp.sex != ''">sex = #{emp.sex},</if>
+            <if test="emp.status != null">status = #{emp.status},</if>
+            <if test="emp.idNumber != null and emp.idNumber != ''">id_number = #{emp.idNumber},</if>
+            <if test="emp.updateTime != null">update_time = #{emp.updateTime},</if>
+            <if test="emp.updateUser != null">update_user = #{emp.updateUser},</if>
         </set>
-        WHERE id = #{id}
+        WHERE id = #{emp.id}
     </update>
 
 </mapper>

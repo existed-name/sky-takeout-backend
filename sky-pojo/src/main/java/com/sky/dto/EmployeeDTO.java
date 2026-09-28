@@ -19,11 +19,12 @@ import java.io.Serializable;
 @ApiModel( description = "员工对象 DTO" )
 public class EmployeeDTO implements Serializable {
 
-    /** 员工表id */
-    @ApiModelProperty( value = "员工表id", example = "1" )
-    @NotNull( message = "员工 id 不能为空", groups = ValidationGroups.Update.class )
-    @Positive( message = "员工 id 必须是正整数", groups = ValidationGroups.Update.class )
-    private Long id;
+//    id 应该放在请求路径用于定位资源, 而不是和详细信息混在一起
+//    /** 员工表id */
+//    @ApiModelProperty( value = "员工表id", example = "1" )
+//    @NotNull( message = "员工 id 不能为空", groups = ValidationGroups.Update.class )
+//    @Positive( message = "员工 id 必须是正整数", groups = ValidationGroups.Update.class )
+//    private Long id;
 
     /** 员工用户名(唯一) */
     @ApiModelProperty( value = "员工用户名(唯一)", example = "admin", required = true )

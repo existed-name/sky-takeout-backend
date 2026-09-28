@@ -39,7 +39,7 @@ public interface EmployeeMapper {
      * 修改员工信息，包括修改分类状态(启用/禁用)
      */
     @AutoFill( value = OperationType.UPDATE )
-    int update( Employee employee );
+    int updateById( @Param( "emp" ) Employee employee );
 
     /**
      * 根据员工账号用户名查询登录相关的信息

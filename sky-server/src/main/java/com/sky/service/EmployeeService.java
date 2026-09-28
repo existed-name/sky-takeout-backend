@@ -7,6 +7,8 @@ import com.sky.result.PageResult;
 import com.sky.vo.EmployeeLoginVO;
 import com.sky.vo.employee.EmployeeVO;
 
+import javax.validation.constraints.Positive;
+
 public interface EmployeeService {
 
     /**
@@ -50,8 +52,9 @@ public interface EmployeeService {
     /**
      * 修改员工信息
      *
-     * @param operatorId 操作人 id
+     * @param operatorId  操作人 id
+     * @param id 待修改员工的 id
      * @param employeeDTO 需要更新的信息
      */
-    void update( Long operatorId, EmployeeDTO employeeDTO );
+    void updateById( Long operatorId, Long id, EmployeeDTO employeeDTO );
 }

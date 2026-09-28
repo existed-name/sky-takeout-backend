@@ -148,7 +148,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setId( id );
         employee.setStatus( status );
         // AOP 补充审计字段
-        int row = employeeMapper.update( employee );
+        int row = employeeMapper.updateById( employee );
         NotFoundUtil.throwIfNotUpdated( row, MessageConstant.EMPLOYEE_NOT_FOUND );
     }
 
@@ -162,7 +162,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void update( Long operatorId, EmployeeDTO employeeDTO ){
+    public void updateById( Long operatorId, Long id, EmployeeDTO employeeDTO ){
         /*
             * 修改信息逻辑
                 修改、创建员工, 都应该传入实体类而不是 dto
@@ -172,7 +172,8 @@ public class EmployeeServiceImpl implements EmployeeService {
             * 另外这里的 operatorId 只是起到提醒作用, 审计字段由 aop 自动填写
          */
         Employee employee = employeeConverter.toEntity( employeeDTO );
-        int row = employeeMapper.update( employee );
+        employee.setId( id );
+        int row = employeeMapper.updateById( employee );
         NotFoundUtil.throwIfNotUpdated( row, MessageConstant.EMPLOYEE_NOT_FOUND );
     }
 
