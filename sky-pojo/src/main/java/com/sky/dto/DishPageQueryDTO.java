@@ -3,6 +3,7 @@ package com.sky.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -12,21 +13,11 @@ import java.io.Serializable;
  * 菜品分页查询数据传输对象
  * 用于菜品信息的条件分页查询
  */
+@EqualsAndHashCode( callSuper = true )
 @Data
 @ApiModel(description = "菜品分页查询 DTO")
-public class DishPageQueryDTO implements Serializable {
+public class DishPageQueryDTO extends PageQueryDTO implements Serializable {
 
-    /**
-     * 起始页码
-     */
-    @ApiModelProperty(value = "起始页码", example = "1")
-    private Integer page;
-
-    /**
-     * 每页记录数
-     */
-    @ApiModelProperty(value = "每页记录数", example = "10")
-    private Integer pageSize;
 
     /**
      * 菜品名称
