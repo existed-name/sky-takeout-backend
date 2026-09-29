@@ -13,7 +13,9 @@ import com.sky.entity.DishFlavor;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.EnableStatus;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.CreationNotAllowedException;
 import com.sky.exception.NotFoundException;
+import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -52,10 +54,11 @@ public class DishServiceImpl implements DishService {
     private final SetmealCacheManager setmealCacheManager;
     private final DishCacheManager dishCacheManager;
     private final DishConverter dishConverter;
+    private final CategoryMapper categoryMapper;
 
 
     // ==================== 构造器 ====================
-    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, SetmealCacheManager setmealCacheManager, DishCacheManager dishCacheManager, DishConverter dishConverter ){
+    public DishServiceImpl( DishMapper dishMapper, DishFlavorMapper dishFlavorMapper, SetmealMapper setmealMapper, RedisTemplate< String, Object > redisTemplate, SetmealCacheManager setmealCacheManager, DishCacheManager dishCacheManager, DishConverter dishConverter, CategoryMapper categoryMapper ){
         this.dishMapper = dishMapper;
         this.dishFlavorMapper = dishFlavorMapper;
         this.setmealMapper = setmealMapper;
@@ -63,6 +66,7 @@ public class DishServiceImpl implements DishService {
         this.setmealCacheManager = setmealCacheManager;
         this.dishCacheManager = dishCacheManager;
         this.dishConverter = dishConverter;
+        this.categoryMapper = categoryMapper;
     }
 
 
@@ -74,12 +78,22 @@ public class DishServiceImpl implements DishService {
             * 业务逻辑
               1. 新增菜品, 同时新增菜品关联的口味
               2. 由于用户端使用缓存展示菜品数据, 改动菜品数据需要清理旧缓存
+              3. 我自己补了一个: 如果关联的分类被禁用, 则拒绝创建该菜品, 理论上前端创建菜品时只会展示启用的分类
             * 思路
               - converter 把 dto 转实体对象用来插入数据
               - 菜品字段设置默认值
               - 拿出 dto 里面的菜品口味, 设置关联的菜品 id 逻辑外键再写入数据库
               - 拼接 redis 键, 清理缓存
          */
+        Long categoryId = dishDTO.getCategoryId();
+        Integer categoryStatus = categoryMapper.selectStatusById( categoryId );
+        if ( categoryStatus == null ){
+            throw new NotFoundException( MessageConstant.CATEGORY_NOT_FOUND );
+        }
+        if ( EnableStatus.isDisabled( categoryStatus ) ){
+            throw new CreationNotAllowedException( MessageConstant.GOODS_CREATE_FAILED_BECAUSE_CATEGORY_DISABLED );
+        }
+
         Dish dish = dishConverter.toEntity( dishDTO );
 
         // 注意部分字段如果没有设置值，需要手动设置默认值，比如 status 需要显示启用
@@ -104,7 +118,7 @@ public class DishServiceImpl implements DishService {
             精细修改缓存: 只修改该菜品所在的分类缓存, 也就需要拿到 RedisKey = 业务前缀:分类 id
          */
         // categoryId 一定非空
-        dishCacheManager.deleteRedisKey( dishDTO.getCategoryId() );
+        dishCacheManager.deleteRedisKey( categoryId );
     }
 
     @Transactional( readOnly = true )

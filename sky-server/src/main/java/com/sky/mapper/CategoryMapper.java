@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -74,4 +75,18 @@ public interface CategoryMapper {
      * @return 分类列表数据
      */
     List< CategoryListItemVO > selectItemVOListByStatusAndType( @Param( "status" ) int status, @Param( "type" ) Integer type );
+
+    /**
+     * 查询某个商品的启用状态
+     *
+     * @param id 分类 id
+     * @return 启用状态{@link com.sky.enumeration.EnableStatus},
+     *          <b>分类不存在时返回 null</b>
+     */
+    @Select( """
+            SELECT status
+            FROM category
+            WHERE id = #{id}
+            """ )
+    Integer selectStatusById( @Param( "id" ) Long id );
 }

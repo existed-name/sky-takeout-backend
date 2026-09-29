@@ -80,6 +80,7 @@ public class MessageConstant {
     public static final String EMPLOYEE_NOT_FOUND = "该员工不存在";
     public static final String CATEGORY_TYPE_INVALID = "商品分类的类型参数无效";
     public static final String CATEGORY_NOT_FOUND = "该商品分类不存在";
+    public static final String GOODS_CREATE_FAILED_BECAUSE_CATEGORY_DISABLED = "商品关联的分类被禁用, 请启用分类或者选择其他分类再创建该商品";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )
