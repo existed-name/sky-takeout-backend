@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.file;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 上传文件的类型不支持

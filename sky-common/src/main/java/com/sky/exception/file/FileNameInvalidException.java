@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.file;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 无效文件名: 文件名为空、缺少文件后缀

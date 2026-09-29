@@ -2,11 +2,11 @@ package com.sky.service.impl;
 
 import com.sky.constant.FileConstant;
 import com.sky.constant.MessageConstant;
-import com.sky.exception.FileEmptyException;
-import com.sky.exception.FileTypeNotSupportedException;
-import com.sky.exception.FileUploadFailedException;
-import com.sky.exception.FileNameInvalidException;
-import com.sky.exception.FileSizeLimitExceededException;
+import com.sky.exception.file.FileEmptyException;
+import com.sky.exception.file.FileTypeNotSupportedException;
+import com.sky.exception.file.FileUploadFailedException;
+import com.sky.exception.file.FileNameInvalidException;
+import com.sky.exception.file.FileSizeLimitExceededException;
 import com.sky.service.FileService;
 import com.sky.utils.AliOssUtil;
 import lombok.extern.slf4j.Slf4j;

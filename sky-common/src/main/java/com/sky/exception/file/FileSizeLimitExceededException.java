@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.file;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 文件大小超出限制
