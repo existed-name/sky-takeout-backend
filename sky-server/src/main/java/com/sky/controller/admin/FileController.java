@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,11 +52,12 @@ public class FileController {
     @ApiOperation( value = "上传菜品图片" )
     @LogOperation( description = "上传菜品图片", operationType = OperationType.INSERT )
     public Result< String > uploadDishImage(
+            @RequestPart( name = "file", required = false )
             @NotNull( message = "上传的图片不能为空" )
             MultipartFile file
     ){
         Long operatorId = BaseContext.getCurrentId();
-        log.info( "id = {} 的管理员上传菜品图片: {}", operatorId, file.getName() );
+        log.info( "id = {} 的管理员上传菜品图片: {}", operatorId, file.getOriginalFilename() );
         String url = fileService.upload( file, FileConstant.BusinessDir.DISH );
         return Result.success( url );
     }
@@ -68,6 +70,7 @@ public class FileController {
     @ApiOperation( value = "上传套餐图片" )
     @LogOperation( description = "上传套餐图片", operationType = OperationType.INSERT )
     public Result< String > uploadSetmealImage(
+            @RequestPart( name = "file", required = false )
             @NotNull( message = "上传的图片不能为空" )
             MultipartFile file
     ){

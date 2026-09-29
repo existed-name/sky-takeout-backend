@@ -19,6 +19,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MultipartException;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -105,6 +106,14 @@ public class GlobalExceptionHandler {
         String message = extractBusinessMessage( exception );
         log.warn( "参数检验未通过: {}", message );
         return Result.error( message );
+    }
+
+    /**
+     * 处理上传文件格式不对的情况
+     */
+    @ExceptionHandler( value = MultipartException.class )
+    public Result<Void> handleFileMultipartException( MultipartException e) {
+        return Result.error("请求格式不正确，请使用 multipart/form-data 上传文件");
     }
 
     /**
