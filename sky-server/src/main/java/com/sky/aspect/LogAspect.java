@@ -13,8 +13,14 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 @Slf4j
 @Aspect
@@ -86,7 +92,22 @@ public class LogAspect {
         // 注解指定是否记录方法传参
         String requestParams = null;
         if ( logOperationAnnotation.recordParams() ){
-            requestParams = JSON.toJSONString( args );
+            try {
+                /*
+                    由于涉及 json 序列化, 应该筛选出可序列化的参数,
+                    文件、请求/响应、输入输出流不可序列化, 会报错
+                 */
+                Object[] logArgs = Arrays.stream( args )
+                        .filter( arg -> !( arg instanceof MultipartFile ) )
+                        .filter( arg -> !( arg instanceof ServletRequest ) )
+                        .filter( arg -> !( arg instanceof ServletResponse ) )
+                        .filter( arg -> !( arg instanceof InputStream ) )
+                        .filter( arg -> !( arg instanceof OutputStream ) )
+                        .toArray();
+                requestParams = JSON.toJSONString( logArgs );
+            } catch ( Exception e ){
+                log.error( "记录操作日志时, 请求参数序列化失败", e );
+            }
         }
 
         LocalDateTime createTime = LocalDateTime.now();
