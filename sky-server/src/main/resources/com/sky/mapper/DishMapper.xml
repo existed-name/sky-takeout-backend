@@ -25,15 +25,18 @@
         SELECT d.id, d.name, d.price, d.image, d.description, d.status, d.update_time
             , c.name AS categoryName
             <!-- 注意 category 的 name 字段取别名为 VO 对象的属性，让 Mybatis 能够识别、封装 -->
-        FROM dish AS d
+        FROM (
+            SELECT id, category_id, name, price, image, description, status, update_time
+            FROM dish
+            <where>
+                <!-- 注意字段全部带上表别名来限定，防止数据库认为字段模糊 -->
+                <if test="query.name != null and query.name.trim() != ''">AND name LIKE concat( '%', #{query.name}, '%' )</if>
+                <if test="query.categoryId != null">AND category_id = #{query.categoryId}</if>
+                <if test="query.status != null">AND status = #{query.status}</if>
+            </where>
+        ) AS d
         LEFT JOIN category AS c
         ON d.category_id = c.id
-        <where>
-            <!-- 注意字段全部带上表别名来限定，防止数据库认为字段模糊 -->
-            <if test="query.name != null and query.name.trim() != ''">AND d.name LIKE concat( '%', #{query.name}, '%' )</if>
-            <if test="query.categoryId != null">AND d.category_id = #{query.categoryId}</if>
-            <if test="query.status != null">AND d.status = #{query.status}</if>
-        </where>
         ORDER BY d.update_time DESC, d.id DESC
 
     </select>
