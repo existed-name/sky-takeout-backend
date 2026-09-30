@@ -27,7 +27,6 @@ import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -207,34 +206,42 @@ public class DishServiceImpl implements DishService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void update( DishDTO dishDTO ){
+    public void update( Long operatorId, Long id, DishDTO dishDTO ){
+        /*
+            整理思路
+            * 写操作需要清理旧缓存
+              - 而我这里是按分类做的缓存, 每个分类一部分缓存
+              - 于是受影响的分类都需要清理缓存
+              - 也就是修改前、后涉及到的分类
+            * 而更新菜品时
+              - 一个是菜品本身
+              - 一个是关联内容, 也就是菜品口味
+              - 关联内容直接覆盖, 删除旧数据、插入新数据, 避免一个一个对太麻烦
+            * 写操作顺序
+              - 问 ai 先写 Mysql 数据库, 后删 redis 缓存, 避免其他地方读的时候把数据库旧数据填入 redis
+         */
+        /*
+            全面更新 Dish 信息 = Dish( 包含 CategoryId ) + DishFlavors
+         */
+        Dish dish = dishConverter.toEntity( dishDTO );
+        dish.setId( id );
+        // 注意审计字段交给 AOP 填充
+        int affectedRow = dishMapper.update( dish );
+        NotFoundUtil.throwIfNotUpdated( affectedRow, MessageConstant.DISH_NOT_FOUND );
+
+        // 关联的子表 DishFlavor 删了重装更方便
+        dishFlavorMapper.deleteBatchByDishIds( List.of( id ) );
+        saveDishFlavors( id, dishDTO.getFlavors() );
+
         // 清除缓存: 需要知道修改前后的分类 id
-        Long dishId = dishDTO.getId();
-        Dish oldDishCategoryId = dishMapper.selectCategoryIdById( dishId );
-        Long oldCategoryId = oldDishCategoryId.getCategoryId();
+        Long oldCategoryId = dishMapper.selectCategoryIdById( id );
+
         dishCacheManager.deleteRedisKey( oldCategoryId );
         // 受影响的分类都需要清缓存
         Long newCategoryId = dishDTO.getCategoryId();
         if ( ! oldCategoryId.equals( newCategoryId ) ){
             dishCacheManager.deleteRedisKey( newCategoryId );
         }
-
-        /*
-            全面更新 Dish 信息 = Dish( 包含 CategoryId ) + DishFlavors
-         */
-        // Dish 主体直接改, 只需要注意空字段不写入数据库
-        Dish dish = new Dish();
-        BeanUtils.copyProperties( dishDTO, dish );
-        // 注意审计字段交给 AOP 填充
-        int affectedRow = dishMapper.update( dish );
-        if ( affectedRow <= 0 ){
-            // 修改行数 = 0 => DTO 的 DishId 不正确，
-            throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
-        }
-
-        // 关联的子表 DishFlavor 删了重装更方便
-        dishFlavorMapper.deleteBatchByDishIds( List.of( dishId ) );
-        saveDishFlavors( dishId, dishDTO.getFlavors() );
     }
 
     @Transactional( rollbackFor = Exception.class )
@@ -252,8 +259,8 @@ public class DishServiceImpl implements DishService {
 
         // RedisKey = 业务前缀:分类 id, 就需要查到分类 id
         // 由于下面对 setmealList 判空、return，放到最后可能清不了缓存
-        Dish dishCategoryId = dishMapper.selectCategoryIdById( id ); // 由于之前判断过修改行数，所以这里 dishId 一定有效
-        dishCacheManager.deleteRedisKey( dishCategoryId.getCategoryId() );
+        Long categoryId = dishMapper.selectCategoryIdById( id ); // 由于之前判断过修改行数，所以这里 dishId 一定有效
+        dishCacheManager.deleteRedisKey( categoryId );
 
         // 还要注意业务约束: 如果是禁用菜品，那也要禁用包含此菜品的套餐
         if ( StatusConstant.isDisable( status ) ){
@@ -336,7 +343,7 @@ public class DishServiceImpl implements DishService {
      * 提取 save, update 的公有逻辑 - 给某个菜品添加口味
      *
      * @param dishId 菜品 id, <strong>由调用方检验，确保传入合法参数</strong>
-     * @param dishFlavors 菜品口味链表, <strong>由于业务允许菜品口味为空，所以这里判空后不抛异常</strong>
+     * @param dishFlavors 菜品口味链表, <strong>null 或者空链表直接结束</strong>
      */
     private void saveDishFlavors( Long dishId, List< DishFlavor > dishFlavors ){
         // 空链表不能丢进 SQL

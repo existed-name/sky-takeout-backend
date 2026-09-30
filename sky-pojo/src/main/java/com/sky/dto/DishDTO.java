@@ -22,11 +22,11 @@ import java.util.List;
 @ApiModel( description = "菜品对象 DTO" )
 public class DishDTO implements Serializable {
 
-    /** 菜品表id(新增时选填，修改时必填) */
-    @ApiModelProperty( value = "菜品表id(选填)", example = "1" )
-    @NotNull( message = "菜品 id 不能为空", groups = ValidationGroups.Update.class )
-    @Positive( message = "菜品 id 必须是正整数", groups = ValidationGroups.Update.class )
-    private Long id;
+//    /** 菜品表id(新增时选填，修改时必填) */
+//    @ApiModelProperty( value = "菜品表id(选填)", example = "1" )
+//    @NotNull( message = "菜品 id 不能为空", groups = ValidationGroups.Update.class )
+//    @Positive( message = "菜品 id 必须是正整数", groups = ValidationGroups.Update.class )
+//    private Long id;
 
     /** 菜品名称(必填) */
     @ApiModelProperty( value = "菜品名称(必填)", example = "宫保鸡丁", required = true )

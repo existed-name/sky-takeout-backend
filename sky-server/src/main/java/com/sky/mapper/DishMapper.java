@@ -130,7 +130,7 @@ public interface DishMapper {
             FROM dish
             WHERE id = #{id}
             """ )
-    Dish selectCategoryIdById( @Param( "id" ) Long id );
+    Long selectCategoryIdById( @Param( "id" ) Long id );
 
     /**
      * 根据 id 批量查询菜品分类 id, 用于组装 RedisKey = 业务前缀:分类 id

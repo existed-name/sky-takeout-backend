@@ -127,11 +127,17 @@ public class DishController {
      */
     @ApiOperation( value = "修改菜品信息" )
     @LogOperation( description = "修改菜品信息", operationType = OperationType.UPDATE )
-    @PutMapping
-    public Result< Void > update( @Validated( value = ValidationGroups.Update.class )
-            @RequestBody DishDTO dishDTO ){
-        log.info( "修改菜品信息: {}", dishDTO );
-        dishService.update( dishDTO );
+    @PutMapping( "/{id}" )
+    public Result< Void > update(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "菜品 id 必须是正整数" )
+            Long id,
+            @Validated( value = ValidationGroups.Update.class )
+            @RequestBody DishDTO dishDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员修改菜品信息: {}", operatorId, dishDTO );
+        dishService.update( operatorId, id, dishDTO );
         return Result.success();
     }
 

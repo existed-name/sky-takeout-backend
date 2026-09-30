@@ -5,6 +5,7 @@ import com.sky.dto.DishPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishVO;
 
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 public interface DishService {
@@ -39,9 +40,13 @@ public interface DishService {
     DishVO getInfoById( Long id );
 
     /**
-     * <b>管理端</b>: 修改菜品信息
+     * 管理端修改菜品信息
+     *
+     * @param operatorId 操作者 id
+     * @param id 菜品 id
+     * @param dishDTO    更新后的菜品信息
      */
-    void update( DishDTO dishDTO );
+    void update( Long operatorId, Long id, DishDTO dishDTO );
 
     /**
      * <b>管理端</b>: 切换菜品状态(停售/起售)
