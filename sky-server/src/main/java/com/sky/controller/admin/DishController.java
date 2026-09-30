@@ -2,8 +2,8 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
-import com.sky.dto.DishDTO;
-import com.sky.dto.DishPageQueryDTO;
+import com.sky.dto.dish.DishDTO;
+import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;

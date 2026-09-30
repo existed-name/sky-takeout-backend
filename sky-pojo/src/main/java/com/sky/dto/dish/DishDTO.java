@@ -1,4 +1,4 @@
-package com.sky.dto;
+package com.sky.dto.dish;
 
 import com.sky.entity.DishFlavor;
 import com.sky.validation.ValidationGroups;

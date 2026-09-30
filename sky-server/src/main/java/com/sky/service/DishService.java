@@ -1,11 +1,10 @@
 package com.sky.service;
 
-import com.sky.dto.DishDTO;
-import com.sky.dto.DishPageQueryDTO;
+import com.sky.dto.dish.DishDTO;
+import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishVO;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 public interface DishService {

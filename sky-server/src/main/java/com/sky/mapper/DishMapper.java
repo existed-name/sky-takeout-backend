@@ -1,7 +1,7 @@
 package com.sky.mapper;
 
 import com.sky.annotation.AutoFill;
-import com.sky.dto.DishPageQueryDTO;
+import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.dto.GoodsStatusCount;
 import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
