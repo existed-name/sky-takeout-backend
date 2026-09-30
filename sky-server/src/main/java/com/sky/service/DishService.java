@@ -26,9 +26,12 @@ public interface DishService {
     PageResult pageQuery( DishPageQueryDTO dishPageQueryDTO );
 
     /**
-     * <b>管理端</b>: 批量删除菜品
+     * 管理端批量删除菜品
+     *
+     * @param operatorId 操作者 id, <b>当前为硬删除( 删除整条数据 ), 如果之后改为软删除( 打标记 ), 才需要记录操作者 id</b>
+     * @param ids        菜品 id
      */
-    void deleteByIds( List< Long> ids );
+    void deleteByIds( Long operatorId, List< Long > ids );
 
     /**
      * <b>管理端</b>: 根据 id 查询菜品

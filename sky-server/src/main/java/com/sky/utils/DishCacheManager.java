@@ -2,6 +2,7 @@ package com.sky.utils;
 
 import com.sky.constant.RedisConstant;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class DishCacheManager {
 
 
     // ==================== 构造器 ====================
+    @Autowired
     public DishCacheManager( RedisCacheCleaner redisCacheCleaner ){
         this.redisCacheCleaner = redisCacheCleaner;
     }
@@ -33,7 +35,8 @@ public class DishCacheManager {
 
     // ==================== 公有方法 ====================
     /**
-     * 删除特定的菜品 RedisKey = {@code 业务前缀:分类 id}
+     * 删除特定的菜品 RedisKey = {@code 业务前缀:分类 id},
+     * 内部调用{@link com.sky.utils.RedisCacheCleaner#generateAndDeleteKey}
      *
      * @param categoryId 菜品所属的分类 id, 用于拼接 RedisKey,
      *                   <b>为空时无法删除缓存, 打印日志后结束该方法</b>
@@ -50,7 +53,10 @@ public class DishCacheManager {
     }
 
     /**
-     * 批量删除特定的菜品 RedisKey = {@code 业务前缀:分类 id}
+     * 批量删除特定的菜品 RedisKey = {@code 业务前缀:分类 id},
+     * 内部调用{@link com.sky.utils.RedisCacheCleaner#generateAndDeleteKeys}
+     *
+     * @param categoryIdList 商品分类 id 链表
      */
     public void deleteRedisKeys( List< Long > categoryIdList ){
         redisCacheCleaner.generateAndDeleteKeys(

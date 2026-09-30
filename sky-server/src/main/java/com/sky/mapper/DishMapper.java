@@ -59,13 +59,20 @@ public interface DishMapper {
      * 用于删除菜品前检查是否起售
      * <br>
      * 更推荐 java.lang.Long，因为 count(*) 在 MySQL 里默认返回 BIGINT
+     *
+     * @param ids 菜品 id 链表
+     * @param status 启用状态{@link com.sky.enumeration.EnableStatus}
+     * @return 菜品数量
      */
-    long countByIdsAndStatus( @Param( "ids" ) List< Long> ids, @Param( "status" ) Integer status );
+    long countByIdsAndStatus( @Param( "ids" ) List< Long > ids, @Param( "status" ) Integer status );
 
     /**
      * 批量删除菜品
+     *
+     * @param ids 菜品 id 链表
+     * @return 删除的行数
      */
-    int deleteBatch( @Param( "ids" ) List< Long> ids );
+    int deleteBatch( @Param( "ids" ) List< Long > ids );
 
     /**
      * 根据 id 查询菜品信息
@@ -125,9 +132,10 @@ public interface DishMapper {
     /**
      * 根据 id 批量查询菜品分类 id, 用于组装 RedisKey = 业务前缀:分类 id
      *
-     * @return 只包含 categoryId 的 DishList
+     * @param ids 菜品 id 链表
+     * @return 这批菜品所属的分类 id
      */
-    List< Dish > selectCategoryIdsByIds( @Param( "ids" ) List< Long > ids );
+    List< Long > selectCategoryIdsByIds( @Param( "ids" ) List< Long > ids );
 
     /**
      * 判断该 id 对应的对象是否存在，如果存在返回 1，否则 0

@@ -47,6 +47,9 @@ public interface DishFlavorMapper {
 
     /**
      * 删除多个菜品对应的口味
+     *
+     * @param dishIds 菜品 id
+     * @return 删除行数
      */
     int deleteBatchByDishIds( @Param( "dishIds" ) List< Long> dishIds );
 

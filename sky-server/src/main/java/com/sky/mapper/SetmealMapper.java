@@ -37,6 +37,9 @@ public interface SetmealMapper {
      * 批量查询菜品关联的套餐
      * <br>
      * 用于删除菜品前检查是否有关联的套餐
+     *
+     * @param dishIds 菜品 id 链表
+     * @return 菜品关联的套餐数量
      */
     long countByDishIds( @Param( "dishIds" ) List< Long> dishIds );
 

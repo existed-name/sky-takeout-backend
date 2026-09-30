@@ -167,7 +167,7 @@
     根据 id 批量查询菜品分类 id, 用于组装 RedisKey = 业务前缀:分类 id
     Returns: 只包含 categoryId 的 DishList
     -->
-    <select id="selectCategoryIdsByIds" resultType="com.sky.entity.Dish">
+    <select id="selectCategoryIdsByIds" resultType="java.lang.Long">
         SELECT category_id
         FROM dish
         WHERE id IN

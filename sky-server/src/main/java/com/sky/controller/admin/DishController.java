@@ -97,9 +97,12 @@ public class DishController {
     @DeleteMapping
     public Result< Void > delete(
             @NotEmpty( message = "选中的菜品不能为空" )
-            @RequestParam( name = "ids" ) List< Long > ids ){
-        log.info( "批量删除菜品, ids = {}", ids );
-        dishService.deleteByIds( ids );
+            @RequestParam( name = "ids", required = true )
+            List< Long > ids
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员批量删除菜品, ids = {}", operatorId, ids );
+        dishService.deleteByIds( operatorId, ids );
         return Result.success();
     }
 

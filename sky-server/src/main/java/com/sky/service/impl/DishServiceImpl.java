@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -150,7 +151,7 @@ public class DishServiceImpl implements DishService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void deleteByIds( List< Long > ids ){
+    public void deleteByIds( Long operatorId, List< Long > ids ){
         /*
             思路1: ✅
                 - 先查目标菜品，检查有无 status = 1 的菜品，有则抛异常
@@ -161,23 +162,32 @@ public class DishServiceImpl implements DishService {
                 - 拿到返回的 affectedRows 跟 ids 数量对比，少了就抛异常
                 - 也就是已经完成删除，但还是提醒用户有不符合条件的数据(没删)
          */
+        // 提前结束, 同时避免 WHERE id IN( .. ) 报错
         if ( ids == null || ids.isEmpty() ){
             return;
         }
 
-        // 不需要 SQL 查对象、业务层再看链表数据，直接底层 count 计数即可
-        if ( dishMapper.countByIdsAndStatus( ids, StatusConstant.ENABLE ) > 0 ){
+        // 安全感
+        ids = ids.stream()
+                .filter( Objects::nonNull )
+                .filter( id -> id > 0L )
+                .distinct()
+                .toList();
+        if ( ids.isEmpty() ){
+            return;
+        }
+
+        // 不需要查对象，直接 count 计数
+        if ( dishMapper.countByIdsAndStatus( ids, EnableStatus.ENABLED.getStatus() ) > 0L ){
             throw new DeletionNotAllowedException( MessageConstant.DISH_ON_SALE );
         }
 
-        if ( setmealMapper.countByDishIds( ids ) > 0 ){
+        if ( setmealMapper.countByDishIds( ids ) > 0L ){
             throw new DeletionNotAllowedException( MessageConstant.DISH_BE_RELATED_BY_SETMEAL );
         }
 
-        // 精准删除 RedisKey, 需要知道该批菜品的 categoryId
-        List< Dish > dishCategoryIdList = dishMapper.selectCategoryIdsByIds( ids );
-        // WHERE id IN( .. ) 不会返回 null
-        List< Long > categoryIds = dishCategoryIdList.stream().map( Dish::getCategoryId ).toList();
+        // 精准删除 RedisKey, 需要知道该批菜品的 categoryId, 然后删除这些分类的缓存
+        List< Long > categoryIds = dishMapper.selectCategoryIdsByIds( ids );
         dishCacheManager.deleteRedisKeys( categoryIds );
 
         // 先删子表，后删主表
