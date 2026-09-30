@@ -78,8 +78,11 @@ public interface DishMapper {
      * 根据 id 查询菜品信息
      * <br>
      * DishVO = Dish + CategoryName + DishFlavorList, 这里只查 Dish、CategoryName，之后单独查 DishFlavor 在业务层组装
+     *
+     * @param id 菜品 id
+     * @return 菜品信息展示对象, <b>不存在时返回 null</b>
      */
-    DishVO selectDishVOByIdWithoutFlavors( @Param( "id" ) Long id );
+    DishVO selectVOByIdWithoutFlavors( @Param( "id" ) Long id );
 
     /**
      * 修改菜品信息

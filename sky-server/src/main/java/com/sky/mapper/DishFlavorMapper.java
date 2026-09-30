@@ -37,6 +37,9 @@ public interface DishFlavorMapper {
 
     /**
      * 查询某种菜品对应的口味
+     *
+     * @param dishId 菜品 id
+     * @return 该菜品关联的口味, 菜品不存在、无关联口味时返回空链表
      */
     @Select( """
             SELECT id, dish_id, name, value

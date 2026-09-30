@@ -34,7 +34,7 @@ public interface DishService {
     void deleteByIds( Long operatorId, List< Long > ids );
 
     /**
-     * <b>管理端</b>: 根据 id 查询菜品
+     * 管理端查询指定的菜品信息
      */
     DishVO getInfoById( Long id );
 

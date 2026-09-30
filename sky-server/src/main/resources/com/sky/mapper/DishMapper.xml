@@ -78,14 +78,17 @@
      * <br>
      * DishVO = Dish + CategoryName + DishFlavorList, 这里只查 Dish、CategoryName，之后单独查 DishFlavor 在业务层组装
      -->
-    <select id="selectDishVOByIdWithoutFlavors" resultType="com.sky.vo.DishVO">
-        SELECT d.id, d.name, d.category_id, d.price, d.image, d.description, d.status, d.update_time
+    <select id="selectVOByIdWithoutFlavors" resultType="com.sky.vo.DishVO">
+        SELECT d.id, d.name, d.price, d.image, d.description
             , c.name AS categoryName
-            <!-- 注意 category 的 name 字段取别名为 VO 对象的属性，让 Mybatis 能够识别、封装 -->
-        FROM dish AS d
+        <!-- 注意 category 的 name 字段取别名为 VO 对象的属性，让 Mybatis 能够识别、封装 -->
+        FROM (
+            SELECT id, category_id, name, price, image, description
+            FROM dish
+            WHERE id = #{id}
+        ) AS d
         LEFT JOIN category AS c
         ON d.category_id = c.id
-        WHERE d.id = #{id}
     </select>
 
     <!--

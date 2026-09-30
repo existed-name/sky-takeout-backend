@@ -1,6 +1,5 @@
 package com.sky.service.impl;
 
-import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.RedisConstant;
 import com.sky.constant.StatusConstant;
@@ -22,6 +21,7 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.utils.DishCacheManager;
+import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishVO;
@@ -89,9 +89,8 @@ public class DishServiceImpl implements DishService {
          */
         Long categoryId = dishDTO.getCategoryId();
         Integer categoryStatus = categoryMapper.selectStatusById( categoryId );
-        if ( categoryStatus == null ){
-            throw new NotFoundException( MessageConstant.CATEGORY_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotFound( categoryStatus, MessageConstant.CATEGORY_NOT_FOUND );
+
         if ( EnableStatus.isDisabled( categoryStatus ) ){
             throw new CreationNotAllowedException( MessageConstant.GOODS_CREATE_FAILED_BECAUSE_CATEGORY_DISABLED );
         }
@@ -199,11 +198,9 @@ public class DishServiceImpl implements DishService {
     @Transactional( readOnly = true )
     @Override
     public DishVO getInfoById( Long id ){
-        DishVO dishVO = dishMapper.selectDishVOByIdWithoutFlavors( id );
+        DishVO dishVO = dishMapper.selectVOByIdWithoutFlavors( id );
         // 注意 MyBatis 单条查询可能返回 null( 多条查询返回空链表 )
-        if ( dishVO == null ){
-            throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotFound( dishVO, MessageConstant.DISH_NOT_FOUND );
         dishVO.setFlavors( dishFlavorMapper.selectByDishId( id ) );
         return dishVO;
     }
