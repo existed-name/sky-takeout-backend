@@ -22,7 +22,7 @@
     -->
     <select id="selectItemVOByQueryWithoutFlavors" resultType="com.sky.vo.dish.DishPageQueryItemVO">
 
-        SELECT d.id, d.name, d.price, d.image, d.description, d.status, d.update_time
+        SELECT d.id, d.category_id, d.name, d.price, d.image, d.description, d.status, d.update_time
             , c.name AS categoryName
             <!-- 注意 category 的 name 字段取别名为 VO 对象的属性，让 Mybatis 能够识别、封装 -->
         FROM (
@@ -79,7 +79,7 @@
      * DishVO = Dish + CategoryName + DishFlavorList, 这里只查 Dish、CategoryName，之后单独查 DishFlavor 在业务层组装
      -->
     <select id="selectVOByIdWithoutFlavors" resultType="com.sky.vo.DishVO">
-        SELECT d.id, d.name, d.price, d.image, d.description
+        SELECT d.id, d.category_id, d.name, d.price, d.image, d.description
             , c.name AS categoryName
         <!-- 注意 category 的 name 字段取别名为 VO 对象的属性，让 Mybatis 能够识别、封装 -->
         FROM (

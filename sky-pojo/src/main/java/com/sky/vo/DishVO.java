@@ -32,9 +32,9 @@ public class DishVO implements Serializable {
     @ApiModelProperty(value = "菜品名称", example = "宫保鸡丁")
     private String name;
 
-//    /** 菜品分类id */
-//    @ApiModelProperty(value = "菜品分类id", example = "1")
-//    private Long categoryId;
+    /** 菜品分类id */
+    @ApiModelProperty(value = "菜品分类id", example = "1")
+    private Long categoryId;
 
     /** 菜品价格 */
     @ApiModelProperty(value = "菜品价格", example = "38.00")
