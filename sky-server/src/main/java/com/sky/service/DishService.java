@@ -18,7 +18,10 @@ public interface DishService {
     void saveWithFlavors( Long operatorId, DishDTO dishDTO );
 
     /**
-     * <b>管理端</b>: 条件分页查询菜品
+     * 管理端条件分页查询菜品
+     *
+     * @param dishPageQueryDTO 查询条件
+     * @return 分页包装列表数据
      */
     PageResult pageQuery( DishPageQueryDTO dishPageQueryDTO );
 

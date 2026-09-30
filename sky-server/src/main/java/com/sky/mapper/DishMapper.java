@@ -6,6 +6,7 @@ import com.sky.dto.GoodsStatusCount;
 import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
+import com.sky.vo.dish.DishPageQueryItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
@@ -50,7 +51,7 @@ public interface DishMapper {
      * <br>
      * 排序规则: 菜品修改时间降序、菜品 id 降序
      */
-    List< DishVO > selectDishVOByQueryWithoutFlavors( @Param( "dto" ) DishPageQueryDTO dishPageQueryDTO );
+    List< DishPageQueryItemVO > selectItemVOByQueryWithoutFlavors( @Param( "query" ) DishPageQueryDTO dishPageQueryDTO );
 
     /**
      * 批量查询某种状态的菜品数量(比如正在起售的菜品数量)

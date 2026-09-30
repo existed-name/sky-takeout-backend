@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,8 +21,8 @@ import java.util.List;
 @ApiModel(description = "分页查询结果")
 public class PageResult implements Serializable {
 
-    /** 总记录数 */
-    @ApiModelProperty(value = "总记录数", example = "100")
+    /** 分页前, 满足筛选条件的总记录数 */
+    @ApiModelProperty(value = "分页前, 满足筛选条件的总记录数", example = "100")
     private long total;
 
     /** 当前页数据 List 集合 */

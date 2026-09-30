@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -37,7 +38,7 @@ import java.util.List;
 @Slf4j
 @Api( tags = "菜品管理" )
 @RestController( "adminDishController" )
-@RequestMapping( "/admin/dish" )
+@RequestMapping( "/admin/dishes" )
 @Validated
 public class DishController {
     // ==================== 常量 ====================
@@ -78,11 +79,12 @@ public class DishController {
      * 条件分页查询菜品
      */
     @ApiOperation( value = "条件分页查询菜品" )
-    @GetMapping( "/page" )
+    @GetMapping
     public Result< PageResult > page(
-            @NotNull( message = "分页查询参数不能为空" )
-            DishPageQueryDTO dishPageQueryDTO ){
-        log.info( "条件分页查询菜品, 查询参数: {}", dishPageQueryDTO );
+            @Valid DishPageQueryDTO dishPageQueryDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员条件分页查询菜品, 查询参数 = {}", operatorId, dishPageQueryDTO );
         PageResult dishList = dishService.pageQuery( dishPageQueryDTO );
         return Result.success( dishList );
     }
