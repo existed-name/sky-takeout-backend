@@ -6,6 +6,7 @@ import com.sky.dto.GoodsStatusCount;
 import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
+import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
@@ -101,11 +102,14 @@ public interface DishMapper {
 
     /**
      * 根据分类 id 查询菜品
-     * 按照修改时间降序排列，修改时间相同按照 id 降序
+     * <p>
+     *     按照修改时间降序排列，修改时间相同按照 id 降序
+     * </p>
      *
-     * @return 参数为空，查到所有菜品；参数无效则查询为空
+     * @param categoryId 分类 id
+     * @return 菜品数据项列表, 参数为空，查询所有菜品；参数无效则查询为空列表
      */
-    List< DishVO > selectDishVOByCategoryId( @Param( "categoryId" ) Long categoryId );
+    List< DishListItemVO > listItemVOsByCategoryIdWithoutFlavors( @Param( "categoryId" ) Long categoryId );
 
     /**
      * 批量查询菜品状态 {@link com.sky.entity.Dish}

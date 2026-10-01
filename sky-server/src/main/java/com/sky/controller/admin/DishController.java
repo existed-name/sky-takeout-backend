@@ -11,6 +11,7 @@ import com.sky.result.Result;
 import com.sky.service.DishService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.DishVO;
+import com.sky.vo.dish.DishListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -167,12 +168,16 @@ public class DishController {
      */
     @ApiOperation( value = "根据分类 id 查询菜品" )
     @GetMapping( "/list" )
-    public Result< List< DishVO > > list(
+    public Result< List< DishListItemVO > > list(
             @RequestParam( name = "categoryId", required = false )
-            Long categoryId ){
-        log.info( "查询分类 id = {} 的菜品", categoryId );
-        List< DishVO > dishVOList = dishService.listByCategoryId( categoryId );
-        return Result.success( dishVOList );
+            // 非判空类型的注解只对非空参数起作用
+            @Positive( message = "分类 id 必须是正整数" )
+            Long categoryId
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员查询分类 id = {} 的菜品", operatorId, categoryId );
+        List< DishListItemVO > dishListItemVOList = dishService.listByCategoryId( categoryId );
+        return Result.success( dishListItemVOList );
     }
 
 

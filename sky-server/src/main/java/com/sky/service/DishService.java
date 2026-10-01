@@ -4,6 +4,7 @@ import com.sky.dto.dish.DishDTO;
 import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishVO;
+import com.sky.vo.dish.DishListItemVO;
 
 import java.util.List;
 
@@ -57,11 +58,15 @@ public interface DishService {
     void updateStatusById( Long operatorId, Long id, Integer status );
 
     /**
-     * <b>管理端</b>: 根据分类 id 查询菜品 VO( 包含菜品口味 )
-     * <br>
-     * <b>并没有检验参数</b>: 由于分类 id 非必须，这里参数可能为空，就会查到所有菜品；参数无效则查询为空
+     * 管理端查询某种分类对应的菜品列表( 不包含菜品口味 )
+     * <p>
+     *      业务场景: 新增套餐需要添加菜品, 从各个菜品分类选择菜品
+     * </p>
+     *
+     * @param categoryId 分类 id, 选填, 为空时查询所有菜品；参数无效则查询为空
+     * @return 菜品数据项列表
      */
-    List< DishVO > listByCategoryId( Long categoryId );
+    List< DishListItemVO > listByCategoryId( Long categoryId );
 
     /**
      * <b>用户端</b>: 根据分类 id 查询菜品 VO( 包含菜品口味 )

@@ -25,6 +25,7 @@ import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishVO;
+import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -317,9 +318,12 @@ public class DishServiceImpl implements DishService {
 
     @Transactional( readOnly = true )
     @Override
-    public List< DishVO > listByCategoryId( Long categoryId ){
-        List< DishVO > dishVOList = dishMapper.selectDishVOByCategoryId( categoryId );
-        return setFlavorsToDishVOList( dishVOList );
+    public List< DishListItemVO > listByCategoryId( Long categoryId ){
+        /*
+            管理端需要查看实时数据, 不做缓存, 除非特殊需要
+         */
+        List< DishListItemVO > dishListItemVOList = dishMapper.listItemVOsByCategoryIdWithoutFlavors( categoryId );
+        return dishListItemVOList;
     }
 
     @Transactional( readOnly = true )
