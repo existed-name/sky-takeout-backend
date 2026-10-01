@@ -92,6 +92,9 @@ public interface DishMapper {
 
     /**
      * 切换菜品状态(停售/起售)
+     *
+     * @param dish 设置了 id, status 字段的菜品实体, 由 AOP 填写审计字段
+     * @return 修改行数, <b>当数据不存在时返回 0</b>
      */
     @AutoFill( OperationType.UPDATE )
     int updateStatusById( @Param( "dish" ) Dish dish );

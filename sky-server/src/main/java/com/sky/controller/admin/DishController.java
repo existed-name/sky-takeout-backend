@@ -4,6 +4,7 @@ import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
 import com.sky.dto.dish.DishDTO;
 import com.sky.dto.dish.DishPageQueryDTO;
+import com.sky.dto.dish.DishStatusDTO;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
@@ -146,14 +147,18 @@ public class DishController {
      */
     @ApiOperation( value = "切换菜品状态(停售/起售)" )
     @LogOperation( description = "切换菜品状态", operationType = OperationType.UPDATE )
-    @PutMapping( "/status/{status}" )
+    @PutMapping( "/{id}/status" )
     public Result< Void > updateStatus(
-            @RequestParam( name = "id" ) @NotNull( message = "菜品 id 不能为空" )
-            @Positive( message = "菜品 id 必须是正整数" ) Long id,
-            @PathVariable( name = "status" )
-            @NotNull( message = "菜品状态不能为空" ) Integer status ){
-        log.info( "修改 id = {} 的菜品状态为 {}", id, status );
-        dishService.updateStatusById( id, status );
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "菜品 id 必须是正整数" )
+            Long id,
+            @RequestBody @Valid
+            DishStatusDTO dishStatusDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        Integer status = dishStatusDTO.getStatus();
+        log.info( "id = {} 的管理员修改 id = {} 的菜品状态为 {}", operatorId, id, status );
+        dishService.updateStatusById( operatorId, id, status );
         return Result.success();
     }
 

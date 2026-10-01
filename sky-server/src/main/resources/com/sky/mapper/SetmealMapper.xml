@@ -5,6 +5,15 @@
 <mapper namespace="com.sky.mapper.SetmealMapper">
 
     <!--
+    数据库表完整字段, 可供查询完整实体类复用
+    -->
+    <sql id="BaseColumns">
+        id, category_id, name, price,
+        status, description, image,
+        create_time, update_time, create_user, update_user
+    </sql>
+
+    <!--
      * 批量查询菜品关联的套餐
      * <br>
      * 用于删除菜品前检查是否有关联的套餐
@@ -23,11 +32,10 @@
     <!--
     查询某种菜品对应的套餐
     -->
-    <select id="selectByDishId" resultType="com.sky.entity.Setmeal">
-        SELECT id, category_id, name, price, status, description, image, create_time, update_time, create_user, update_user
+    <select id="selectIdProjectionsByDishId" resultType="com.sky.projection.setmeal.SetmealIdProjection">
+        SELECT id, category_id
         FROM setmeal
-        WHERE id IN
-        (
+        WHERE id IN (
             SELECT setmeal_id
             FROM setmeal_dish
             WHERE dish_id = #{dishId}

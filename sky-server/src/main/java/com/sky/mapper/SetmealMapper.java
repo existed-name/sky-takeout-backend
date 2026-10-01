@@ -5,6 +5,7 @@ import com.sky.dto.GoodsStatusCount;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
+import com.sky.projection.setmeal.SetmealIdProjection;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Insert;
@@ -44,16 +45,22 @@ public interface SetmealMapper {
     long countByDishIds( @Param( "dishIds" ) List< Long> dishIds );
 
     /**
-     * 查询某种菜品对应的套餐
+     * 查询包含这个菜品的所有套餐的 id、对应的分类 id
+     *
+     * @param dishId 菜品 id
+     * @return 套餐 id 投影对象
      */
-    List< Setmeal > selectByDishId( @Param( "dishId" ) Long dishId );
+    List< SetmealIdProjection > selectIdProjectionsByDishId( @Param( "dishId" ) Long dishId );
 
     /**
      * 修改多个套餐的状态
      * <br>
      * 本来想 SET 应该不能像 VALUES 那样设置多条不同值，然后 AI 提醒还可以用 CASE-WHEN，这样就可以每个对象单独设置自己的 status 了
      * <br>
-     * 注意: <b>由于 AOP 暂不支持批量设置对象的审计字段，所有交给调用方设置审计字段</b>
+     * 注意: <b>AOP 暂不支持批量设置对象的审计字段，交给调用方设置审计字段</b>
+     *
+     * @param setmealList 设置了 id、status、审计字段的套餐对象链表
+     * @return 修改行数
      */
 //    @AutoFill( OperationType.UPDATE )
     // TODO: 优化为 AOP 批量填写审计字段而不是只针对单个对象

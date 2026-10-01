@@ -40,7 +40,7 @@ public class NotFoundUtil {
      * 根据 id 修改数据, 修改行数为 0 时( 数据不存在 )抛出业务异常
      *
      * @param row 修改行数
-     * @param message 抛出异常的信息
+     * @param message 抛出的异常信息, 由调用方在{@link com.sky.constant.MessageConstant}中指定
      * @throws NotFoundException 当修改行数为 0 时抛出
      */
     public static void throwIfNotUpdated( int row, String message ){

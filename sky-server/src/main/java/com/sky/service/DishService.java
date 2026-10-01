@@ -48,9 +48,13 @@ public interface DishService {
     void update( Long operatorId, Long id, DishDTO dishDTO );
 
     /**
-     * <b>管理端</b>: 切换菜品状态(停售/起售)
+     * 管理端修改菜品起售状态(停售/起售)
+     *
+     * @param operatorId 操作者 id
+     * @param id 菜品 id
+     * @param status    更新后的菜品起售状态
      */
-    void updateStatusById( Long id, Integer status );
+    void updateStatusById( Long operatorId, Long id, Integer status );
 
     /**
      * <b>管理端</b>: 根据分类 id 查询菜品 VO( 包含菜品口味 )

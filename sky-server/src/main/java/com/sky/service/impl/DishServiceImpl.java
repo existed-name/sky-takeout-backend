@@ -3,7 +3,6 @@ package com.sky.service.impl;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.RedisConstant;
 import com.sky.constant.StatusConstant;
-import com.sky.context.BaseContext;
 import com.sky.convertor.DishConverter;
 import com.sky.dto.dish.DishDTO;
 import com.sky.dto.dish.DishPageQueryDTO;
@@ -11,13 +10,14 @@ import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.EnableStatus;
+import com.sky.enumeration.GoodsStatus;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.CreationNotAllowedException;
-import com.sky.exception.NotFoundException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
+import com.sky.projection.setmeal.SetmealIdProjection;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.utils.DishCacheManager;
@@ -246,61 +246,73 @@ public class DishServiceImpl implements DishService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void updateStatusById( Long id, Integer status ){
-        StatusConstant.validateStatus( status );
-        Dish dish = new Dish();
-        dish.setId( id );
-        dish.setStatus( status );
+    public void updateStatusById( Long operatorId, Long id, Integer status ){
+        /*
+            写操作通用逻辑
+            更新关联数据/子表、更新主表( 这俩看依赖顺序 ), 在最后清理关联的所有缓存
+
+            补充完整思路
+            主线还是更新菜品状态
+            而牵扯到的就是分类、套餐,
+            更新菜品状态肯定不能干扰分类里面的其他菜品, 所以不管菜品所在的分类
+            而菜品、套餐是捆绑销售的, 具体说套餐是各个菜品组成的, 1 个菜品卖不了, 那套餐肯定也不能卖, 也禁用了
+
+            缓存
+            菜品 →
+              菜品本体信息、关联口味是组装在一起的, 然后把一整个分类的菜品列表存进缓存
+              于是修改该菜品就会影响所在分类的整个列表
+              所以就把这个分类的缓存删掉
+            套餐 →
+              套餐本体信息、包含的菜品信息是拆开的, 分开管理
+              1 个分类对应 1 个套餐本体信息列表, 而 1 个套餐对应 1 个菜品信息列表
+              于是修改某个套餐, 就需要删除所在分类的列表缓存、对应的菜品信息列表缓存
+         */
+        GoodsStatus.throwIfInvalid( status );
+
+        Dish dish = Dish.builder()
+                .id( id )
+                .status( status )
+                .build();
         // AOP 填写审计字段
         int affectedRow = dishMapper.updateStatusById( dish );
-        if ( affectedRow <= 0 ){
-            throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotUpdated( affectedRow, MessageConstant.DISH_NOT_FOUND );
 
-        // RedisKey = 业务前缀:分类 id, 就需要查到分类 id
-        // 由于下面对 setmealList 判空、return，放到最后可能清不了缓存
-        Long categoryId = dishMapper.selectCategoryIdById( id ); // 由于之前判断过修改行数，所以这里 dishId 一定有效
-        dishCacheManager.deleteRedisKey( categoryId );
-
-        // 还要注意业务约束: 如果是禁用菜品，那也要禁用包含此菜品的套餐
-        if ( StatusConstant.isDisable( status ) ){
+        // 业务约束: 如果是禁用菜品，那也要禁用包含此菜品的套餐
+        if ( EnableStatus.isDisabled( status ) ){
             /*
-            // 思路 1: 直接传 setmeal 对象，修改 status
-            // 但是发现它没有 dishId 属性
-            // 而且 1 个 dishId 对应多个 setmeal
-            Setmeal setmeal = new Setmeal();
-            setmeal.sestDishId( id );
-            setmeal.setStatus( StatusConstant.DISABLE );
-            setmealMapper.updateBatchStatusByDishId( setmeal );
+                思路 2:
+                先拿到 dishId 对应的所有 setmeal, 修改后塞回数据库
+                但是这样就用不了 AOP 了(针对单个对象), 需要手动设置审计字段
+                怪不得教程循环调用 Mapper 的单个对象 update
+                不过我觉得也可以修改 AOP，让它支持链表批量修改审计字段
              */
+            List< SetmealIdProjection > setmealIdProjections = setmealMapper.selectIdProjectionsByDishId( id );
+            boolean isBlank = setmealIdProjections == null || setmealIdProjections.isEmpty();
 
-            // 思路 2: 先拿到 dishId 对应的所有 setmeal, 修改后塞回数据库
-            // 但是这样就用不了 AOP 了(针对单个对象), 需要手动设置审计字段
-            // 怪不得教程循环调用 Mapper 的单个对象 update
-            List< Setmeal > setmealList = setmealMapper.selectByDishId( id );
-            if ( setmealList == null || setmealList.isEmpty() ){
-                // 经 AI 提醒还要防止空数据入库
-                return;
+            // 由于最后需要清理菜品缓存, 所以这里不能判空后 return
+            // 空只能说明菜品没有关联套餐, 不能说明这个菜品不存在
+            if ( ! isBlank ){
+                LocalDateTime now = LocalDateTime.now();
+                List< Setmeal > setmealList = setmealIdProjections.stream()
+                        .map( setmealIdProjection -> Setmeal.builder()
+                                .id( setmealIdProjection.getId() )
+                                .status( EnableStatus.DISABLED.getStatus() )
+                                .updateTime( now )
+                                .updateUser( operatorId )
+                                .build()
+                        )
+                        .toList();
+                setmealMapper.updateBatchStatusByIds( setmealList );
+
+                // TODO: 这里也可以拆成 setmealMapper.selectIdsByDishId 和 selectCategoryIdsByDishId 分开查套餐、套餐分类的 id
+                List< Long > setmealCategoryIds = setmealIdProjections.stream().map( SetmealIdProjection::getCategoryId ).toList();
+                List< Long > setmealIds = setmealIdProjections.stream().map( SetmealIdProjection::getId ).toList();
+                setmealCacheManager.deleteRedisKeys( setmealCategoryIds, setmealIds );
             }
-            setmealList.forEach( setmeal -> {
-                setmeal.setStatus( StatusConstant.DISABLE );
-                setmeal.setUpdateTime( LocalDateTime.now() );
-                setmeal.setUpdateUser( BaseContext.getCurrentId() );
-                // 不过我觉得也可以修改 AOP，让它支持链表批量修改审计字段
-            } );
-            setmealMapper.updateBatchStatusByIds( setmealList );
-
-            /*
-                注意关联缓存:
-                * 禁用菜品 -> 禁用套餐 -> 修改套餐状态 -> 需要拿到 categoryId, setmealId
-             */
-            // TODO: 如果 setmealMapper.selectByDishId 返回不完整的 setmeal 对象，这里需要调整
-            List< Long > categoryIds = setmealList.stream().map( Setmeal::getCategoryId ).toList();
-            List< Long > setmealIds = setmealList.stream().map( Setmeal::getId ).toList();
-            // 调 SetmealServiceImpl 的 private / default 清除缓存方法 | 内部再写重复方法 | 放入 RedisConstant
-            // 最终提取业务工具类
-            setmealCacheManager.deleteRedisKeys( categoryIds, setmealIds );
         }
+
+        Long categoryId = dishMapper.selectCategoryIdById( id );
+        dishCacheManager.deleteRedisKey( categoryId );
     }
 
     @Transactional( readOnly = true )

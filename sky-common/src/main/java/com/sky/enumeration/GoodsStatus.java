@@ -1,5 +1,7 @@
 package com.sky.enumeration;
 
+import com.sky.constant.MessageConstant;
+import com.sky.exception.status.GoodsStatusInvalidException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -41,7 +43,7 @@ public enum GoodsStatus {
      * @throws IllegalArgumentException 当商品状态参数无效时
      */
     public static GoodsStatus toInstance( Integer status ){
-        throwIfInvalid( status );
+        requireValid( status );
         return statusToInstanceMap.get( status );
     }
 
@@ -69,10 +71,24 @@ public enum GoodsStatus {
      * @param status 状态数值
      * @throws IllegalArgumentException 当商品状态参数无效时
      */
-    public static void throwIfInvalid( Integer status ){
+    private static void requireValid( Integer status ){
         if ( ! isValid( status ) ){
             throw new IllegalArgumentException(
                     String.format( "无效的商品状态: status = %s", status )
+            );
+        }
+    }
+
+    /**
+     * 检验商品状态是否有效, 无效则抛出业务异常
+     *
+     * @param status 状态数值
+     * @throws GoodsStatusInvalidException 当商品状态参数无效时
+     */
+    public static void throwIfInvalid( Integer status ){
+        if ( ! isValid( status ) ){
+            throw new GoodsStatusInvalidException(
+                    MessageConstant.GOODS_STATUS_INVALID
             );
         }
     }

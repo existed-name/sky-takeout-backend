@@ -101,7 +101,7 @@ public enum EnableStatus {
     }
 
     /**
-     * 判判断是否是禁用状态
+     * 判断是否是禁用状态
      */
     public static boolean isDisabled( Integer status ){
         return DISABLED.getStatus() == status;
