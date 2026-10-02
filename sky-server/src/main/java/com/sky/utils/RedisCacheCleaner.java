@@ -4,6 +4,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -88,7 +89,7 @@ public class RedisCacheCleaner {
     /**
      * 调用方指定生成 Key 的方法、多份原始材料，该方法批量组装 Key 后删除
      * <p>
-     *     内部会对 key 列表去重，减少网络开销
+     *     内部会对 key 列表去除 null 元素、去重，减少网络开销
      * </p>
      *
      * @param redisKeyGenerator 方法引用，主要来自{@link com.sky.constant.RedisConstant}的组装 Key 方法
@@ -99,13 +100,14 @@ public class RedisCacheCleaner {
      */
     public < T > void generateAndDeleteKeys( Function< T, String > redisKeyGenerator, List< T > ids ){
         validateRedisKeyGenerator( redisKeyGenerator );
-        if ( ids == null || ids.isEmpty() ){
+        if ( ListUtils.isEmpty( ids ) ){
             return;
         }
 
         List< String > redisKeys = ids.stream()
-                .map( redisKeyGenerator )
+                .filter( Objects::nonNull )
                 .distinct()
+                .map( redisKeyGenerator )
                 .toList();
         redisTemplate.delete( redisKeys );
     }

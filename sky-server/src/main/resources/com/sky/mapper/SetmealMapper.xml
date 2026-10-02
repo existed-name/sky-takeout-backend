@@ -228,4 +228,16 @@
             </foreach>
     </select>
 
+    <!--
+    查询一批套餐所属的分类 id
+    -->
+    <select id="selectCategoryIdsByIds" resultType="java.lang.Long">
+        SELECT category_id
+        FROM setmeal
+        WHERE id IN
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                id
+            </foreach>
+    </select>
+
 </mapper>

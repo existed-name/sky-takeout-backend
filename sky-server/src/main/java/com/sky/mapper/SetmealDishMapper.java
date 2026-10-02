@@ -32,6 +32,9 @@ public interface SetmealDishMapper {
 
     /**
      * 删除多个套餐对应的关联关系
+     *
+     * @param setmealIds 套餐 id 链表
+     * @return 删除数据行数
      */
     int deleteBySetmealIds( @Param( "setmealIds" ) List< Long > setmealIds );
 

@@ -92,6 +92,9 @@ public interface SetmealMapper {
 
     /**
      * 批量删除套餐
+     *
+     * @param ids 套餐 id 链表
+     * @return 删除数据行数
      */
     int deleteByIds( @Param( "ids" ) List< Long > ids );
 
@@ -195,7 +198,7 @@ public interface SetmealMapper {
      * 统计一批套餐里面、某种售卖状态的套餐数量
      *
      * @param setmealIds 套餐 id
-     * @param status 售卖状态, {@link com.sky.constant.StatusConstant}
+     * @param status 售卖状态, {@link com.sky.enumeration.GoodsStatus}
      * @return 指定售卖状态的套餐数量, <b>> 0 说明有, 否则无</b>
      */
     long countByIdsAndStatus( @Param( "ids" ) List< Long> setmealIds, @Param( "status" ) Integer status );
@@ -217,4 +220,12 @@ public interface SetmealMapper {
             """ )
     @MapKey( "status" )
     Map< Integer, GoodsStatusCount > countGroupByStatus();
+
+    /**
+     * 查询一批套餐所属的分类 id
+     *
+     * @param ids 套餐 id 链表
+     * @return 分类 id 链表
+     */
+    List< Long > selectCategoryIdsByIds( @Param( "ids" ) List< Long > ids );
 }

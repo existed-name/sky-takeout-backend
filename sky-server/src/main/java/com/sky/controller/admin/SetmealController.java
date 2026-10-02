@@ -95,10 +95,15 @@ public class SetmealController {
     @ApiOperation( value = "批量删除套餐" )
     @LogOperation( description = "批量删除套餐", operationType = OperationType.DELETE )
     @DeleteMapping
-    public Result< Void > delete( @NotEmpty( message = "选中的套餐不能为空" )
-            @RequestParam( name = "ids" ) List< Long > ids ){
-        log.info( "批量删除套餐 ids = {}", ids );
-        setmealService.deleteBatch( ids );
+    public Result< Void > delete(
+            @RequestParam( name = "ids", required = true )
+            // RequestParam 拦住 null , NotEmpty 拦住 null 和空链表
+            @NotEmpty( message = "选中的套餐不能为空" )
+            List< Long > ids
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员批量删除套餐, 套餐 ids = {}", operatorId, ids );
+        setmealService.deleteBatch( operatorId, ids );
         return Result.success();
     }
 

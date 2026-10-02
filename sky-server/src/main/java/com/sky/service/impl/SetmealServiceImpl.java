@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -140,21 +141,33 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void deleteBatch( List< Long > ids ){
-        if ( ids == null || ids.isEmpty() ){
+    public void deleteBatch( Long operatorId, List< Long > ids ){
+        /*
+            整理思路
+            删除套餐, 关联数据是套餐和菜品之间的关系, 可以直接删掉
+            最后再清理缓存
+
+            特殊业务要求
+            起售的套餐不能删, 这里考虑只要选中的套餐中有一个是起售状态, 那么整批都不能删除
+            技巧: 直接用 ids、状态作统计条件, 而不是查询完整对象
+         */
+        if ( ListUtils.isEmpty( ids ) ){
+            return;
+        }
+
+        // 可加可不加
+        ids = ids.stream()
+                .filter( Objects::nonNull )
+                .filter( id -> id > 0 )
+                .distinct()
+                .toList();
+        if ( ids.isEmpty() ){
             return;
         }
 
         // 业务检查: 起售的套餐不能删除
-        List< Setmeal > setmealList = setmealMapper.selectByIds( ids );
-        if ( setmealList == null || setmealList.isEmpty() ){
-            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
-        }
-        for ( Setmeal setmeal : setmealList ){
-            // 查询获得的单个元素不可能为 null
-            if ( StatusConstant.isEnable( setmeal.getStatus() ) ){
-                throw new DeletionNotAllowedException( MessageConstant.SETMEAL_ON_SALE );
-            }
+        if ( setmealMapper.countByIdsAndStatus( ids, GoodsStatus.ON_SALE.getStatus() ) > 0L ){
+            throw new DeletionNotAllowedException( MessageConstant.SETMEAL_ON_SALE );
         }
 
         // 先删除关联内容(子表)，后删主表
@@ -162,8 +175,7 @@ public class SetmealServiceImpl implements SetmealService {
         setmealMapper.deleteByIds( ids );
 
         // 清除目标分类、套餐关联菜品缓存
-        // TODO: 如果 setmealMapper.selectByIds 改为只查套餐状态而不是完整对象，那这里需要再单独查 categoryId
-        List< Long > categoryIds = setmealList.stream().map( Setmeal::getCategoryId ).toList();
+        List< Long > categoryIds = setmealMapper.selectCategoryIdsByIds( ids );
         setmealCacheManager.deleteRedisKeys( categoryIds, ids );
     }
 
