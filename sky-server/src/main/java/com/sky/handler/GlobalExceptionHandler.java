@@ -239,7 +239,7 @@ public class GlobalExceptionHandler {
          */
         String message = ex.getRootCause().getMessage();
         String cannotBeNull = "cannot be null";
-        int columnNameIdx = 1;
+        String dataTooLong = "Data too long";
         if ( message.contains( cannotBeNull ) ){
         /*
             MyBatis/JPA 捕获 DataIntegrityConstraintViolationException，
@@ -255,10 +255,22 @@ public class GlobalExceptionHandler {
             ### Cause: java.sql.SQLIntegrityConstraintViolationException: Column 'is_default' cannot be null
          */
             String[] split = message.split( space );
+            int columnNameIdx = 1;
             String columnName = split[ columnNameIdx ];
             // 正常情况参数检验、Service 检验就拦到了，还没拦到说明比较严重，所以这里用 error
             log.error( "数据库字段 {} 不能为空", columnName );
             return Result.error( MessageConstant.FIELD_CAN_NOT_BE_NULL );
+        } else if ( message.contains( dataTooLong ) ){
+            /*
+                ### Error updating database.  Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Data too long for column 'image' at row 1
+                ### The error may exist in com/sky/mapper/SetmealMapper.java (best guess)
+                ### The error may involve com.sky.mapper.SetmealMapper.insert-Inline
+                ### The error occurred while setting parameters
+                ### SQL: INSERT INTO setmeal ( category_id, name, price, status, description, image, create_time, update_time, create_user, update_user ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+                ### Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Data too long for column 'image' at row 1
+             */
+            log.error( "填入数据库的字段太长, 异常信息 = {}", message );
+            return Result.error( MessageConstant.FILED_TOO_LONG );
         } else {
             log.error( "数据库字段约束异常", ex );
             return Result.error( MessageConstant.UNSATISFIED_FIELD_CONSTRAINT );
