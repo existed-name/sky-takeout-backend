@@ -3,34 +3,38 @@ package com.sky.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.Positive;
 import java.io.Serializable;
 
 /**
- * 套餐分页查询数据传输对象
- * 用于套餐信息的条件分页查询
+ * 套餐条件分页查询数据传输对象, 用于套餐信息的条件分页查询
  */
+@EqualsAndHashCode( callSuper = true )
 @Data
-@ApiModel(description = "套餐分页查询 DTO")
-public class SetmealPageQueryDTO implements Serializable {
+@ApiModel( description = "套餐条件分页查询 DTO" )
+public class SetmealPageQueryDTO extends PageQueryDTO implements Serializable {
 
-    /** 页码 */
-    @ApiModelProperty(value = "页码", example = "1")
-    private int page;
 
-    /** 每页记录数 */
-    @ApiModelProperty(value = "每页记录数", example = "10")
-    private int pageSize;
 
-    /** 套餐名称（模糊查询） */
-    @ApiModelProperty(value = "套餐名称（模糊查询）", example = "商务套餐")
+    /**
+     * 套餐名称（模糊查询）
+     */
+    @ApiModelProperty( value = "套餐名称（模糊查询）", example = "商务套餐", required = false )
     private String name;
 
-    /** 分类id */
-    @ApiModelProperty(value = "分类id", example = "1")
+    /**
+     * 所属的分类 id
+     */
+    @ApiModelProperty( value = "所属的分类 id", example = "1", required = false )
+    // 只在 id 非空时生效
+    @Positive( message = "套餐 id 必须是正整数" )
     private Integer categoryId;
 
-    /** 状态：0 禁用 1 启用 */
-    @ApiModelProperty(value = "状态：0 禁用 1 启用", example = "1")
+    /**
+     * 起售状态 0表示停售 1表示起售
+     */
+    @ApiModelProperty( value = "起售状态 0表示停售 1表示起售", example = "1", required = false )
     private Integer status;
 }

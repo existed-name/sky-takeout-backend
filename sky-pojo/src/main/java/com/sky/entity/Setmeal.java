@@ -46,7 +46,7 @@ public class Setmeal implements Serializable {
     /** 创建时间, yyyy-MM-dd HH:mm:ss */
     private LocalDateTime createTime;
 
-    /** 创建时间, yyyy-MM-dd HH:mm:ss */
+    /** 更新时间, yyyy-MM-dd HH:mm:ss */
     private LocalDateTime updateTime;
 
     /** 创建该数据的管理员 id */

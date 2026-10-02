@@ -25,6 +25,7 @@ import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
+import com.sky.vo.setmeal.SetmealPageQueryItemVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -123,41 +124,18 @@ public class SetmealServiceImpl implements SetmealService {
     @Transactional( readOnly = true )
     @Override
     public PageResult page( SetmealPageQueryDTO setmealPageQueryDTO ){
+        /*
+            前端只展示套餐本体信息, 不用查询关联菜品
+            只需要套餐、分类联合拿到分类名称就行
+         */
+        Integer status = setmealPageQueryDTO.getStatus();
+        if ( status != null ){
+            GoodsStatus.throwIfInvalid( status );
+        }
+
         PageUtil.validateParamsAndStartPage( setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize() );
-        // SetmealVO = Setmeal + CategoryName + 关联关系 SetmealDish
-        // 先联表查 Setmeal + CategoryName
-        List< SetmealVO > setmealVOList = // null; 测试
-                setmealMapper.selectSetmealVOByQueryWithoutSetmealDishRelation( setmealPageQueryDTO );
-
-        // 考虑判空
-        if ( setmealVOList == null ){
-            return PageUtil.buildEmptyPageResult();
-        }
-
-        // 注意第 1 次查询后记录总数据数
-        // null 可以强转为任意类型还是 null, 再调 getTotal 就可能空指针
-        Page< SetmealVO > setmealVOPage = ( Page< SetmealVO > ) setmealVOList;
-        long setmealVOPageTotal = setmealVOPage.getTotal();
-
-        // 再查关联对象 SetmealDish
-        // 查询之前先检验参数
-        if ( setmealVOPage.isEmpty() ){
-            return PageUtil.buildPageResult( setmealVOPageTotal, setmealVOPage );
-        }
-
-        List< Long > setmealIds = setmealVOList.stream().map( SetmealVO::getId ).toList();
-        List< SetmealDish > setmealDishList = setmealDishMapper.selectBySetmealIds( setmealIds );
-
-        // 注意多个套餐 id 对应的一大批关联对象需要分组
-        Map< Long, List< SetmealDish > > setmealIdToSetmealDishesMap = setmealDishList.stream().collect( Collectors.groupingBy( SetmealDish::getSetmealId ) );
-        // 最后组装完整 SetmealVO
-        setmealVOList.forEach( setmealVO -> setmealVO.setSetmealDishes(
-                setmealIdToSetmealDishesMap.getOrDefault(
-                        setmealVO.getId(), setmealVO.getSetmealDishes()
-                )
-        ) );
-
-        return PageUtil.buildPageResult( setmealVOPageTotal, setmealVOPage );
+        List< SetmealPageQueryItemVO > setmealPageQueryItemVOList = setmealMapper.selectItemVOByQueryWithoutSetmealDishRelation( setmealPageQueryDTO );
+        return PageUtil.buildPageResult( setmealPageQueryItemVOList );
     }
 
     @Transactional( rollbackFor = Exception.class )

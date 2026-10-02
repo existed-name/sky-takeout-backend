@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -78,12 +79,12 @@ public class SetmealController {
      * 条件分页查询套餐
      */
     @ApiOperation( value = "条件分页查询套餐" )
-    @GetMapping( "/page" )
+    @GetMapping
     public Result< PageResult > page(
-            @NotNull( message = "条件分页查询参数不能为空" )
-            // TODO: 如果需要检验属性，则加上 @Valid
-            SetmealPageQueryDTO setmealPageQueryDTO ){
-        log.info( "条件分页查询套餐, 查询参数: {}", setmealPageQueryDTO );
+            @Valid SetmealPageQueryDTO setmealPageQueryDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员条件分页查询套餐, 查询参数 = {}", operatorId, setmealPageQueryDTO );
         PageResult pageResult = setmealService.page( setmealPageQueryDTO );
         return Result.success( pageResult );
     }

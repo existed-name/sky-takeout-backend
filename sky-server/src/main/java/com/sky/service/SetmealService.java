@@ -24,7 +24,10 @@ public interface SetmealService {
     void saveWithRelation( Long operatorId, SetmealDTO setmealDTO );
 
     /**
-     * <b>管理端</b>: 条件分页查询套餐
+     * 管理端条件分页查询套餐
+     *
+     * @param setmealPageQueryDTO 条件分页查询参数
+     * @return 数据列表分页包装结果
      */
     PageResult page( SetmealPageQueryDTO setmealPageQueryDTO );
 

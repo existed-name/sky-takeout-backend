@@ -8,6 +8,7 @@ import com.sky.enumeration.OperationType;
 import com.sky.projection.setmeal.SetmealIdProjection;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
+import com.sky.vo.setmeal.SetmealPageQueryItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
@@ -84,9 +85,10 @@ public interface SetmealMapper {
     /**
      * 条件分页查询 - PageHelper 负责分页
      *
-     * @return {@link com.sky.vo.SetmealVO} 链表，包含 {@link com.sky.entity.Setmeal} + CategoryName, <B>不包含关联对象{@link com.sky.entity.SetmealDish}(由调用方拼装)</B>
+     * @param setmealPageQueryDTO 查询条件
+     * @return 套餐本体的部分字段 + 分类名称, <B>不包含关联对象{@link com.sky.entity.SetmealDish}(由调用方选择性拼装)</B>
      */
-    List< SetmealVO > selectSetmealVOByQueryWithoutSetmealDishRelation( @Param( "dto" ) SetmealPageQueryDTO setmealPageQueryDTO );
+    List< SetmealPageQueryItemVO > selectItemVOByQueryWithoutSetmealDishRelation( @Param( "query" ) SetmealPageQueryDTO setmealPageQueryDTO );
 
     /**
      * 批量删除套餐
