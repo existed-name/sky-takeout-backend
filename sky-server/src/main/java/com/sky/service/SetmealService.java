@@ -1,13 +1,12 @@
 package com.sky.service;
 
-import com.sky.dto.SetmealDTO;
-import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.dto.setmeal.SetmealDTO;
+import com.sky.dto.setmeal.SetmealPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 /**

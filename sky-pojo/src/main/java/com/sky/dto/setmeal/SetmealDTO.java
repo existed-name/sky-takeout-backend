@@ -1,4 +1,4 @@
-package com.sky.dto;
+package com.sky.dto.setmeal;
 
 import com.sky.entity.SetmealDish;
 import com.sky.validation.ValidationGroups;

@@ -1,5 +1,6 @@
-package com.sky.dto;
+package com.sky.dto.setmeal;
 
+import com.sky.dto.PageQueryDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

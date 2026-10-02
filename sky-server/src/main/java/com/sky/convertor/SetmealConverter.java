@@ -1,7 +1,7 @@
 package com.sky.convertor;
 
 import com.sky.config.GlobalMappingConfiguration;
-import com.sky.dto.SetmealDTO;
+import com.sky.dto.setmeal.SetmealDTO;
 import com.sky.entity.Setmeal;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

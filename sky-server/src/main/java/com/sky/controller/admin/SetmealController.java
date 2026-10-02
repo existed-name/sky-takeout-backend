@@ -2,8 +2,8 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
-import com.sky.dto.SetmealDTO;
-import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.dto.setmeal.SetmealDTO;
+import com.sky.dto.setmeal.SetmealPageQueryDTO;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
