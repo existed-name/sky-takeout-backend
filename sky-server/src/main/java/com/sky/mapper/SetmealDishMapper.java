@@ -39,12 +39,10 @@ public interface SetmealDishMapper {
     int deleteBySetmealIds( @Param( "setmealIds" ) List< Long > setmealIds );
 
     /**
-     * 查询某个套餐和菜品关联关系
+     * 查询某个套餐的关联菜品信息
+     *
+     * @param setmealId 套餐 id
+     * @return 关联菜品信息列表
      */
-    @Select( """
-            SELECT id, setmeal_id, dish_id, name, price, copies
-            FROM setmeal_dish
-            WHERE setmeal_id = #{setmealId}
-            """)
     List< SetmealDish > selectBySetmealId( @Param( "setmealId" ) Long setmealId );
 }

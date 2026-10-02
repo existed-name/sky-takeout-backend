@@ -25,6 +25,7 @@ import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
+import com.sky.vo.setmeal.SetmealInfoVO;
 import com.sky.vo.setmeal.SetmealPageQueryItemVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -182,20 +183,15 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Transactional( readOnly = true )
     @Override
-    public SetmealVO getInfo( Long id ){
-        if ( id == null || id <= 0 ){
-            return null;
-        }
+    public SetmealInfoVO getInfo( Long id ){
+        // setmealInfoVO = setmeal + categoryName + setmealDishes
+        SetmealInfoVO setmealInfoVO = setmealMapper.selectInfoVOByIdWithoutSetmealDishRelation( id );
+        NotFoundUtil.throwIfNotFound( setmealInfoVO, MessageConstant.SETMEAL_NOT_FOUND );
 
-        // setmealVO = setmeal + categoryName + setmealDishes
-        SetmealVO setmealVO = setmealMapper.selectSetmealVOByIdWithoutSetmealDishRelation( id );
-        if ( setmealVO == null ){
-            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
-        }
         List< SetmealDish > setmealDishes = setmealDishMapper.selectBySetmealId( id );
-        setmealVO.setSetmealDishes( setmealDishes );
+        setmealInfoVO.setSetmealDishes( setmealDishes );
 
-        return setmealVO;
+        return setmealInfoVO;
     }
 
     @Transactional( rollbackFor = Exception.class )

@@ -10,6 +10,7 @@ import com.sky.result.Result;
 import com.sky.service.SetmealService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.SetmealVO;
+import com.sky.vo.setmeal.SetmealInfoVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -112,13 +113,15 @@ public class SetmealController {
      */
     @ApiOperation( value = "根据 id 查询套餐" )
     @GetMapping( "/{id}" )
-    public Result< SetmealVO > getInfo(
-            @PathVariable( name = "id" )
-            @NotNull( message = "套餐 id 不能为空" )
-            @Positive( message = "套餐 id 必须是正整数" ) Long id ){
-        log.info( "查询 id = {} 的套餐", id );
-        SetmealVO setmealVO = setmealService.getInfo( id );
-        return Result.success( setmealVO );
+    public Result< SetmealInfoVO > getInfo(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "套餐 id 必须是正整数" )
+            Long id
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员查询 id = {} 的套餐", operatorId, id );
+        SetmealInfoVO setmealInfoVO = setmealService.getInfo( id );
+        return Result.success( setmealInfoVO );
     }
 
     /**

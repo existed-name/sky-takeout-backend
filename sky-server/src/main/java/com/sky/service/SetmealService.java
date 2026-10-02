@@ -5,6 +5,7 @@ import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
+import com.sky.vo.setmeal.SetmealInfoVO;
 
 import java.util.List;
 
@@ -40,9 +41,12 @@ public interface SetmealService {
     void deleteBatch( Long operatorId, List< Long > ids );
 
     /**
-     * <b>管理端</b>: 根据 id 查询套餐
+     * 管理端查询某个套餐的完整信息
+     *
+     * @param id 套餐 id
+     * @return 包含关联菜品的套餐展示数据
      */
-    SetmealVO getInfo( Long id );
+    SetmealInfoVO getInfo( Long id );
 
     /**
      * <b>管理端</b>: 修改套餐信息

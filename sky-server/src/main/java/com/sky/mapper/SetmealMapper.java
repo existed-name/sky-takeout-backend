@@ -8,6 +8,7 @@ import com.sky.enumeration.OperationType;
 import com.sky.projection.setmeal.SetmealIdProjection;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
+import com.sky.vo.setmeal.SetmealInfoVO;
 import com.sky.vo.setmeal.SetmealPageQueryItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
@@ -106,11 +107,15 @@ public interface SetmealMapper {
     List< Setmeal > selectByIds( @Param( "ids" ) List< Long > ids );
 
     /**
-     * 根据 id 查询套餐 VO,
-     * 包含 {@link com.sky.entity.Setmeal} + CategoryName,
-     * 关联关系 {@link com.sky.entity.SetmealDish} 由业务层单独查询再组装 VO
+     * 根据 id 查询套餐信息展示对象, 通过和 category 联表获取 CategoryName
+     * <p>
+     *     关联关系 {@link com.sky.entity.SetmealDish} 由业务层单独查询后组装完整 VO
+     * </p>
+     *
+     * @param id 套餐 id
+     * @return 不包含关联菜品的套餐展示数据
      */
-    SetmealVO selectSetmealVOByIdWithoutSetmealDishRelation( @Param( "id" ) Long id );
+    SetmealInfoVO selectInfoVOByIdWithoutSetmealDishRelation( @Param( "id" ) Long id );
 
     /**
      * 修改套餐信息

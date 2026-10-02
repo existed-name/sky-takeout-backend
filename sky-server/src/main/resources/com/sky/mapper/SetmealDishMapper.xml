@@ -5,6 +5,13 @@
 <mapper namespace="com.sky.mapper.SetmealDishMapper">
 
     <!--
+    数据库表完整字段, 可供查询完整实体类复用
+    -->
+    <sql id="BaseColumns">
+        id, setmeal_id, dish_id, name, price, copies
+    </sql>
+
+    <!--
      * 新增套餐和相关菜品的关联关系, 套餐本体信息由{@link com.sky.mapper.SetmealMapper}管理
      -->
     <insert id="insertBatch">
@@ -27,6 +34,15 @@
             <foreach collection="setmealIds" item="setmealId" open="(" close=")" separator=",">
                 #{setmealId}
             </foreach>
+    </select>
+
+    <!--
+    查询某个套餐的关联菜品信息
+    -->
+    <select id="selectBySetmealId" resultType="com.sky.entity.SetmealDish">
+        SELECT <include refid="BaseColumns"/>
+        FROM setmeal_dish
+        WHERE setmeal_id = #{setmealId}
     </select>
 
     <!--
