@@ -221,6 +221,10 @@ public class DishServiceImpl implements DishService {
             * 写操作顺序
               - 问 ai 先写 Mysql 数据库, 后删 redis 缓存, 避免其他地方读的时候把数据库旧数据填入 redis
          */
+        // 清除缓存: 需要知道修改前后的分类 id, 注意旧的分类 id 在数据库里面、必须先查出来、避免被新的覆盖
+        Long oldCategoryId = dishMapper.selectCategoryIdById( id );
+        NotFoundUtil.throwIfNotFound( oldCategoryId, MessageConstant.DISH_NOT_FOUND );
+
         /*
             全面更新 Dish 信息 = Dish( 包含 CategoryId ) + DishFlavors
          */
@@ -228,14 +232,10 @@ public class DishServiceImpl implements DishService {
         dish.setId( id );
         // 注意审计字段交给 AOP 填充
         int affectedRow = dishMapper.update( dish );
-        NotFoundUtil.throwIfNotUpdated( affectedRow, MessageConstant.DISH_NOT_FOUND );
 
         // 关联的子表 DishFlavor 删了重装更方便
         dishFlavorMapper.deleteBatchByDishIds( List.of( id ) );
         saveDishFlavors( id, dishDTO.getFlavors() );
-
-        // 清除缓存: 需要知道修改前后的分类 id
-        Long oldCategoryId = dishMapper.selectCategoryIdById( id );
 
         dishCacheManager.deleteRedisKey( oldCategoryId );
         // 受影响的分类都需要清缓存
