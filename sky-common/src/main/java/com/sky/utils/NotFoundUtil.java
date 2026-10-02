@@ -49,6 +49,19 @@ public class NotFoundUtil {
         }
     }
 
+    /**
+     * 根据 id 计数, 计数 = 0 说明该条数据不存在, 抛出业务异常
+     *
+     * @param countById 计数结果, 基本数据类型、而不是包装类型
+     * @param message 异常信息
+     * @throws NotFoundException 计算结果 = 0 时抛出
+     */
+    public static void throwIfCountZero( long countById, String message ){
+        if ( countById == 0L ){
+            throw new NotFoundException( message );
+        }
+    }
+
 
     // ==================== 私有辅助方法 ====================
 

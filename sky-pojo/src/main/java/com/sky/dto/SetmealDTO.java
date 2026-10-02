@@ -45,8 +45,8 @@ public class SetmealDTO implements Serializable {
     @Positive( message = "套餐价格必须是正数", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private BigDecimal price;
 
-    /** 状态(选填)：0 停用 1 启用 */
-    @ApiModelProperty(value = "状态(选填)：0 停用 1 启用", example = "1")
+    /** 起售状态(选填)：0 停售 1 起售 */
+    @ApiModelProperty(value = "起售状态(选填)：0 停售 1 起售", example = "1")
     private Integer status;
 
     /** 描述信息(选填) */

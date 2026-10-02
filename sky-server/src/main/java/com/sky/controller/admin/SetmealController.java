@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
+import com.sky.context.BaseContext;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.enumeration.OperationType;
@@ -36,7 +37,7 @@ import java.util.List;
 @Validated
 @Slf4j
 @RestController( "adminSetmealController" )
-@RequestMapping( "/admin/setmeal" )
+@RequestMapping( "/admin/setmeals" )
 @Api( tags = "套餐管理接口" )
 public class SetmealController {
     // ==================== 常量 ====================
@@ -63,10 +64,13 @@ public class SetmealController {
     @ApiOperation( value = "新增套餐" )
     @LogOperation( description = "新增套餐", operationType = OperationType.INSERT )
     @PostMapping
-    public Result< Void > save( @Validated( value = ValidationGroups.Create.class )
-            @RequestBody SetmealDTO setmealDTO ){
-        log.info( "新增套餐: {}", setmealDTO );
-        setmealService.saveWithRelation( setmealDTO );
+    public Result< Void > save(
+            @Validated( value = ValidationGroups.Create.class )
+            @RequestBody SetmealDTO setmealDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员新增套餐, 套餐信息 = {}", operatorId, setmealDTO );
+        setmealService.saveWithRelation( operatorId, setmealDTO );
         return Result.success();
     }
 

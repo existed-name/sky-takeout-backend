@@ -29,7 +29,7 @@ public class AssertUtils {
      *                比如{@code 插入套餐数据时, 主键回填失败, 套餐名称 = %s , 分类 id = %s}
      * @throws IllegalStateException 当 id 为 null 时抛出( 主键回填失败 )
      */
-    public static void assertIdBackFilled( Long id, String message ){
+    public static void assertIdBackfilled( Long id, String message ){
         if ( id == null ){
             throw new IllegalStateException( message );
         }

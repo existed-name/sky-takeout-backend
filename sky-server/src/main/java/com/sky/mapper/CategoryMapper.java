@@ -89,4 +89,17 @@ public interface CategoryMapper {
             WHERE id = #{id}
             """ )
     Integer selectStatusById( @Param( "id" ) Long id );
+
+    /**
+     * 判断某个分类是否存在
+     *
+     * @param id 分类 id
+     * @return 1, 该分类存在; 0, 不存在
+     */
+    @Select( """
+            SELECT count( * )
+            FROM category
+            WHERE id = #{id}
+            """ )
+    long countById( @Param( "id" ) Long id );
 }

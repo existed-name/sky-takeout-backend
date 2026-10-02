@@ -2,13 +2,10 @@ package com.sky.service;
 
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
-import com.sky.entity.SetmealDish;
 import com.sky.result.PageResult;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -18,9 +15,13 @@ import java.util.List;
  */
 public interface SetmealService {
     /**
-     * <b>管理端</b>: 新增套餐, 同时存储该套餐和相关菜品的关联关系
+     * 管理端新增套餐, 保存套餐本体信息、关联菜品信息
+     *
+     * @param operatorId 显式传入操作者 id, 如果不使用 AOP 自动填写审计字段,
+     *                   则使用该参数手动填写 create_user、update_user
+     * @param setmealDTO 包含关联菜品信息的套餐数据
      */
-    void saveWithRelation( SetmealDTO setmealDTO );
+    void saveWithRelation( Long operatorId, SetmealDTO setmealDTO );
 
     /**
      * <b>管理端</b>: 条件分页查询套餐

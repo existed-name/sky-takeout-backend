@@ -1,21 +1,26 @@
 package com.sky.service.impl;
 
-import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.RedisConstant;
 import com.sky.constant.StatusConstant;
+import com.sky.convertor.SetmealConverter;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
+import com.sky.enumeration.GoodsStatus;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.NotFoundException;
 import com.sky.exception.SetmealEnableFailedException;
+import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.SetmealService;
+import com.sky.utils.AssertUtils;
+import com.sky.utils.ListUtils;
+import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishItemVO;
@@ -44,26 +49,64 @@ public class SetmealServiceImpl implements SetmealService {
     private final DishMapper dishMapper;
     private final RedisTemplate< String, Object > redisTemplate;
     private final SetmealCacheManager setmealCacheManager;
+    private final SetmealConverter setmealConverter;
+    private final CategoryMapper categoryMapper;
 
 
     // ==================== 构造器 ====================
-    public SetmealServiceImpl( SetmealMapper setmealMapper, SetmealDishMapper setmealDishMapper, DishMapper dishMapper, RedisTemplate< String, Object > redisTemplate, SetmealCacheManager setmealCacheManager ){
+    public SetmealServiceImpl( SetmealMapper setmealMapper, SetmealDishMapper setmealDishMapper, DishMapper dishMapper, RedisTemplate< String, Object > redisTemplate, SetmealCacheManager setmealCacheManager, SetmealConverter setmealConverter, CategoryMapper categoryMapper ){
         this.setmealMapper = setmealMapper;
         this.setmealDishMapper = setmealDishMapper;
         this.dishMapper = dishMapper;
         this.redisTemplate = redisTemplate;
         this.setmealCacheManager = setmealCacheManager;
+        this.setmealConverter = setmealConverter;
+        this.categoryMapper = categoryMapper;
     }
 
 
     // ==================== 公有方法 ====================
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void saveWithRelation( SetmealDTO setmealDTO ){
-        // setmealDTO = setmeal + setmealDish 关联对象，分 2 批插入数据库
-        Setmeal setmeal = new Setmeal();
-        BeanUtils.copyProperties( setmealDTO, setmeal );
+    public void saveWithRelation( Long operatorId, SetmealDTO setmealDTO ){
+        /*
+            整理思路
+            setmealDTO = setmeal + setmealDish 关联对象，分 2 批插入数据库
+            setmeal 用 converter 转换映射
+            setmealDish 需要设置逻辑外键 setmealId( 前端可能没有自带, 需要绑定当前套餐、主键回填 )
+
+            然后清理缓存
+            套餐缓存 => 整个分类的缓存、关联菜品的缓存
+            该套餐所在分类的缓存
+            由于是新增, 之前并没有缓存关联菜品, 所以删、不删都一样
+
+            额外的注意事项
+            dto 部分字段选填, 比如 status 需要手动设置, 但如果前端显式传入需要判断有效性
+            关联的分类是否存在
+         */
+        //
+        Setmeal setmeal = setmealConverter.toEntity( setmealDTO );
+        Integer status = setmeal.getStatus();
+        if ( status != null ){
+            GoodsStatus.throwIfInvalid( status );
+        } else {
+            setmeal.setStatus( GoodsStatus.DEFAULT_SETMEAL_STATUS.getStatus() );
+        }
+
+        Long categoryId = setmealDTO.getCategoryId();
+        long countByCategoryId = categoryMapper.countById( categoryId );
+        NotFoundUtil.throwIfCountZero( countByCategoryId, MessageConstant.CATEGORY_NOT_FOUND );
         setmealMapper.insert( setmeal );
+
+        Long id = setmeal.getId();
+        String message = String.format( "插入套餐数据时, 主键回填失败, 套餐名称 = %s , 分类 id = %s", id, categoryId );
+        AssertUtils.assertIdBackfilled( id, message );
+
+        List< SetmealDish > setmealDishes = setmealDTO.getSetmealDishes();
+        if ( ! ListUtils.isEmpty( setmealDishes ) ){
+            setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( id ) );
+            setmealDishMapper.insertBatch( setmealDishes );
+        }
 
         /*
                 增删改对缓存的影响 -> 只看有缓存的那端(用户端)
@@ -71,22 +114,9 @@ public class SetmealServiceImpl implements SetmealService {
               - 该分类内容发生变化，就需要删除缓存
             * 套餐关联菜品缓存 RedisKey = setmeal:dish:{setmealId}
               - 该套餐发生变化，就需要删除缓存
-              - 并且由于分类在最上游，修改该套餐分类 -> 删除该分类的套餐缓存 -> 删除该套餐的菜品缓存
-            * 还要注意:
-              - 由于是新增，刚开始并没有 setmealId 需要主键回填后才能拿到 id
-              - 清除缓存时机: 必须放在 return 之前
+              - 虽然新增套餐, 之前还并没有缓存关联菜品, 不过也可以把 id 传进去删除
          */
-        setmealCacheManager.deleteRedisKey( setmealDTO.getCategoryId(), setmeal.getId() );
-
-        // 唉，忽略了 SetmealDish 的 setmealId 并不是前端自带的，而是绑定当前套餐
-        // 于是需要从当前套餐拿到 id
-        // 就需要设置主键回填
-        List< SetmealDish > setmealDishes = setmealDTO.getSetmealDishes();
-        if ( setmealDishes == null || setmealDishes.isEmpty() ){
-            return;
-        }
-        setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( setmeal.getId() ) );
-        setmealDishMapper.insertBatch( setmealDishes );
+        setmealCacheManager.deleteRedisKey( categoryId, id );
     }
 
 

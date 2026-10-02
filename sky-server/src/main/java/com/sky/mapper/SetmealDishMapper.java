@@ -15,11 +15,14 @@ import java.util.List;
 @Mapper
 public interface SetmealDishMapper {
     /**
-     * 新增套餐和相关菜品的关联关系
-     * <br>
-     * 注意: 由{@link com.sky.mapper.SetmealMapper}存储该套餐
+     * 新增套餐和相关菜品的关联关系, 套餐本体信息由{@link com.sky.mapper.SetmealMapper}管理
+     * <p>
+     *     太好了，不用设置审计字段
+     * </p>
+     *
+     * @param setmealDishes 套餐关联菜品信息
+     * @return 插入数据行数
      */
-    // 太好了，不用设置审计字段
     int insertBatch( @Param( "setmealDishes" ) List< SetmealDish > setmealDishes );
 
     /**

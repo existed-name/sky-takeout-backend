@@ -20,7 +20,12 @@ public enum GoodsStatus {
     /** 起售 */
     ON_SALE( 1, "起售" ),
     /** 停售 */
-    DISCONTINUED( 0, "停售" );
+    DISCONTINUED( 0, "停售" ),
+    /** 菜品默认状态 */
+    DEFAULT_DISH_STATUS( ON_SALE.getStatus(), ON_SALE.getDescription() ),
+    /** 套餐默认状态 */
+    DEFAULT_SETMEAL_STATUS( DISCONTINUED.getStatus(), DISCONTINUED.getDescription() ),
+    ;
 
     /** 状态值 */
     private final int status;
