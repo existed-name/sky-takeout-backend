@@ -142,7 +142,7 @@
      * <br>
      * 注意: <b>仅修改 {@link com.sky.entity.Setmeal}</b>, 关联关系 {@link com.sky.entity.SetmealDish} 由 {@link com.sky.mapper.SetmealDishMapper} 负责
     -->
-    <update id="update">
+    <update id="updateById">
         UPDATE setmeal
         <set>
             <if test="setmeal.categoryId != null">category_id = #{setmeal.categoryId}, </if>
@@ -151,6 +151,8 @@
             <if test="setmeal.status != null">status = #{setmeal.status}, </if>
             <if test="setmeal.description != null and setmeal.description.trim() != ''">description = #{setmeal.description}, </if>
             <if test="setmeal.image != null and setmeal.image.trim() != ''">image = #{setmeal.image}, </if>
+            update_time = #{setmeal.updateTime},
+            update_user = #{setmeal.updateUser}
         </set>
         WHERE id = #{setmeal.id}
     </update>

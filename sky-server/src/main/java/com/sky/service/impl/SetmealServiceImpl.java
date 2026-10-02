@@ -27,7 +27,6 @@ import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
 import com.sky.vo.setmeal.SetmealPageQueryItemVO;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -196,45 +195,46 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void update( SetmealDTO setmealDTO ){
-        // 删除缓存, 由于是修改信息操作，需要注意修改前后 redisKey 的组成部分 categoryId 有无变化
-        Long setmealId = setmealDTO.getId();
-        Setmeal setmealCategoryId = setmealMapper.selectCategoryIdById( setmealId );
-        if ( setmealCategoryId == null ){
-            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
-        }
-        Long oldCategoryId = setmealCategoryId.getCategoryId();
-        // 之前的 categoryId
-        setmealCacheManager.deleteRedisKey( oldCategoryId, setmealId );
-        // 修改后的
-        Long newCategoryId = setmealDTO.getCategoryId();
-        if ( ! oldCategoryId.equals( newCategoryId ) ){
-            // 虽然说这里重复删了 setmealId
-            setmealCacheManager.deleteRedisKey( newCategoryId, setmealId );
+    public void update( Long operatorId, Long id, SetmealDTO setmealDTO ){
+        /*
+            整理思路
+            更新套餐本体、用新的关联菜品覆盖旧的关联关系
+            注意关联菜品信息需要设置逻辑外键( setmealId )
+
+            最后来清理缓存
+            套餐缓存 → 所在分类的缓存( 套餐本体列表 ) + 对应的关联菜品缓存( 关联关系列表 )
+            细节在于清理所有受影响的缓存 → 更新前、更新后的分类 → 必须在更新数据库之前查出旧的分类 id
+         */
+        Long oldCategoryId = setmealMapper.selectCategoryIdById( id );
+        NotFoundUtil.throwIfNotFound( oldCategoryId, MessageConstant.SETMEAL_NOT_FOUND );
+
+        Integer status = setmealDTO.getStatus();
+        if ( status != null ){
+            GoodsStatus.throwIfInvalid( status );
         }
 
         // SetmealDTO = Setmeal + 关联关系 SetmealDish
-        Setmeal setmeal = new Setmeal();
-        BeanUtils.copyProperties( setmealDTO, setmeal );
-
-        int updateRow = setmealMapper.update( setmeal );
-        /*
-            前面组装 RedisKey 使用 id 查了对象，已经判断了对象存在
-        if ( updateRow <= 0 ){
-            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
-        }
-         */
+        Setmeal setmeal = setmealConverter.toEntity( setmealDTO );
+        setmeal.setId( id );
+        int updateRow = setmealMapper.updateById( setmeal );
 
         // 关联子表内容删了重装
-        // 本来应该分开单独写方法，但是这里的批量删除方法大概率不会改，所以就复用了
-        setmealDishMapper.deleteBySetmealIds( List.of( setmealId ) );
+        setmealDishMapper.deleteBatchBySetmealId( id );
         List< SetmealDish > setmealDishes = setmealDTO.getSetmealDishes();
-        if ( setmealDishes == null || setmealDishes.isEmpty() ){
-            return;
+        if ( ! ListUtils.isEmpty( setmealDishes ) ){
+            // 又忘了写子表的关联逻辑外键
+            setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( id ) );
+            setmealDishMapper.insertBatch( setmealDishes );
         }
-        // 又忘了写子表的关联逻辑外键
-        setmealDishes.forEach( setmealDish -> setmealDish.setSetmealId( setmealId ) );
-        setmealDishMapper.insertBatch( setmealDishes );
+
+        // 之前的 categoryId
+        setmealCacheManager.deleteRedisKey( oldCategoryId, id );
+        // 修改后的
+        Long newCategoryId = setmealDTO.getCategoryId();
+        if ( ! oldCategoryId.equals( newCategoryId ) ){
+            // 虽然说这里重复删了 id
+            setmealCacheManager.deleteRedisKey( newCategoryId, id );
+        }
     }
 
     @Transactional( rollbackFor = Exception.class )
@@ -267,8 +267,8 @@ public class SetmealServiceImpl implements SetmealService {
         }
 
         // 精确删除缓存需要查到 categoryId
-        Setmeal setmealCategoryId = setmealMapper.selectCategoryIdById( id );
-        setmealCacheManager.deleteRedisKey( setmealCategoryId.getCategoryId(), id );
+        Long categoryId = setmealMapper.selectCategoryIdById( id );
+        setmealCacheManager.deleteRedisKey( categoryId, id );
     }
 
     @Transactional( readOnly = true )

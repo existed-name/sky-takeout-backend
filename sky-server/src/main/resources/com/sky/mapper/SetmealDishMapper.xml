@@ -56,6 +56,13 @@
         </foreach>
     </delete>
 
+    <!--
+    删除某个套餐关联的所有菜品关系
+    -->
+    <delete id="deleteBatchBySetmealId">
+        DELETE FROM setmeal_dish
+        WHERE setmeal_id = #{setmealId}
+    </delete>
 
 
 </mapper>

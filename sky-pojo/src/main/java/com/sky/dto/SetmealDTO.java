@@ -22,11 +22,11 @@ import java.util.List;
 @ApiModel(description = "套餐对象 DTO")
 public class SetmealDTO implements Serializable {
 
-    /** 套餐表id(新增时选填，修改时必填) */
-    @ApiModelProperty(value = "套餐表id(选填)", example = "1")
-    @NotNull( message = "套餐 id 不能为空", groups = ValidationGroups.Update.class )
-    @Positive( message = "套餐 id 必须是正整数", groups = ValidationGroups.Update.class )
-    private Long id;
+//    /** 套餐表id(新增时选填，修改时必填) */
+//    @ApiModelProperty(value = "套餐表id(选填)", example = "1")
+//    @NotNull( message = "套餐 id 不能为空", groups = ValidationGroups.Update.class )
+//    @Positive( message = "套餐 id 必须是正整数", groups = ValidationGroups.Update.class )
+//    private Long id;
 
     /** 分类id(必填) */
     @ApiModelProperty(value = "分类id(必填)", example = "1")

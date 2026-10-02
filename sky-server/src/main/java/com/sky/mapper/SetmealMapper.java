@@ -119,10 +119,14 @@ public interface SetmealMapper {
 
     /**
      * 修改套餐信息
-     * <br>
+     * <p>
      * 注意: <b>仅修改 {@link com.sky.entity.Setmeal}</b>, 关联关系 {@link com.sky.entity.SetmealDish} 由 {@link com.sky.mapper.SetmealDishMapper} 负责
+     *
+     * @param setmeal 更新后的套餐信息
+     * @return 修改数据行数, <b>id 对应的套餐不存在时返回 0</b>
      */
-    int update( @Param( "setmeal" ) Setmeal setmeal );
+    @AutoFill( OperationType.UPDATE )
+    int updateById( @Param( "setmeal" ) Setmeal setmeal );
 
     /**
      * 修改套餐状态(起售/停售)
@@ -167,16 +171,17 @@ public interface SetmealMapper {
     List< DishItemVO > selectDishItemVOListById( @Param( "setmealId" ) Long id );
 
     /**
-     * 查询改套餐的分类 id, 用于组装 RedisKey
+     * 查询某个套餐所属的分类 id, 用于组装 RedisKey
      *
-     * @return 只包含 categoryId 的 Setmeal
+     * @param id 套餐 id
+     * @return 分类 id, <b>套餐不存在时返回 null</b>
      */
     @Select( """
             SELECT category_id
             FROM setmeal
             WHERE id = #{id}
             """ )
-    Setmeal selectCategoryIdById( @Param( "id" ) Long id );
+    Long selectCategoryIdById( @Param( "id" ) Long id );
 
     /**
      * 判断该 id 对应的对象是否存在，如果存在返回 1，否则 0

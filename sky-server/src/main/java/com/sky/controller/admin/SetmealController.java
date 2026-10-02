@@ -129,11 +129,18 @@ public class SetmealController {
      */
     @ApiOperation( value = "修改套餐信息" )
     @LogOperation( description = "修改套餐信息", operationType = OperationType.UPDATE )
-    @PutMapping
-    public Result< Void > update( @Validated( value = ValidationGroups.Update.class )
-            @RequestBody SetmealDTO setmealDTO ){
-        log.info( "修改套餐: {}", setmealDTO );
-        setmealService.update( setmealDTO );
+    @PutMapping( "/{id}" )
+    public Result< Void > update(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "套餐 id 必须是正整数" )
+            Long id,
+            @Validated( value = ValidationGroups.Update.class )
+            @RequestBody
+            SetmealDTO setmealDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员修改套餐, 套餐 id = {}, 修改数据 = {}", operatorId, id, setmealDTO );
+        setmealService.update( operatorId, id, setmealDTO );
         return Result.success();
     }
 

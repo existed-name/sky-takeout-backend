@@ -7,6 +7,7 @@ import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
 
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -49,9 +50,14 @@ public interface SetmealService {
     SetmealInfoVO getInfo( Long id );
 
     /**
-     * <b>管理端</b>: 修改套餐信息
+     * 管理端修改套餐信息
+     *
+     * @param operatorId 显式传入操作者 id, 如果不使用 AOP 自动填写审计字段,
+     *                   则使用该参数手动填写 create_user、update_user
+     * @param id 套餐 id
+     * @param setmealDTO 包含关联菜品信息的套餐数据
      */
-    void update( SetmealDTO setmealDTO );
+    void update( Long operatorId, Long id, SetmealDTO setmealDTO );
 
     /**
      * <b>管理端</b>: 修改套餐状态(起售/停售)
