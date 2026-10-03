@@ -2,6 +2,8 @@ package com.sky.constant;
 
 /**
  * 信息提示常量类
+ * <br>
+ * TODO: 细分内部静态类, 给各常量分类管理
  */
 public class MessageConstant {
 
@@ -84,6 +86,9 @@ public class MessageConstant {
     public static final String GOODS_STATUS_INVALID = "商品起售状态无效";
     public static final String FILED_TOO_LONG = "某个字段太长啦, 数据库塞不下~";
     public static final String SHOP_STATUS_INVALID = "店铺营业状态无效";
+    public static final String WECHAT_LOGIN_FAILED = "微信登录失败, 可能是系统故障";
+    public static final String WECHAT_CODE_INVALID = "微信用户授权码无效, 可能是超时失效";
+    public static final String WECHAT_LOGIN_REPEATED = "该微信账号已经登录过了, 请检查是否已在其他设备上登录";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )

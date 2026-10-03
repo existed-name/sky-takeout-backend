@@ -1,4 +1,4 @@
-package com.sky.dto;
+package com.sky.dto.user.user;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,11 +12,11 @@ import java.io.Serializable;
  * <p>用于接收微信用户登录时提交的授权码</p>
  */
 @Data
-@ApiModel(value = "UserLoginDTO", description = "C端用户登录请求参数")
+@ApiModel( description = "C端用户登录请求参数" )
 public class UserLoginDTO implements Serializable {
 
     /** 微信用户授权码 */
-    @ApiModelProperty(value = "微信用户授权码", required = true, example = "auth_code_example")
+    @ApiModelProperty( value = "微信用户授权码", required = true, example = "auth_code_example" )
     @NotBlank( message = "微信用户授权码不能为空" )
     private String code;
 

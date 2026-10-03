@@ -17,13 +17,16 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
     /**
-     * 新增用户
-     * <br>
-     * <b>注意主键回填</b>
+     * 新增用户, <b>注意主键回填</b>
+     * <p>
+     *     由于只需要填写创建时间、更新时间, 所以没有使用 AOP 注解
+     *     {@code @AutoFill( OperationType.INSERT )}
+     * </p>
+     *
+     * @param user 完整的用户实体类, <b>包含了审计字段</b>
+     * @return 插入数据行数, 通常为 1
      */
     @Options( useGeneratedKeys = true, keyProperty = "id" )
-//    @AutoFill( OperationType.INSERT )
-    // 不过只需要填写创建时间、更新时间
     @Insert( """
             INSERT INTO user
             ( openid, name, phone, sex, id_number, avatar, create_time, update_time )
@@ -32,9 +35,10 @@ public interface UserMapper {
     int insert( @Param( "user" ) User user );
 
     /**
-     * 根据 openid 查询用户( <b>所有字段</b> )
+     * 根据 openid 查询用户
      *
      * @param openid 微信用户唯一标识
+     * @return <b>字段完整</b>的用户实体对象
      */
     @Select( """
         SELECT id, openid, name, phone, sex, id_number, avatar, create_time, update_time
@@ -84,4 +88,17 @@ public interface UserMapper {
                   create_time < #{endExclusive}
             """ )
     long countAllByDateRange( @Param( "begin" ) LocalDate begin, @Param( "endExclusive" ) LocalDate endExclusive );
+
+    /**
+     * 根据 openid 查询某个用户 id
+     *
+     * @param openid 微信用户唯一标识
+     * @return 用户 id, <b>不存在时返回 null</b>
+     */
+    @Select( """
+            SELECT id
+            FROM user
+            WHERE openid = #{openid}
+            """ )
+    Long selectIdByOpenid( @Param( "openid" ) String openid );
 }

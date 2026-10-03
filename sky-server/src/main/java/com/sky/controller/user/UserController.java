@@ -1,6 +1,6 @@
 package com.sky.controller.user;
 
-import com.sky.dto.UserLoginDTO;
+import com.sky.dto.user.user.UserLoginDTO;
 import com.sky.result.Result;
 import com.sky.service.UserService;
 import com.sky.vo.UserLoginVO;
@@ -24,7 +24,7 @@ import javax.validation.Valid;
 @Slf4j
 @Api( tags = "用户模块接口" )
 @RestController
-@RequestMapping( "/user/user" ) // 用户端、user 模块
+@RequestMapping( "/user/users" )
 public class UserController {
     // ==================== 常量 ====================
 
@@ -45,11 +45,11 @@ public class UserController {
 
     // ==================== 公有方法 ====================
     /**
-     * 用户登录
+     * 微信用户登录
      */
-    @ApiOperation( value = "用户登录" )
+    @ApiOperation( value = "微信用户登录" )
     @PostMapping( "/login" )
-    public Result< UserLoginVO > login( @Valid @RequestBody UserLoginDTO userLoginDTO ){
+    public Result< UserLoginVO > wechatLogin( @Valid @RequestBody UserLoginDTO userLoginDTO ){
         log.info( "用户登录，登录参数: {}", userLoginDTO );
         UserLoginVO userLoginVO = userService.wechatLogin( userLoginDTO );
         return Result.success( userLoginVO );

@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.constant.HttpClientConstant;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
-import com.sky.dto.UserLoginDTO;
+import com.sky.dto.user.user.UserLoginDTO;
+import com.sky.enumeration.WeChatLoginStatus;
 import com.sky.external.WeChatSessionDTO;
 import com.sky.entity.User;
 import com.sky.exception.auth.WeChatAuthFailedException;
@@ -13,7 +14,9 @@ import com.sky.mapper.UserMapper;
 import com.sky.properties.JwtProperties;
 import com.sky.properties.WeChatProperties;
 import com.sky.service.UserService;
+import com.sky.utils.AssertUtils;
 import com.sky.utils.JwtUtil;
+import com.sky.utils.StringUtils;
 import com.sky.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -23,6 +26,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -54,60 +58,60 @@ public class UserServiceImpl implements UserService {
 
 
     // ==================== 公有方法 ====================
+
+    @Transactional( rollbackFor = Exception.class )
     @Override
     public UserLoginVO wechatLogin( UserLoginDTO userLoginDTO ){
-        // 传入参数: 微信用户授权码 code
-        // 官网 API 要求 RequestParam = appid + secret + js_code + grant_type
-        // 只需填入 js_code 即可拿到 session_id, openid
-        // 于是手搓 HttpClient、设置请求体、访问目标路径、解析响应体
+        /*
+            传入参数: 微信用户授权码 code
+            官网 API 要求 RequestParam = appid + secret + js_code + grant_type
+            只需填入 js_code 即可拿到 session_id, openid
+            于是手搓 HttpClient、设置请求体、访问目标路径、解析响应体
+            然后检验微信登录响应信息是否有效( 登录成功 )
+            之后判断是否需要注册用户
+         */
         String code = userLoginDTO.getCode();
         WeChatSessionDTO wechatSessionDTO = wechatCode2Session( code );
-
-        Integer errorCode = wechatSessionDTO.getErrorCode();
-        String errorMessage = wechatSessionDTO.getErrorMessage();
-        if ( wechatSessionDTO.isLoginFailed() ){
-            log.warn( "微信登录失败, 错误码 = {}, 错误信息 = {}", errorCode, errorMessage );
-            throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
-        }
+        validateWeChatSessionDTO( wechatSessionDTO );
 
         String openid = wechatSessionDTO.getOpenid();
-        if ( openid == null || openid.isBlank() ){
-            log.warn( "微信用户唯一标识 openid 不能为空" );
-            throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
-        }
-
-        User user = userMapper.selectByOpenid( openid );
-        if ( user == null ){
-            user = registerWithOpenid( openid );
+        Long userId = userMapper.selectIdByOpenid( openid );
+        if ( userId == null ){
+            /*
+                被调用方法加入调用方的事务
+             */
+            User user = registerWithOpenid( openid );
+            userId = user.getId();
         }
 
         return UserLoginVO.builder()
-                .id( user.getId() )
+                .id( userId )
                 .openid( openid )
-                .token( generateUserJwtToken( user ) )
+                .token( generateUserJwtToken( userId ) )
                 .build();
     }
 
-
-
-    // ==================== 私有辅助方法 ====================
-    /**
-     * 注册用户
-     *
-     * @param openid 微信用户唯一标识, <b>不能是空字符串</b>
-     * @return 用户对象，不包含项目、电话、性别、身份证号、头像
-     */
-    private User registerWithOpenid( String openid ){
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public User registerWithOpenid( String openid ){
         User user = User.builder()
-                // .id(  ) 主键回填
+                // .id(  ) 交给主键回填
                 .openid( openid )
                 // .name().phone().sex().idNumber().avatar()
                 .createTime( LocalDateTime.now() )
                 .updateTime( LocalDateTime.now() )
                 .build();
         userMapper.insert( user );
+
+        Long userId = user.getId();
+        String message = String.format( "注册用户时, 主键回填失败, 用户 openid = %s", openid );
+        AssertUtils.assertIdBackfilled( userId, message );
+
         return user;
     }
+
+
+    // ==================== 私有辅助方法 ====================
 
     /**
      * 通过微信登录 API 获取认证信息( sessionId, openid )
@@ -206,16 +210,49 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 调用{@link com.sky.utils.JwtUtil}生成用户登录 token
-     * <p>
-     * token 携带信息(claims): userId
+     * 检验微信登录响应信息是否有效, 无效则抛出异常并输出日志信息
+     *
+     * @param wechatSessionDTO 微信登录接口响应信息
+     * @throws WeChatAuthFailedException 当微信登录失败、响应的 openid 为空时抛出
      */
-    private String generateUserJwtToken( User user ){
-        // claims 声明: token 携带的信息，比如不敏感的 userId 等等
-        // 注意 jjwt-0.9.1 内部会往 claims Map 里 put 东西
-        // 所以这里不能用 Map.of/ofEntries 不可变 Map
+    private void validateWeChatSessionDTO( WeChatSessionDTO wechatSessionDTO ){
+//        log.info( "微信登录响应参数 = {}", wechatSessionDTO );
+
+        Integer errorCode = wechatSessionDTO.getErrorCode();
+        String errorMessage = wechatSessionDTO.getErrorMessage();
+        if ( WeChatLoginStatus.loginFailed( errorCode, errorMessage ) ){
+            log.warn( "微信登录失败, 错误码 = {}, 错误信息 = {}", errorCode, errorMessage );
+
+            String message = MessageConstant.WECHAT_LOGIN_FAILED;
+            if ( WeChatLoginStatus.isWeChatCodeInvalid( errorCode ) ){
+                message = MessageConstant.WECHAT_CODE_INVALID;
+            } else if ( WeChatLoginStatus.isWeChatCodeUsed( errorCode ) ){
+                message = MessageConstant.WECHAT_LOGIN_REPEATED;
+            }
+            throw new WeChatAuthFailedException( message );
+        }
+
+        String openid = wechatSessionDTO.getOpenid();
+        if ( StringUtils.isBlank( openid ) ){
+            log.warn( "微信登录用户唯一标识 openid 为空, 可能是微信登录接口异常, 或者 dto 字段映射失败, 错误码 = {}, 错误信息 = {}", errorCode, errorMessage );
+            throw new WeChatAuthFailedException( MessageConstant.WECHAT_LOGIN_FAILED );
+        }
+    }
+
+    /**
+     * 调用{@link com.sky.utils.JwtUtil}生成微信用户登录 token
+     *
+     * @param userId 用户 id, 用于组装 jwt claims
+     * @return 后端用户端的 jwt 字符串
+     */
+    private String generateUserJwtToken( Long userId ){
+        /*
+            claims 声明: token 携带的信息，比如不敏感的 userId 等等
+            注意 jjwt-0.9.1 内部会往 claims Map 里 put 东西
+            所以这里不能用 Map.of/ofEntries 不可变 Map
+         */
         Map< String, Object > claims = new HashMap<>();
-        claims.put( JwtClaimsConstant.USER_ID, user.getId() );
+        claims.put( JwtClaimsConstant.USER_ID, userId );
         String jwt = JwtUtil.createJWT(
                 jwtProperties.getUserSecretKey(),
                 jwtProperties.getUserTtl(),
