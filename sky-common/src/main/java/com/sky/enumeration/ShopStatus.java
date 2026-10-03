@@ -1,5 +1,7 @@
 package com.sky.enumeration;
 
+import com.sky.constant.MessageConstant;
+import com.sky.exception.status.ShopStatusInvalidException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -19,7 +21,8 @@ public enum ShopStatus {
     /** 打烊 */
     CLOSED( 0, "打烊" ),
     /** 默认状态 */
-    DEFAULT( OPEN.getStatus(), "默认" );
+    DEFAULT( OPEN.getStatus(), "默认" ),
+    ;
 
     /** 状态数值 */
     private final int status;
@@ -42,7 +45,7 @@ public enum ShopStatus {
      * @throws IllegalArgumentException 当店铺状态参数无效时
      */
     public static ShopStatus toInstance( Integer status ){
-        throwIfInvalid( status );
+        requireValid( status );
         return statusToInstanceMap.get( status );
     }
 
@@ -70,10 +73,24 @@ public enum ShopStatus {
      * @param status 店铺状态数值
      * @throws IllegalArgumentException 当店铺状态参数无效时
      */
-    public static void throwIfInvalid( Integer status ){
+    private static void requireValid( Integer status ){
         if ( ! isValid( status ) ){
             throw new IllegalArgumentException(
                     String.format( "无效的店铺状态: status = %s", status )
+            );
+        }
+    }
+
+    /**
+     * 检验店铺营业状态是否有效, 无效则抛出业务异常
+     *
+     * @param status 状态数值
+     * @throws ShopStatusInvalidException 当店铺营业状态参数无效时
+     */
+    public static void throwIfInvalid( Integer status ){
+        if ( ! isValid( status ) ){
+            throw new ShopStatusInvalidException(
+                    MessageConstant.SHOP_STATUS_INVALID
             );
         }
     }

@@ -169,9 +169,13 @@ public class SetmealController {
      * 根据套餐分类 id 查询对应的套餐
      */
     public Result< List< SetmealVO > > list(
-            @RequestParam( name = "categoryId", required = false ) Long categoryId ){
-        String logInfo = ( categoryId == null ) ? "所有套餐" : "分类 id = " + categoryId;
-        log.info( "查询套餐: {}", logInfo );
+            @RequestParam( name = "categoryId", required = false )
+            // @Positive: 参数非 null 时生效
+            @Positive( message = "分类 id 必须是正整数" )
+            Long categoryId
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员查询某个分类的所有套餐, 分类 id = {}", operatorId, categoryId );
         List< SetmealVO > setmealVOList = setmealService.listByCategoryId( categoryId );
         return Result.success( setmealVOList );
     }

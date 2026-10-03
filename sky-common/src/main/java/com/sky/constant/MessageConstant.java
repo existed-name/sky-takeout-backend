@@ -16,7 +16,7 @@ public class MessageConstant {
     public static final String ADDRESS_BOOK_IS_NULL = "用户地址为空，不能下单";
     public static final String LOGIN_FAILED = "登录失败";
     public static final String UPLOAD_FAILED = "文件上传失败";
-    public static final String SETMEAL_ENABLE_FAILED = "套餐内包含未启售菜品，无法启售";
+    public static final String SETMEAL_ENABLE_FAILED_BECAUSE_DISH_DISABLED = "套餐包含停售菜品，无法起售";
     public static final String PASSWORD_EDIT_FAILED = "密码修改失败";
     public static final String DISH_ON_SALE = "起售中的菜品不能删除";
     public static final String SETMEAL_ON_SALE = "起售中的套餐不能删除";
@@ -83,6 +83,7 @@ public class MessageConstant {
     public static final String GOODS_CREATE_FAILED_BECAUSE_CATEGORY_DISABLED = "商品关联的分类被禁用, 请启用分类或者选择其他分类再创建该商品";
     public static final String GOODS_STATUS_INVALID = "商品起售状态无效";
     public static final String FILED_TOO_LONG = "某个字段太长啦, 数据库塞不下~";
+    public static final String SHOP_STATUS_INVALID = "店铺营业状态无效";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )
