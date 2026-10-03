@@ -78,7 +78,8 @@ public class ShopController {
     @ApiOperation( value = "查询店铺营业状态" )
     @GetMapping( "/status" )
     public Result< Integer > getStatus(){
-        log.info( "查询店铺营业状态" );
+        Long operatorId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员查询店铺营业状态", operatorId );
         Integer status = shopService.getStatus();
         return Result.success( status );
     }

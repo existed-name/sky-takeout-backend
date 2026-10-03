@@ -1,7 +1,6 @@
 package com.sky.service.impl;
 
 import com.sky.constant.RedisConstant;
-import com.sky.constant.StatusConstant;
 import com.sky.enumeration.ShopStatus;
 import com.sky.service.ShopService;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,13 +29,13 @@ public class ShopServiceImpl implements ShopService {
     }
 
     /**
-     * <b>启动初始化</b>: 应用启动时自动执行，且只执行一次
-     * <br>
-     * setIfAbsent = "如果不存在才设置"，不会覆盖已有值
+     * 启动应用时初始化店铺状态缓存
+     * <p>
+     *     <b>只在店铺状态缓存不存在时才设置</b>( 不会覆盖已有值 )
+     * </p>
      */
     @PostConstruct
-    public void init(){
-        // String -> String
+    public void initIfAbsent(){
         stringRedisTemplate.opsForValue().setIfAbsent(
                 RedisConstant.Shop.SHOP_STATUS,
                 Integer.toString( ShopStatus.DEFAULT.getStatus() )  // 默认营业中 1
@@ -77,11 +76,21 @@ public class ShopServiceImpl implements ShopService {
     @Transactional( readOnly = true )
     @Override
     public Integer getStatus(){
+        /*
+            从缓存中查店铺状态
+
+            有个选择问题
+            没查到( 过期、没初始化 )再设置默认值, 还是先 setIfAbsent 再查?
+
+            初步想法
+            缓存的目的是加快查询速度, 通常先查询、有的话直接用, 没有才来设置缓存,
+            如果先设置了初始缓存, 可能多了一层性能开销, 但只是单个字段、可能性能都差不多
+            
+            问 ai: 这种场景, 默认值就是有效值, 先设置、后查询, 避免多个请求同时查询为空、再同时设置
+         */
+        initIfAbsent();
         Object status = stringRedisTemplate.opsForValue().get( RedisConstant.Shop.SHOP_STATUS );
-        // 注意可能并没有设置默认值，导致查到空值
-        return ( status == null ) ?
-                StatusConstant.ShopStatus.DEFAULT :
-                Integer.valueOf( status.toString() );
+        return Integer.valueOf( status.toString() );
     }
 
 
