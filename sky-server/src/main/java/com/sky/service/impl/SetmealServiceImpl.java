@@ -10,7 +10,6 @@ import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.enumeration.GoodsStatus;
 import com.sky.exception.DeletionNotAllowedException;
-import com.sky.exception.NotFoundException;
 import com.sky.exception.SetmealEnableFailedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
@@ -239,32 +238,31 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void updateStatusById( Long id, Integer status ){
-        StatusConstant.validateStatus( status );
+    public void updateStatusById( Long operatorId, Long id, Integer newStatus ){
+        /*
+            更新套餐状态、清理相关缓存
+            业务约束: 包含停售菜品的套餐不能起售
+         */
+        GoodsStatus.throwIfInvalid( newStatus );
 
-        // 起售套餐时需要检查包含的菜品是不是停售的
-        // 停售套餐则不需要修改菜品状态
-        if ( StatusConstant.isEnable( status ) ){
-            // 从套餐-菜品关联关系拿到对应的菜品 id
-            List< SetmealDish > setmealDishList = setmealDishMapper.selectBySetmealId( id );
-            if ( ! ( setmealDishList == null || setmealDishList.isEmpty() ) ){
-                List< Long > dishIds = setmealDishList.stream().map( SetmealDish::getDishId ).toList();
-                // 可以只查需要的字段，而不用查整个对象
-                List< Integer > statusList = dishMapper.selectDishStatusListByIds( dishIds );
-                for ( Integer dishStatus : statusList ){
-                    if ( StatusConstant.isDisable( dishStatus ) ){
-                        throw new SetmealEnableFailedException( MessageConstant.SETMEAL_ENABLE_FAILED );
-                    }
-                }
+        if ( GoodsStatus.isOnSale( newStatus ) ){
+            /*
+                之前想的
+                先从套餐-菜品关联关系拿到对应的菜品 id
+                然后去查有多少菜品
+                防止 in() 里面进入空链表
+
+                问 ai 知道 in() 里面子查询为空不会报错, 于是改成了子查询
+             */
+            if ( dishMapper.countBySetmealIdAndStatus( id, GoodsStatus.DISCONTINUED.getStatus() ) > 0L ){
+                throw new SetmealEnableFailedException( MessageConstant.SETMEAL_ENABLE_FAILED_BECAUSE_DISH_DISABLED );
             }
         }
 
         // 注意还要更新审计字段，需要传对象
-        Setmeal updatedSetmeal = Setmeal.builder().id( id ).status( status ).build();
+        Setmeal updatedSetmeal = Setmeal.builder().id( id ).status( newStatus ).build();
         int updateRow = setmealMapper.updateStatusById( updatedSetmeal );
-        if ( updateRow <= 0 ){
-            throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotUpdated( updateRow, MessageConstant.SETMEAL_NOT_FOUND );
 
         // 精确删除缓存需要查到 categoryId
         Long categoryId = setmealMapper.selectCategoryIdById( id );

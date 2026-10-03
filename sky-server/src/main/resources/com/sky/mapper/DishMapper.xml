@@ -136,22 +136,6 @@
     </select>
 
     <!--
-     * 批量查询菜品状态 {@link com.sky.entity.Dish}
-     * <br>
-     * 用于起售套餐时检查有无停售的关联菜品
-     * <br>
-     * 无需排序
-     -->
-    <select id="selectDishStatusListByIds" resultType="java.lang.Integer">
-        SELECT status
-        FROM dish
-        WHERE id IN
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-    </select>
-
-    <!--
     根据菜品分类、起售状态查询菜品 VO( <b>不包含菜品口味</b> )
      * 按照修改时间降序排列，修改时间相同按照 id 降序
     -->
@@ -200,6 +184,24 @@
             <foreach collection="ids" item="id" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+    </select>
+
+    <!--
+    统计某个套餐包含的某种状态的菜品数量, 比如 1 个套餐包含了多少个停售的菜品( 用于判断是否可以起售套餐 )
+    -->
+    <select id="countBySetmealIdAndStatus" resultType="java.lang.Long">
+        SELECT count( * )
+        FROM dish
+        WHERE status = #{status}
+            AND id IN (
+                <!--
+                这里子查询返回 0 行数据会自动判为 false
+                只有手动传入链表才可能出现空的 in 括号
+                -->
+                SELECT dish_id
+                FROM setmeal_dish
+                WHERE setmeal_id = #{setmealId}
+            )
     </select>
 
 </mapper>

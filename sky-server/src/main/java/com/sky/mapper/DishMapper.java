@@ -57,13 +57,11 @@ public interface DishMapper {
     /**
      * 批量查询某种状态的菜品数量(比如正在起售的菜品数量)
      * <br>
-     * 用于删除菜品前检查是否起售
-     * <br>
-     * 更推荐 java.lang.Long，因为 count(*) 在 MySQL 里默认返回 BIGINT
+     * 可用于删除菜品前检查是否起售、起售套餐前检查是否包含停售菜品...
      *
      * @param ids 菜品 id 链表
      * @param status 启用状态{@link com.sky.enumeration.EnableStatus}
-     * @return 菜品数量
+     * @return 菜品数量, 推荐 java.lang.Long，因为 count(*) 在 MySQL 里默认返回 BIGINT
      */
     long countByIdsAndStatus( @Param( "ids" ) List< Long > ids, @Param( "status" ) Integer status );
 
@@ -110,15 +108,6 @@ public interface DishMapper {
      * @return 菜品数据项列表, 参数为空，查询所有菜品；参数无效则查询为空列表
      */
     List< DishListItemVO > listItemVOsByCategoryIdWithoutFlavors( @Param( "categoryId" ) Long categoryId );
-
-    /**
-     * 批量查询菜品状态 {@link com.sky.entity.Dish}
-     * <br>
-     * 用于起售套餐时检查有无停售的关联菜品
-     * <br>
-     * 无需排序
-     */
-    List< Integer > selectDishStatusListByIds( @Param( "ids" ) List< Long> ids );
 
     /**
      * 根据菜品分类、起售状态查询菜品 VO( <b>不包含菜品口味</b> )
@@ -189,4 +178,16 @@ public interface DishMapper {
             """ )
     @MapKey( "status" )
     Map< Integer, GoodsStatusCount > countGroupByStatus();
+
+    /**
+     * 统计某个套餐包含的某种状态的菜品数量, 比如 1 个套餐包含了多少个停售的菜品( 用于判断是否可以起售套餐 )
+     * <p>
+     *     内部联合 setmeal_dish 关系边获取菜品 id
+     * </p>
+     *
+     * @param setmealId 套餐 id
+     * @param status 商品状态{@link com.sky.enumeration.GoodsStatus}
+     * @return 菜品数量
+     */
+    long countBySetmealIdAndStatus( @Param( "setmealId" ) Long setmealId, @Param( "status" ) int status );
 }

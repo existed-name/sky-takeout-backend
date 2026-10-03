@@ -129,9 +129,10 @@ public interface SetmealMapper {
     int updateById( @Param( "setmeal" ) Setmeal setmeal );
 
     /**
-     * 修改套餐状态(起售/停售)
-     * <br>
-     * 注意: <b>传入对象用于 AOP 修改审计字段</b>
+     * 修改套餐状态(起售/停售), <b>传入对象使用 AOP 修改审计字段</b>
+     *
+     * @param setmeal 修改后的套餐实体对象, 设置了 id、status、审计字段
+     * @return 修改行数, <b>套餐不存在时返回 0</b>
      */
     @Update( """
             UPDATE setmeal

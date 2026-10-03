@@ -59,9 +59,14 @@ public interface SetmealService {
     void update( Long operatorId, Long id, SetmealDTO setmealDTO );
 
     /**
-     * <b>管理端</b>: 修改套餐状态(起售/停售)
+     * 管理端修改套餐状态(起售/停售)
+     *
+     * @param operatorId 显式传入操作者 id, 如果不使用 AOP 自动填写审计字段,
+     *                   则使用该参数手动填写 create_user、update_user
+     * @param id 套餐 id
+     * @param newStatus 修改后的套餐起售状态, 业务类内部进行业务检验
      */
-    void updateStatusById( Long id, Integer status );
+    void updateStatusById( Long operatorId, Long id, Integer newStatus );
 
     /**
      * <b>管理端</b>: 根据套餐分类 id 查询对应的套餐

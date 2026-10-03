@@ -4,6 +4,7 @@ import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
 import com.sky.dto.setmeal.SetmealDTO;
 import com.sky.dto.setmeal.SetmealPageQueryDTO;
+import com.sky.dto.setmeal.SetmealStatusDTO;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
@@ -139,7 +140,7 @@ public class SetmealController {
             SetmealDTO setmealDTO
     ){
         Long operatorId = BaseContext.getCurrentId();
-        log.info( "id = {} 的管理员修改套餐, 套餐 id = {}, 修改数据 = {}", operatorId, id, setmealDTO );
+        log.info( "id = {} 的管理员修改套餐信息, 套餐 id = {}, 修改数据 = {}", operatorId, id, setmealDTO );
         setmealService.update( operatorId, id, setmealDTO );
         return Result.success();
     }
@@ -149,14 +150,18 @@ public class SetmealController {
      */
     @ApiOperation( value = "修改套餐状态(起售/停售)" )
     @LogOperation( description = "修改套餐状态", operationType = OperationType.UPDATE )
-    @PutMapping( "/status/{status}" )
-    public Result< Void > updateStatus( @RequestParam( name = "id" )
-            @NotNull( message = "套餐 id 不能为空" )
-            @Positive( message = "套餐 id 必须是正整数" ) Long id,
-            @PathVariable( name = "status" )
-            @NotNull( message = "修改后的套餐状态不能为空" ) Integer status ){
-        log.info( "修改 id = {} 的套餐状态为 {}", id, status );
-        setmealService.updateStatusById( id, status );
+    @PutMapping( "/{id}/status" )
+    public Result< Void > updateStatus(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "套餐 id 必须是正整数" )
+            Long id,
+            @RequestBody @Valid
+            SetmealStatusDTO setmealStatusDTO
+    ){
+        Long operatorId = BaseContext.getCurrentId();
+        Integer status = setmealStatusDTO.getStatus();
+        log.info( "id = {} 的管理员修改 id = {} 的套餐状态为 {}", operatorId, id, status );
+        setmealService.updateStatusById( operatorId, id, status );
         return Result.success();
     }
 
