@@ -30,6 +30,8 @@ sky:
   wechat:
     appid: <自己的小程序 id>
     secret: <自己的小程序密钥>
+    url:
+      login: https://api.weixin.qq.com/sns/jscode2session
 
   baidu-map:
     access-key: <自己的ak>

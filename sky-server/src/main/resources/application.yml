@@ -57,6 +57,11 @@ sky:
     appid: ${sky.wechat.appid}
     # 小程序密钥
     secret: ${sky.wechat.secret}
+    # 相关接口的 url
+    url:
+      # 登录接口 url
+      login: ${sky.wechat.url.login}
+
   # 阿里 OSS 配置
   alioss:
     access-key-id: ${sky.alioss.access-key-id}

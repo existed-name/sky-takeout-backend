@@ -1,14 +1,14 @@
 package com.sky.constant;
 
+import com.sky.enumeration.WeChatLoginParamName;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
  * 微信登录相关请求常量
- * <p>
- *     TODO: 整理为枚举类
- * </p>
  *
- * @UpdateTime 2026/10/3 20:58
+ * @deprecated 新代码请使用{@link com.sky.enumeration.WeChatLoginAPI}
+ *      和{@link com.sky.properties.WeChatProperties.Url}获取微信登录接口,
+ *      通过{@link WeChatLoginParamName}获取微信登录参数名
  */
 public class WeChatHttpClientConstant {
     // ==================== 常量 ====================

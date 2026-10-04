@@ -2,10 +2,11 @@ package com.sky.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sky.constant.WeChatHttpClientConstant;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.dto.user.user.UserLoginDTO;
+import com.sky.enumeration.WeChatLoginAPI;
+import com.sky.enumeration.WeChatLoginParamName;
 import com.sky.enumeration.WeChatLoginStatus;
 import com.sky.external.WeChatSessionDTO;
 import com.sky.entity.User;
@@ -20,17 +21,9 @@ import com.sky.utils.JwtUtil;
 import com.sky.utils.StringUtils;
 import com.sky.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,10 +78,13 @@ public class UserServiceImpl implements UserService {
             userId = user.getId();
         }
 
+        String userJwt = generateUserJwtToken( userId );
+        // 本地端到端测试需要用到 token, 正常情况应该关闭
+//        log.info( "当前用户登录认证 jwt = {}", userJwt );
         return UserLoginVO.builder()
                 .id( userId )
                 .openid( openid )
-                .token( generateUserJwtToken( userId ) )
+                .token( userJwt )
                 .build();
     }
 
@@ -130,23 +126,23 @@ public class UserServiceImpl implements UserService {
             再序列化为目标 dto 对象
          */
 
-        String responseString = null;
+        String responseString = "";
         Map< String, String > queryParamsMap = null;
         try {
             // GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JS_CODE&grant_type=GRANT_TYPE
             queryParamsMap = Map.ofEntries(
-                    Map.entry( WeChatHttpClientConstant.StringValue.APP_ID, weChatProperties.getAppid() ),
-                    Map.entry( WeChatHttpClientConstant.StringValue.SECRET, weChatProperties.getSecret() ),
-                    Map.entry( WeChatHttpClientConstant.StringValue.JS_CODE, code ),
-                    Map.entry( WeChatHttpClientConstant.StringValue.GRANT_TYPE, WeChatHttpClientConstant.DEFAULT_GRANT_TYPE )
+                    Map.entry( WeChatLoginParamName.APP_ID.getParamName(), weChatProperties.getAppid() ),
+                    Map.entry( WeChatLoginParamName.SECRET.getParamName(), weChatProperties.getSecret() ),
+                    Map.entry( WeChatLoginParamName.JS_CODE.getParamName(), code ),
+                    Map.entry( WeChatLoginParamName.GRANT_TYPE.getParamName(), WeChatLoginAPI.DEFAULT_GRANT_TYPE.getValue() )
             );
             responseString = HttpClientUtil.doGet(
-                    WeChatHttpClientConstant.WECHAT_LOGIN_URL,
+                    weChatProperties.getUrl().getLogin(),
                     queryParamsMap
             );
         } catch ( Exception e ){
-            log.error( "微信登录请求失败, 请求参数 = {}, 响应体 json 字符串 = {}",
-                    queryParamsMap, responseString, e );
+            // 发生异常的话 responseString 始终没被赋值, 无需打印
+            log.error( "微信登录请求失败, 请求参数 = {}", queryParamsMap, e );
             throw new WeChatAuthFailedException( MessageConstant.WECHAT_LOGIN_SERVICE_ERROR );
         }
 
