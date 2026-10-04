@@ -5,6 +5,7 @@ import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishVO;
 import com.sky.vo.dish.DishListItemVO;
+import com.sky.vo.user.dish.UserDishListItemVO;
 
 import java.util.List;
 
@@ -69,9 +70,13 @@ public interface DishService {
     List< DishListItemVO > listByCategoryId( Long categoryId );
 
     /**
-     * <b>用户端</b>: 根据分类 id 查询菜品 VO( 包含菜品口味 )
-     * <br>
-     * <b>只查询起售状态</b>
+     * 用户端查询某个分类、<b>起售</b>的菜品( 包含菜品口味 )
+     * <p>
+     *     TODO: 拓展为{@code  listByCategoryIdAndStatus}由 controller 指定 status
+     * </p>
+     *
+     * @param categoryId 分类 id
+     * @return 菜品数据项列表
      */
-    List< DishVO> listEnabledByCategoryId( Long categoryId );
+    List< UserDishListItemVO > listEnabledByCategoryId( Long categoryId );
 }

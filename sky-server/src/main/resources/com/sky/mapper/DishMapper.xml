@@ -136,17 +136,29 @@
     </select>
 
     <!--
-    根据菜品分类、起售状态查询菜品 VO( <b>不包含菜品口味</b> )
-     * 按照修改时间降序排列，修改时间相同按照 id 降序
+    根据菜品分类、起售状态查询菜品( 不包含菜品口味、分类名称 )
+    按照修改时间降序排列，修改时间相同按照 id 降序
     -->
-    <select id="selectDishVOByCategoryIdAndStatusWithoutFlavors" resultType="com.sky.vo.DishVO">
-        SELECT d.id, d.name, d.category_id, d.price, d.image, d.description, d.status, d.create_time, d.update_time, d.create_user, d.update_user
+    <select id="listItemVOsByCategoryIdAndStatusWithoutFlavors" resultType="com.sky.vo.user.dish.UserDishListItemVO">
+        SELECT id, category_id, name, price, image, description
+        FROM dish
+        WHERE category_id = #{categoryId} AND status = #{status}
+        ORDER BY update_time DESC, id DESC
+        <!--
+        TODO: 如果需要展示该菜品的分类名称, 则替换为下面的 SQL
+        SELECT d.id, d.category_id, d.name, d.price, d.image, d.description
                 , c.name AS categoryName
-        FROM dish AS d
+        FROM (
+            SELECT id, category_id, name, price, image, description, update_time
+            FROM dish
+            WHERE category_id = #{categoryId} AND status = #{status}
+        ) AS d
         LEFT JOIN category AS c
         ON d.category_id = c.id
-        WHERE d.category_id = #{categoryId} AND d.status = #{status}
+
+        注意如果在联表前排序, 表格合并时会丢失原来的排序, 应该在最后来排序
         ORDER BY d.update_time DESC, d.id DESC
+        -->
     </select>
 
     <!--

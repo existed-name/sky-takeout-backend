@@ -21,12 +21,14 @@ import com.sky.projection.setmeal.SetmealIdProjection;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.utils.DishCacheManager;
+import com.sky.utils.ListUtils;
 import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
 import com.sky.vo.DishVO;
 import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
+import com.sky.vo.user.dish.UserDishListItemVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -328,26 +330,35 @@ public class DishServiceImpl implements DishService {
 
     @Transactional( readOnly = true )
     @Override
-    public List< DishVO > listEnabledByCategoryId( Long categoryId ){
+    public List< UserDishListItemVO > listEnabledByCategoryId( Long categoryId ){
         /*
-            先看缓存有无该分类的菜品, 无则缓存菜品
-            业务前缀:分类 id -> DishVOList 对象
-            RedisKey -> Value
+            检验是否存在该分类
+            之后先看缓存有无该分类的菜品, 无则查数据库、缓存菜品
+            key = 业务前缀:分类 id -> value = DishVOList
          */
-        ValueOperations< String, Object > valueOperations = redisTemplate.opsForValue();
+        long countByCategoryId = categoryMapper.countById( categoryId );
+        NotFoundUtil.throwIfCountZero( countByCategoryId, MessageConstant.CATEGORY_NOT_FOUND );
 
+        ValueOperations< String, Object > valueOperations = redisTemplate.opsForValue();
         String redisKey = RedisConstant.Dish.formatRedisKey( categoryId );
         Object object = valueOperations.get( redisKey );
-        List< DishVO > dishVOList = ( List< DishVO > ) object;
+        /*
+            IDE 警告强转有问题, 但是为什么端到端测试正常展示数据, 前后端也没有遇到问题?
+            主要原因是 com.sky.config.RedisConfiguration 配置了序列化器,
+            显式设置 GenericJackson2JsonRedisSerializer
+            写入时会在 JSON 里带 @class 类型信息，读取时自动还原具体对象，强转基本安全,
+            但如果改了类、跨服务, 还是会有风险
+            TODO: 封装泛型读取方法, 读取的对象用 objectMapper.convertValue + 指定 TypeReference 显式转换
+         */
+        List< UserDishListItemVO > dishListItemVOs = ( List< UserDishListItemVO > ) object;
 
         // 备注: 缓存中的空列表说明该分类确实没菜品，也应该返回前端, 无需 isEmpty 判断
-        if ( dishVOList != null ){
-            return dishVOList;
+        if ( dishListItemVOs != null ){
+            return dishListItemVOs;
         }
 
-        List< DishVO > enabled = dishMapper.selectDishVOByCategoryIdAndStatusWithoutFlavors( categoryId, StatusConstant.ENABLE );
-        enabled = setFlavorsToDishVOList( enabled );
-        // 业务前缀:分类 id -> DishVOList 对象, 同时注意缓存有效时间
+        List< UserDishListItemVO > enabled = dishMapper.listItemVOsByCategoryIdAndStatusWithoutFlavors( categoryId, GoodsStatus.ON_SALE.getStatus() );
+        setFlavorsToDishVOList( enabled );
         valueOperations.set( redisKey, enabled, RedisConstant.Dish.CACHE_TTL );
 
         return enabled;
@@ -372,30 +383,34 @@ public class DishServiceImpl implements DishService {
     }
 
     /**
-     * 抽取公共逻辑: dishVOList 判空、设置 DishFlavorList
-     * <br>
-     * DishVO = Dish + categoryName + DishFlavorList
+     * 查询某批 dishVO 对应的口味, 并组装到 dishVO 中( DishVO = Dish + categoryName + DishFlavorList )
+     * <p>
+     *     如果其他地方同样需要查询、设置菜品口味, 可以考虑把那个地方的 dishVO 用{@link DishConverter}转成当前
+     *     的参数类型, 然后再拿到菜品口味或者转回原类型列表
+     * </p>
      *
-     * @param dishVOList Mapper 查询好的 VO 列表(不带 DishFlavors )
-     * @return 完整的 VO 列表
+     * @param dishItemVOs 通过 Mapper 查询到的 VO 列表, 不带 DishFlavors, 包含 id 等字段
+     * @return 设置菜品口味的数据项列表, 可以忽略该返回值, 因为方法内部没有创建新链表、直接通过对象引用设置字段
      */
-    private List< DishVO > setFlavorsToDishVOList( List< DishVO > dishVOList ){
-        if ( dishVOList == null || dishVOList.isEmpty() ){
-            // 测试发现 DishFlavorMapper 报错空 in( )，需要提前对 id 链表判空
-            return dishVOList;
+    private List< UserDishListItemVO > setFlavorsToDishVOList( List< UserDishListItemVO > dishItemVOs ){
+        /*
+            逻辑
+            拿到这批 dish 的 id 查出对应的口味
+            然后按照 dishId 分组、组装
+         */
+        // 提前结束, 同时避免空链表进入 sql in( . )
+        if ( ListUtils.isEmpty( dishItemVOs ) ){
+            return dishItemVOs;
         }
 
-        // 管理端原型只需要展示 name, price, status, 接口文档也只涉及 Dish 属性 + CategoryName，无 DishFlavor
-        // 但是用户端需要全部展示
-        // 而且从业务上来看，应该保持 VO 完整，所以这里还是要设置 DishFlavor
-        List< Long > dishIdList = dishVOList.stream().map( DishVO::getId ).toList();
+        List< Long > dishIdList = dishItemVOs.stream().map( UserDishListItemVO::getId ).toList();
         List< DishFlavor > dishFlavors = dishFlavorMapper.selectByDishIdList( dishIdList );
         Map< Long, List< DishFlavor > > dishIdToFlavorsMap = dishFlavors.stream().collect( Collectors.groupingBy( DishFlavor::getDishId ) );
-        dishVOList.forEach( dishVO -> dishVO.setFlavors(
-                dishIdToFlavorsMap.getOrDefault( dishVO.getId(), dishVO.getFlavors() )
+        dishItemVOs.forEach( dishItemVO -> dishItemVO.setFlavors(
+                dishIdToFlavorsMap.getOrDefault( dishItemVO.getId(), dishItemVO.getFlavors() )
         ) );
 
-        return dishVOList;
+        return dishItemVOs;
     }
 
 

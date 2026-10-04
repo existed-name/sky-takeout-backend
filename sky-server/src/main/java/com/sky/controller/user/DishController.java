@@ -1,8 +1,10 @@
 package com.sky.controller.user;
 
+import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
+import com.sky.vo.user.dish.UserDishListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +27,7 @@ import java.util.List;
 @Slf4j
 @Api( tags = "菜品管理接口" )
 @RestController( "userDishController" )
-@RequestMapping( "/user/dish" )
+@RequestMapping( "/user/dishes" )
 public class DishController {
     // ==================== 常量 ====================
 
@@ -50,13 +52,15 @@ public class DishController {
      */
     @ApiOperation( value = "根据分类 id 查询菜品" )
     @GetMapping( "/list" )
-    public Result< List< DishVO > > list(
-            @RequestParam( name = "categoryId" ) // 用户端要求必须分类
-            @NotNull( message = "菜品分类 id 不能为空" )
-            @Positive( message = "菜品分类 id 必须是正整数" ) Long categoryId ){
-        log.info( "查询分类 id = {} 的菜品", categoryId );
-        List< DishVO > dishVOList = dishService.listEnabledByCategoryId( categoryId );
-        return Result.success( dishVOList );
+    public Result< List< UserDishListItemVO > > list(
+            @RequestParam( name = "categoryId", required = true ) // 用户端要求必须分类
+            @Positive( message = "菜品分类 id 必须是正整数" )
+            Long categoryId
+    ){
+        Long currentUserId = BaseContext.getCurrentId();
+        log.info( "id = {} 的用户查询分类 id = {} 的菜品", currentUserId, categoryId );
+        List< UserDishListItemVO > dishListItemVOs = dishService.listEnabledByCategoryId( categoryId );
+        return Result.success( dishListItemVOs );
     }
 
 

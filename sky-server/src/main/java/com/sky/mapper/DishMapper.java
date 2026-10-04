@@ -8,6 +8,7 @@ import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
 import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
+import com.sky.vo.user.dish.UserDishListItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
@@ -104,17 +105,22 @@ public interface DishMapper {
      *     按照修改时间降序排列，修改时间相同按照 id 降序
      * </p>
      *
-     * @param categoryId 分类 id
+     * @param categoryId 分类 id, 可为空
      * @return 菜品数据项列表, 参数为空，查询所有菜品；参数无效则查询为空列表
      */
     List< DishListItemVO > listItemVOsByCategoryIdWithoutFlavors( @Param( "categoryId" ) Long categoryId );
 
     /**
-     * 根据菜品分类、起售状态查询菜品 VO( <b>不包含菜品口味</b> )
-     * <br>
-     * 按照修改时间降序排列，修改时间相同按照 id 降序
+     * 根据菜品分类、起售状态查询菜品( <b>不包含菜品口味、分类名称</b> )
+     * <p>
+     *     按照修改时间降序排列，修改时间相同按照 id 降序
+     * </p>
+     *
+     * @param categoryId 分类 id, 不可为空
+     * @param status 起售状态{@link com.sky.enumeration.GoodsStatus}
+     * @return 菜品数据项列表
      */
-    List< DishVO > selectDishVOByCategoryIdAndStatusWithoutFlavors( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
+    List< UserDishListItemVO > listItemVOsByCategoryIdAndStatusWithoutFlavors( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
 
     /**
      * 根据 id 查询该菜品的分类 id, 用于组装 RedisKey = 业务前缀:分类 id
