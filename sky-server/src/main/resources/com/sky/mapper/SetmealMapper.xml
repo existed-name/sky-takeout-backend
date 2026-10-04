@@ -175,22 +175,33 @@
     </select>
 
     <!--
-     根据套餐分类 id、起售状态查询对应的套餐 VO = setmeal + categoryName
-     *     <b>不包含套餐-菜品关联关系、前端用不到的字段, 参数不可为空</b>
-     * 按修改时间降序，修改时间相同按照 id 降序
+    根据套餐分类 id、起售状态查询对应的套餐数据项
+    按修改时间降序排列，修改时间相同按照 id 降序排列
+    @return 套餐数据项列表, <b>不包含关联菜品信息、分类名称</b>
      -->
-    <select id="selectVOByCategoryIdAndStatusWithoutRelation" resultType="com.sky.vo.SetmealVO">
-        SELECT s.id, s.name, s.price, s.description, s.image
-<!--             , s.category_id , s.status , s.create_time, s.update_time, s.create_user, s.update_user-->
-                , c.name AS categoryName
+    <select id="listItemVOsByCategoryIdAndStatusWithoutRelation" resultType="com.sky.vo.user.setmeal.UserSetmealListItemVO">
+        SELECT s.id, s.category_id, s.name, s.price, s.description, s.image
         FROM setmeal AS s
-        LEFT JOIN category AS c
-        ON s.category_id = c.id
         <where>
             AND s.category_id = #{categoryId}
             AND s.status = #{status}
         </where>
         ORDER BY s.update_time DESC, s.id DESC
+
+        <!--
+        TODO: 如果需要展示该套餐的分类名称, 则替换为下面的 SQL
+        SELECT s.id, s.category_id, s.name, s.price, s.description, s.image
+                , c.name AS categoryName
+        FROM (
+            SELECT id, category_id, name, price, status, description, image, update_time
+            FROM setmeal
+            WHERE category_id = #{categoryId}
+                    AND status = #{status}
+        ) AS s
+        LEFT JOIN category AS c
+        ON s.category_id = c.id
+        ORDER BY s.update_time DESC, s.id DESC
+        -->
     </select>
 
     <!--

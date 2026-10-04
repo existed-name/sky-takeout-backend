@@ -10,6 +10,7 @@ import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
 import com.sky.vo.setmeal.SetmealPageQueryItemVO;
+import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
@@ -154,13 +155,16 @@ public interface SetmealMapper {
     List< SetmealVO > selectSetmealVOByCategoryIdWithoutSetmealDishRelation( @Param( "categoryId" ) Long categoryId );
 
     /**
-     * 根据套餐分类 id、起售状态查询对应的套餐 VO = setmeal + categoryName
+     * 根据套餐分类 id、起售状态查询对应的套餐数据项
      * <p>
-     *     <b>不包含套餐-菜品关联关系、前端用不到的字段, 参数不可为空</b>
+     *     按修改时间降序排列，修改时间相同按照 id 降序排列
      * </p>
-     * 按修改时间降序，修改时间相同按照 id 降序
+     *
+     * @param categoryId 套餐 id, 不可为空
+     * @param status 起售状态, {@link com.sky.enumeration.GoodsStatus}, 不可为空
+     * @return 套餐数据项列表, <b>不包含关联菜品信息、分类名称</b>
      */
-    List< SetmealVO > selectVOByCategoryIdAndStatusWithoutRelation( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
+    List< UserSetmealListItemVO > listItemVOsByCategoryIdAndStatusWithoutRelation( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
 
     /**
      * 查询套餐包含的菜品信息

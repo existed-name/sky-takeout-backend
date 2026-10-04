@@ -2,7 +2,6 @@ package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
 import com.sky.constant.RedisConstant;
-import com.sky.constant.StatusConstant;
 import com.sky.convertor.SetmealConverter;
 import com.sky.dto.setmeal.SetmealDTO;
 import com.sky.dto.setmeal.SetmealPageQueryDTO;
@@ -26,6 +25,7 @@ import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
 import com.sky.vo.setmeal.SetmealPageQueryItemVO;
+import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -278,23 +278,31 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Transactional( readOnly = true )
     @Override
-    public List< SetmealVO > listEnabledByCategoryId( Long categoryId ){
+    public List< UserSetmealListItemVO > listEnabledByCategoryId( Long categoryId ){
         /*
-            缓存操作: 确定 RedisKey -> 查看是否已缓存对应的值 -> 有则直接返回，否则查数据库
-            不过这里的缺点是 SetmealVO 跟关联菜品分开的，不过也可以分开缓存
+            分类存在性判断
+            缓存是否包含套餐列表, 无缓存则查库、设置缓存
+
+            容易昏的是缓存 RedisKey
+            套餐 = 套餐本体 + 关联菜品信息
+            这里根据业务场景拆分的
+            1 个分类 id → 1 个套餐本体列表
+            1 个套餐 id → 1 个关联菜品信息列表
          */
+        long countById = categoryMapper.countById( categoryId );
+        NotFoundUtil.throwIfCountZero( countById, MessageConstant.CATEGORY_NOT_FOUND );
+
         String redisKey = RedisConstant.Setmeal.formatRedisKey( categoryId );
         ValueOperations< String, Object > valueOperations = redisTemplate.opsForValue();
-        List< SetmealVO > setmealVOList = ( List< SetmealVO > ) valueOperations.get( redisKey );
-        if ( setmealVOList != null ){
-            // 空列表也算缓存内容
-            return setmealVOList;
+        Object object = valueOperations.get( redisKey );
+        List< UserSetmealListItemVO > setmealListItemVOs = ( List< UserSetmealListItemVO > ) object;
+        // 空列表也算缓存内容
+        if ( setmealListItemVOs != null ){
+            return setmealListItemVOs;
         }
 
-        List< SetmealVO > enabled = setmealMapper.selectVOByCategoryIdAndStatusWithoutRelation( categoryId, StatusConstant.ENABLE );
+        List< UserSetmealListItemVO > enabled = setmealMapper.listItemVOsByCategoryIdAndStatusWithoutRelation( categoryId, GoodsStatus.ON_SALE.getStatus() );
         valueOperations.set( redisKey, enabled, RedisConstant.Setmeal.CACHE_TTL );
-        // 这里不需要关联关系
-        // return setRelationListToSetmealVOList( enabled );
         return enabled;
     }
 

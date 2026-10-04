@@ -6,6 +6,7 @@ import com.sky.result.PageResult;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
+import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 
 import java.util.List;
 
@@ -74,11 +75,12 @@ public interface SetmealService {
     List< SetmealVO > listByCategoryId( Long categoryId );
 
     /**
-     * <b>用户端</b>: 根据套餐分类 id 查询<b>起售的</b>套餐
-     * <p>
-     * SetmealVO = Setmeal + categoryName + SetmealDish, 而这里不需要关联关系 SetmealDish
+     * 用户端查询某个分类的<b>起售</b>套餐
+     *
+     * @param categoryId 分类 id, 由业务类检验是否存在该分类
+     * @return 套餐数据项列表, <b>不包含关联菜品信息</b>
      */
-    List< SetmealVO > listEnabledByCategoryId( Long categoryId );
+    List< UserSetmealListItemVO > listEnabledByCategoryId( Long categoryId );
 
     /**
      * <b>用户端</b>: 查询套餐包含的菜品信息

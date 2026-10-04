@@ -1,9 +1,11 @@
 package com.sky.controller.user;
 
+import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.SetmealService;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
+import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +25,9 @@ import java.util.List;
  * @CreateTime 2026/6/7 20:42
  */
 @Slf4j
-@Api( tags = "套餐接口" )
+@Api( tags = "用户端套餐接口" )
 @RestController( "userSetmealController" )
-@RequestMapping( "/user/setmeal" )
+@RequestMapping( "/user/setmeals" )
 public class SetmealController {
     // ==================== 常量 ====================
 
@@ -50,15 +52,15 @@ public class SetmealController {
      */
     @ApiOperation( value = "根据套餐分类 id 查询起售的套餐" )
     @GetMapping( "/list" )
-    public Result< List< SetmealVO > > list(
-            @RequestParam( name = "categoryId" ) // 用户端接口文档要求不能为空
-            @NotNull( message = "套餐分类 id 不能为空" )
-            @Positive( message = "套餐分类 id 必须是正整数" ) Long categoryId ){
-        String logInfo = // ( categoryId == null ) ? "所有套餐" :
-                "分类 id = " + categoryId;
-        log.info( "查询套餐: {}", logInfo );
-        List< SetmealVO > setmealVOList = setmealService.listEnabledByCategoryId( categoryId );
-        return Result.success( setmealVOList );
+    public Result< List< UserSetmealListItemVO > > list(
+            @RequestParam( name = "categoryId", required = true )
+            @Positive( message = "套餐分类 id 必须是正整数" )
+            Long categoryId
+    ){
+        Long currentUserId = BaseContext.getCurrentId();
+        log.info( "id = {} 的用户查看分类 id = {} 的套餐", currentUserId, categoryId );
+        List< UserSetmealListItemVO > setmealListItemVOs = setmealService.listEnabledByCategoryId( categoryId );
+        return Result.success( setmealListItemVOs );
     }
 
     /**
