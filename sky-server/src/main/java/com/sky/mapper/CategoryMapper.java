@@ -6,6 +6,7 @@ import com.sky.entity.Category;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.category.CategoryListItemVO;
 import com.sky.vo.category.CategoryPageQueryItemVO;
+import com.sky.vo.user.category.UserCategoryListItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -48,13 +49,16 @@ public interface CategoryMapper {
     int updateById( @Param( "category" ) Category category );
 
     /**
-     * 查询某种状态、某种类型对应的所有分类
+     * 查询某种状态、某种类型的所有分类
      * <p>
-     *     按照设定优先级升序排列，优先级相同按照创建时间降序排列
+     * 按照管理端设定的优先级升序排列，优先级相同按照创建时间降序排列，相同则按 id 降序排列
      * </p>
-     * <b>SQL 直接根据 status 筛选，传参不能为空</b>
+     *
+     * @param type 商品分类的类型{@link com.sky.enumeration.CategoryType}, 为 null 时查询所有分类
+     * @param status 启用状态{@link com.sky.enumeration.EnableStatus}
+     * @return 分类数据项列表
      */
-    List< Category> selectByTypeAndStatus( @Param( "type" ) Integer type, @Param( "status" ) Integer enable );
+    List< UserCategoryListItemVO > selectByTypeAndStatus( @Param( "type" ) Integer type, @Param( "status" ) Integer status );
 
     /**
      * 条件查询分类, 由 PageHelper 完成分页

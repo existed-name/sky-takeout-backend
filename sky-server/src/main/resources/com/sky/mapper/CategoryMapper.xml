@@ -42,20 +42,17 @@
     </update>
 
     <!--
-     * 查询某种状态、某种类型对应的所有分类
-     * <p>
-     *     按照设定优先级升序排列，优先级相同按照创建时间降序排列
-     * </p>
-     * <b>SQL 直接根据 status 筛选，传参不能为空</b>
+    查询某种状态、某种类型的所有分类
+    按照管理端设定的优先级升序排列，优先级相同按照创建时间降序排列，相同则按 id 降序排列
     -->
-    <select id="selectByTypeAndStatus" resultType="com.sky.entity.Category">
-        SELECT id, type, name, sort, status, create_time, update_time, create_user, update_user
+    <select id="selectByTypeAndStatus" resultType="com.sky.vo.user.category.UserCategoryListItemVO">
+        SELECT id, type, name
         FROM category
         <where>
+            status = #{status}
             <if test="type != null">AND type = #{type}</if>
-            AND status = #{status}
         </where>
-        ORDER BY sort ASC, create_time DESC
+        ORDER BY sort ASC, create_time DESC, id DESC
     </select>
 
     <!--

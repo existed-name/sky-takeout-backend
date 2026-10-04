@@ -2,9 +2,9 @@ package com.sky.service;
 
 import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.category.CategoryPageQueryDTO;
-import com.sky.entity.Category;
 import com.sky.result.PageResult;
 import com.sky.vo.category.CategoryListItemVO;
+import com.sky.vo.user.category.UserCategoryListItemVO;
 
 import java.util.List;
 
@@ -62,7 +62,10 @@ public interface CategoryService {
     List< CategoryListItemVO > listByType( Integer type );
 
     /**
-     * <b>用户端</b>: 查询启用的所有分类(菜品/套餐分类)
+     * 用户端查询所有启用的商品分类(菜品/套餐分类)
+     *
+     * @param type 分类的类型{@link com.sky.enumeration.CategoryType}, null 表示查询所有分类
+     * @return 商品分类数据项列表
      */
-    List< Category> listEnabledByType( Integer type );
+    List< UserCategoryListItemVO > listEnabledByType( Integer type );
 }

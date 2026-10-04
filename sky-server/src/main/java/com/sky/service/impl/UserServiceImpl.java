@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
 
         String userJwt = generateUserJwtToken( userId );
         // 本地端到端测试需要用到 token, 正常情况应该关闭
-//        log.info( "当前用户登录认证 jwt = {}", userJwt );
+        log.info( "当前用户登录认证 jwt = {}", userJwt );
         return UserLoginVO.builder()
                 .id( userId )
                 .openid( openid )

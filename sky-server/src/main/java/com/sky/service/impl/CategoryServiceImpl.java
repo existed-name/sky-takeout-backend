@@ -1,7 +1,6 @@
 package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
-import com.sky.constant.StatusConstant;
 import com.sky.convertor.CategoryConverter;
 import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.category.CategoryPageQueryDTO;
@@ -18,6 +17,7 @@ import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.vo.category.CategoryListItemVO;
 import com.sky.vo.category.CategoryPageQueryItemVO;
+import com.sky.vo.user.category.UserCategoryListItemVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -158,9 +158,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional( readOnly = true )
     @Override
-    public List< Category > listEnabledByType( Integer type ){
-        List< Category > categoryList = categoryMapper.selectByTypeAndStatus( type, StatusConstant.ENABLE );
-        return categoryList;
+    public List< UserCategoryListItemVO > listEnabledByType( Integer type ){
+        if ( type != null ){
+            CategoryType.throwIfInvalid( type );
+        }
+        List< UserCategoryListItemVO > categoryListItemVOs = categoryMapper.selectByTypeAndStatus( type, EnableStatus.ENABLED.getStatus() );
+        return categoryListItemVOs;
     }
 
 
