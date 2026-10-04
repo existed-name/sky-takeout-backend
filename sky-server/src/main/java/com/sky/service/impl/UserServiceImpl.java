@@ -2,7 +2,7 @@ package com.sky.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sky.constant.HttpClientConstant;
+import com.sky.constant.WeChatHttpClientConstant;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.dto.user.user.UserLoginDTO;
@@ -15,6 +15,7 @@ import com.sky.properties.JwtProperties;
 import com.sky.properties.WeChatProperties;
 import com.sky.service.UserService;
 import com.sky.utils.AssertUtils;
+import com.sky.utils.HttpClientUtil;
 import com.sky.utils.JwtUtil;
 import com.sky.utils.StringUtils;
 import com.sky.vo.UserLoginVO;
@@ -116,97 +117,55 @@ public class UserServiceImpl implements UserService {
     /**
      * 通过微信登录 API 获取认证信息( sessionId, openid )
      *
-     * @param code 微信用户授权码
-     * @return <b>保证非空, 空则抛异常</b>
+     * @param code 微信用户授权码, 由调用方保证非空、有效
+     * @return 微信登录认证信息, <b>保证非空, 空则抛异常</b>
+     * @throws WeChatAuthFailedException 当请求失败、响应体 json 反序列化失败时,
+     *              将内部异常包装为业务异常抛出, 同时记录日志信息
      * @see <a href="https://developers.weixin.qq.com/minigame/dev/api-backend/login/api_code2session.html">微信官网登录 API 使用操作</alink="https://developers.weixin.qq.com/minigame/dev/api-backend/login/api_code2session.html">
      */
     private WeChatSessionDTO wechatCode2Session( String code ){
         /*
-            对比 2 种操作
-            * 外层都是 try-with-resources 自动管理 HttpClient
-            * 内部还是需要手动关闭创建的对象
-            1. 内部直接创建对象，抛出异常，交给 try-with-resources 统一捕获、统一抛出业务异常
-                * 好处: 代码清晰、重复性小
-                * 缺点: 不好排查哪里创建出错
-            2. 内部创建对象时 try-catch-业务异常 + 日志 + 关闭资源
-                * 好处: 便于排查
-                * 缺点: 太丑陋了、重复性高、每个 catch 块都要记得关闭资源、而且顺利进行后也要关闭资源
-                * 如果创建对象抛出的异常不一样就好了，可以直接外层多个 catch 分类
+            组装完整 uri, 发送 GET 请求拿到响应体
+            把响应体序列化为 json 字符串
+            再序列化为目标 dto 对象
          */
-        try ( CloseableHttpClient httpClient = HttpClients.createDefault() ) {
+
+        String responseString = null;
+        Map< String, String > queryParamsMap = null;
+        try {
             // GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JS_CODE&grant_type=GRANT_TYPE
-            HttpGet httpGet = new HttpGet(
-                    HttpClientConstant.WECHAT_LOGIN_URL
-                    + HttpClientConstant.formatQueryParams(
-                            weChatProperties.getAppid(),
-                            weChatProperties.getSecret(),
-                            code
-                    ) );
-
-            // 响应体  -  局部变量不会初始化，必须显式赋 null
-            CloseableHttpResponse httpResponse = null;
-            try {
-                httpResponse = httpClient.execute( httpGet );
-            } catch ( IOException e ){
-                log.error( "获取用户登录信息时, HttpClient 执行 Get 操作失败", e );
-                // 出现异常记得提前关闭资源
-                // 由于异常、正常情况 finally 都会执行，而正常情况不需要提前关闭资源，就不需要 finally，直接在 catch 块里面关闭资源
-                closeResource( httpResponse );
-                throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
-            }
-
-            // 响应体数据
-            HttpEntity responseEntity = httpResponse.getEntity();
-            String responseString = null;
-            try {
-                responseString = EntityUtils.toString( responseEntity );
-            } catch ( IOException e ){
-                log.error( "解析用户登录响应体失败", e );
-                closeResource( httpResponse );
-                throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
-            }
-
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            /*  JSON 解析成 Map 不好拓展、维护, 推荐封装对象
-            Map< String, String > responseMap = objectMapper.readValue( responseString, new TypeReference< Map< String, String > >() {} );
-            String sessionId = responseMap.get( HttpClientConstant.SESSION_ID_STRING );
-            String openid = responseMap.get( HttpClientConstant.OPEN_ID_STRING );
-             */
-
-            WeChatSessionDTO wechatSessionDTO = null;
-            try {
-                wechatSessionDTO = objectMapper.readValue( responseString, WeChatSessionDTO.class );
-            } catch ( JsonProcessingException e ){
-                log.error( "用户登录响应体转换 WeChatSessionDTO 失败", e );
-            }
-
-            // 最后还需要再手动关闭
-            closeResource( httpResponse );
-            // 转换 DTO 失败后，DTO 应该为 null
-            // 单独从 catch 块拎出来，是为了少写 1 次关闭资源 + 避免传回空对象
-            if ( wechatSessionDTO == null ){
-                throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
-            }
-            return wechatSessionDTO;
-        } catch ( IOException e ){
-            log.error( "HttpClient 创建失败", e );
-            throw new WeChatAuthFailedException( MessageConstant.LOGIN_FAILED );
+            queryParamsMap = Map.ofEntries(
+                    Map.entry( WeChatHttpClientConstant.StringValue.APP_ID, weChatProperties.getAppid() ),
+                    Map.entry( WeChatHttpClientConstant.StringValue.SECRET, weChatProperties.getSecret() ),
+                    Map.entry( WeChatHttpClientConstant.StringValue.JS_CODE, code ),
+                    Map.entry( WeChatHttpClientConstant.StringValue.GRANT_TYPE, WeChatHttpClientConstant.DEFAULT_GRANT_TYPE )
+            );
+            responseString = HttpClientUtil.doGet(
+                    WeChatHttpClientConstant.WECHAT_LOGIN_URL,
+                    queryParamsMap
+            );
+        } catch ( Exception e ){
+            log.error( "微信登录请求失败, 请求参数 = {}, 响应体 json 字符串 = {}",
+                    queryParamsMap, responseString, e );
+            throw new WeChatAuthFailedException( MessageConstant.WECHAT_LOGIN_SERVICE_ERROR );
         }
-    }
 
-    /**
-     * 抽取公共的关闭资源逻辑
-     */
-    private void closeResource( Closeable closeable ){
-        if ( closeable != null ){
-            try {
-                closeable.close();
-            } catch ( IOException e ){
-                // 感觉关闭失败不影响系统、业务运行，就只是 warn 而不是 error
-                log.warn( "{} 关闭失败", closeable.toString() );
-            }
+        /*
+            JSON 解析成 Map 不好拓展、维护, 推荐封装对象
+         */
+        ObjectMapper objectMapper = new ObjectMapper();
+        WeChatSessionDTO wechatSessionDTO = null;
+        try {
+            wechatSessionDTO = objectMapper.readValue( responseString, WeChatSessionDTO.class );
+        } catch ( JsonProcessingException e ){
+            log.error( "微信登录响应体字符串反序列化为 WeChatSessionDTO 失败, 响应体 json 字符串 = {}", responseString, e );
+            throw new WeChatAuthFailedException( MessageConstant.WECHAT_LOGIN_STATUS_PARSE_ERROR );
         }
+        if ( wechatSessionDTO == null ){
+            log.error( "微信登录响应体字符串反序列化的 WeChatSessionDTO 为 null, 响应体 json 字符串 = {}", responseString );
+            throw new WeChatAuthFailedException( MessageConstant.WECHAT_LOGIN_STATUS_PARSE_ERROR );
+        }
+        return wechatSessionDTO;
     }
 
     /**

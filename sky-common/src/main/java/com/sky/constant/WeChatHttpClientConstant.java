@@ -2,7 +2,15 @@ package com.sky.constant;
 
 import org.apache.http.client.utils.URIBuilder;
 
-public class HttpClientConstant {
+/**
+ * 微信登录相关请求常量
+ * <p>
+ *     TODO: 整理为枚举类
+ * </p>
+ *
+ * @UpdateTime 2026/10/3 20:58
+ */
+public class WeChatHttpClientConstant {
     // ==================== 常量 ====================
     /** 微信登录官网 API */
     public static final String WECHAT_LOGIN_URL = "https://api.weixin.qq.com/sns/jscode2session";
@@ -19,8 +27,8 @@ public class HttpClientConstant {
         public static final String JS_CODE = "js_code";
         /** grant_type 字符串常量 */
         public static final String GRANT_TYPE = "grant_type";
-        /** session_id 字符串常量, 用于 JSON 数据键值对映射 */
-        public static final String SESSION_ID = "session_id";
+        /** session_key 字符串常量, 用于 JSON 数据键值对映射 */
+        public static final String SESSION_KEY = "session_key";
         /** openid 字符串常量, 用于 JSON 数据键值对映射 */
         public static final String OPEN_ID = "openid";
 
@@ -35,14 +43,14 @@ public class HttpClientConstant {
 
 
     // ==================== 构造器 ====================
-    private HttpClientConstant(){}
+    private WeChatHttpClientConstant(){}
 
 
     // ==================== 公有方法 ====================
     /**
      * 拼接请求参数
      * <p>
-     * grantType 授权类型使用默认的{@link com.sky.constant.HttpClientConstant#DEFAULT_GRANT_TYPE}
+     * grantType 授权类型使用默认的{@link WeChatHttpClientConstant#DEFAULT_GRANT_TYPE}
      *
      * @param appId 开发者小程序 id
      * @param appSecret 开发者小程序密钥

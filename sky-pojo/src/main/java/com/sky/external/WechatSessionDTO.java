@@ -24,6 +24,7 @@ public class WeChatSessionDTO {
 
     // ==================== 实例变量 ====================
     /** 用户唯一标识 */
+    @JsonProperty( "openid" ) // 对应返回数据 openid
     private String openid;
 
     /** 会话密钥 */

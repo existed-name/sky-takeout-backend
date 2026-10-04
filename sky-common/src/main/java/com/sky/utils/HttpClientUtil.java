@@ -52,19 +52,24 @@ public class HttpClientUtil {
                 进而找到实现类的子类 org.apache.http.client.methods.HttpGet
             3. 于是需要提前构建 HttpGet
             4. 于是需要提前构建 uri 拼接请求路径
+            5. 备注
+                try-with-resources 不管什么情况都可以自动关闭资源, 包括抛异常时
+                ( 无需再手动关闭资源, 编译器会把它展开成 try-catch-finally )
          */
         URI uri = null;
         try {
             URIBuilder uriBuilder = new URIBuilder( url );
-            nameToRequestParamsMap.forEach(
+            if ( nameToRequestParamsMap != null ){
+                nameToRequestParamsMap.forEach(
                     /*
                         本来是在 try 外面定义 URIBuilder、try 内赋值
                         但是 lambda 要求变量不变
                         Variable used in lambda expression should be final or effectively final
                         所以就合在一起构建、只输出产物 uri
                       */
-                    ( k, v ) -> uriBuilder.addParameter( k, v )
-            );
+                        ( k, v ) -> uriBuilder.addParameter( k, v )
+                );
+            }
             try {
                 uri = uriBuilder.build();
             } catch ( URISyntaxException e ){

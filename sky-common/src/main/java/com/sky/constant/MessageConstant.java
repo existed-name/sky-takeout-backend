@@ -86,9 +86,11 @@ public class MessageConstant {
     public static final String GOODS_STATUS_INVALID = "商品起售状态无效";
     public static final String FILED_TOO_LONG = "某个字段太长啦, 数据库塞不下~";
     public static final String SHOP_STATUS_INVALID = "店铺营业状态无效";
-    public static final String WECHAT_LOGIN_FAILED = "微信登录失败, 可能是系统故障";
+    public static final String WECHAT_LOGIN_FAILED = "微信登录失败, 请重试登录";
     public static final String WECHAT_CODE_INVALID = "微信用户授权码无效, 可能是超时失效";
     public static final String WECHAT_LOGIN_REPEATED = "该微信账号已经登录过了, 请检查是否已在其他设备上登录";
+    public static final String WECHAT_LOGIN_STATUS_PARSE_ERROR = "微信登录状态解析错误, 可能是系统故障, 请稍后重试";
+    public static final String WECHAT_LOGIN_SERVICE_ERROR = "微信登录服务异常, 可能是系统异常, 请稍后再试";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )
