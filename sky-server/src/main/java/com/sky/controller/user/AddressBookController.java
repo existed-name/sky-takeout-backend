@@ -32,7 +32,7 @@ import java.util.List;
 @Slf4j
 @Api( tags = "用户端地址簿管理接口" )
 @RestController( "userAddressController" )
-@RequestMapping( "/user/addressBook" )
+@RequestMapping( "/user/address-books" )
 public class AddressBookController {
     // ==================== 常量 ====================
 
@@ -69,9 +69,11 @@ public class AddressBookController {
      */
     @ApiOperation( "新增收货地址" )
     @PostMapping
-    public Result< Void > save( @RequestBody
+    public Result< Void > save(
+            @RequestBody
             @Validated( ValidationGroups.Create.class )
-                        AddressBookDTO addressBookDTO ){
+            AddressBookDTO addressBookDTO
+    ){
         Long userId = BaseContext.getCurrentId();
         log.info( "id  = {} 的用户新增收货地址: {}", userId, addressBookDTO );
         addressBookService.saveWithUserId( userId, addressBookDTO );

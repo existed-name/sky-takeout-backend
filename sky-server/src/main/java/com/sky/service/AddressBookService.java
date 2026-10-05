@@ -12,7 +12,10 @@ public interface AddressBookService {
     List< AddressBookVO > listByUserId( Long userId );
 
     /**
-     * 新增收货地址
+     * 用户端新增收货地址
+     *
+     * @param userId 用户 id
+     * @param addressBookDTO 地址簿信息
      */
     void saveWithUserId( Long userId, AddressBookDTO addressBookDTO  );
 

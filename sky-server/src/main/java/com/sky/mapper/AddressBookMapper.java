@@ -5,6 +5,7 @@ import com.sky.vo.AddressBookVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -29,8 +30,12 @@ public interface AddressBookMapper {
     List< AddressBookVO > selectVOListByUserId( @Param( "userId" ) Long userId );
 
     /**
-     * 新增收货地址, 注意<b>调用方设置 userId</b>
+     * 新增收货地址, 并进行主键回填
+     *
+     * @param addressBook 地址簿数据, <b>由调用方设置 userId</b>
+     * @return 新增数据行数, 通常为 1
      */
+    @Options( useGeneratedKeys = true, keyProperty = "id" )
     @Insert( """
             INSERT INTO address_book
                 ( user_id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default )

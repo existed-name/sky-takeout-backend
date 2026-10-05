@@ -4,6 +4,7 @@ import com.sky.constant.AddressBookConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.convertor.AddressBookConverter;
 import com.sky.dto.AddressBookDTO;
+import com.sky.enumeration.Gender;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
 import com.sky.vo.AddressBookVO;
@@ -47,10 +48,19 @@ public class AddressBookServiceImpl implements AddressBookService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void saveWithUserId( Long userId, AddressBookDTO addressBookDTO ){
+        /*
+            实现思路
+            业务检验: 大部分都在 dto 字段检验过了, 这里自己补了性别数字代码检验
+            dto 转实体对象
+            设置实体对象缺失的字段:
+              - userId
+              - 没有审计字段
+              - 是否为默认地址, 另外我没有考虑把首次创建的地址设为默认地址, 交给用户自己设置
+         */
+        Gender.throwIfInvalid( Integer.valueOf( addressBookDTO.getSex() ) );
+
         AddressBook entity = addressBookConverter.toEntity( addressBookDTO );
-        // DTO、VO 没有 userId 入库前需要手动给 entity 设置 userId
         entity.setUserId( userId );
-        // 以及其他字段的非空默认值
         if ( entity.getIsDefault() == null ){
             entity.setIsDefault( AddressBookConstant.NOT_DEFAULT );
         }

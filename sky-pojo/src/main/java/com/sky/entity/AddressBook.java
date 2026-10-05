@@ -34,7 +34,7 @@ public class AddressBook implements Serializable {
     /** 收货人手机号 */
     private String phone;
 
-    /** 性别：0 女  1 男 */
+    /** 性别：1 男 2 女 */
     private String sex;
 
     /** 省级区划编号 */
