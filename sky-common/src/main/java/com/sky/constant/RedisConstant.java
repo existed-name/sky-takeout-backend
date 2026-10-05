@@ -72,8 +72,9 @@ public class RedisConstant {
         /**
          * 组装套餐关联菜品的 RedisKey = {@link com.sky.constant.RedisConstant.Setmeal#SETMEAL_DISH_CACHE_PREFIX} + setmealId
          *
-         * @param setmealId 套餐 id, <b>不能为空</b>, 否则抛出异常 {@code IllegalArgumentException}
+         * @param setmealId 套餐 id, <b>不能为空</b>
          * @return {@code setmeal:dish:{setmealId}}
+         * @throws IllegalArgumentException 当套餐 id 为空时抛出
          */
         public static String formatDishRedisKey( Long setmealId ){
             return RedisConstant.formatRedisKey( SETMEAL_DISH_CACHE_PREFIX, setmealId );

@@ -46,6 +46,38 @@
     </select>
 
     <!--
+    查询某个套餐包含的菜品信息
+    数据项 = SetmealDish.copies + Dish.name、description、image
+    排序规则: 无
+    -->
+    <select id="selectDishItemVOListBySetmealId" resultType="com.sky.vo.user.setmeal.UserSetmealDishItemVO">
+        <!--
+        先分别查出左右表需要的字段、再 JOIN
+        其实并没有性能提升, 普通写法直接就可以交给优化器优化
+        除非子查询需要 GROUP BY、DISTINCT、LIMIT、UNION 等等操作
+        -->
+        SELECT sd.copies, d.name, d.description, d.image
+        FROM (
+            SELECT dish_id, copies
+            FROM setmeal_dish
+            WHERE setmeal_id = #{setmealId}
+        ) AS sd
+        LEFT JOIN (
+            SELECT id, name, description, image
+            FROM dish
+        ) AS d
+        ON sd.dish_id = d.id
+
+        <!--
+        SELECT sd.copies, d.name, d.image, d.description
+        FROM setmeal_dish AS sd
+        LEFT JOIN dish AS d
+        ON sd.dish_id = d.id
+        WHERE sd.setmeal_id = #{setmealId}
+        -->
+    </select>
+
+    <!--
     删除多个套餐对应的关联关系
     -->
     <delete id="deleteBySetmealIds">

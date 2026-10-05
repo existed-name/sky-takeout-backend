@@ -205,21 +205,6 @@
     </select>
 
     <!--
-     * 查询套餐包含的菜品信息
-     * <br>
-     * DishItemVO = SetmealDish + Dish
-     * <br>
-     * <b>无排序</b>
-     -->
-    <select id="selectDishItemVOListById" resultType="com.sky.vo.DishItemVO">
-        SELECT sd.copies, d.name, d.image, d.description
-        FROM setmeal_dish AS sd
-        LEFT JOIN dish AS d
-        ON sd.dish_id = d.id
-        WHERE sd.setmeal_id = #{setmealId}
-    </select>
-
-    <!--
     统计一批套餐里面、某种售卖状态的套餐数量
     -->
     <select id="countByIdsAndStatus" resultType="java.lang.Long">

@@ -3,9 +3,9 @@ package com.sky.service;
 import com.sky.dto.setmeal.SetmealDTO;
 import com.sky.dto.setmeal.SetmealPageQueryDTO;
 import com.sky.result.PageResult;
-import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
+import com.sky.vo.user.setmeal.UserSetmealDishItemVO;
 import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 
 import java.util.List;
@@ -83,9 +83,10 @@ public interface SetmealService {
     List< UserSetmealListItemVO > listEnabledByCategoryId( Long categoryId );
 
     /**
-     * <b>用户端</b>: 查询套餐包含的菜品信息
-     * <br>
-     * DishItemVO = SetmealDish + Dish
+     * 用户端查询套餐包含的菜品信息, SetmealDishItemVO = SetmealDish + Dish
+     *
+     * @param id 套餐 id
+     * @return 套餐关联菜品数据项列表
      */
-    List< DishItemVO > listDishItemVOById( Long id );
+    List< UserSetmealDishItemVO > listDishItemVOById( Long id );
 }

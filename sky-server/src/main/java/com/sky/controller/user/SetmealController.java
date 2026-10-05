@@ -3,19 +3,18 @@ package com.sky.controller.user;
 import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.SetmealService;
-import com.sky.vo.DishItemVO;
-import com.sky.vo.SetmealVO;
+import com.sky.vo.user.setmeal.UserSetmealDishItemVO;
 import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -24,6 +23,7 @@ import java.util.List;
  *
  * @CreateTime 2026/6/7 20:42
  */
+@Validated
 @Slf4j
 @Api( tags = "用户端套餐接口" )
 @RestController( "userSetmealController" )
@@ -67,14 +67,16 @@ public class SetmealController {
      * 查询套餐包含的菜品信息
      */
     @ApiOperation( value = "查询套餐包含的菜品" )
-    @GetMapping( "/dish/{id}" )
-    public Result< List< DishItemVO > > listRelationBySetmealId(
-            @PathVariable( name = "id" )
-            @NotNull( message = "套餐 id 不能为空" )
-            @Positive( message = "套餐 id 必须是正整数" ) Long id ){
-        log.info( "查询 id = {} 的套餐包含的菜品", id );
-        List< DishItemVO > dishItemVOList = setmealService.listDishItemVOById( id );
-        return Result.success( dishItemVOList );
+    @GetMapping( "/{id}/dishes" )
+    public Result< List< UserSetmealDishItemVO > > listRelationBySetmealId(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "套餐 id 必须是正整数" )
+            Long id
+    ){
+        Long currentUserId = BaseContext.getCurrentId();
+        log.info( "id = {} 的用户查询 id = {} 的套餐包含的菜品", currentUserId, id );
+        List< UserSetmealDishItemVO > setmealDishItemVOList = setmealService.listDishItemVOById( id );
+        return Result.success( setmealDishItemVOList );
     }
 
 

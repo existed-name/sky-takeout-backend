@@ -1,6 +1,7 @@
 package com.sky.mapper;
 
 import com.sky.entity.SetmealDish;
+import com.sky.vo.user.setmeal.UserSetmealDishItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -54,4 +55,16 @@ public interface SetmealDishMapper {
      * @return 删除数据行数
      */
     int deleteBatchBySetmealId( @Param( "setmealId" ) Long setmealId );
+
+    /**
+     * 查询某个套餐包含的菜品信息
+     * <p>
+     *     数据项 = SetmealDish.copies + Dish.name、description、image
+     * </p>
+     * 排序规则: 无
+     *
+     * @param setmealId 套餐 id
+     * @return 套餐关联菜品数据项列表
+     */
+    List< UserSetmealDishItemVO > selectDishItemVOListBySetmealId( @Param( "setmealId" ) Long setmealId );
 }

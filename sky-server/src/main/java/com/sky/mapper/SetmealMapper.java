@@ -6,10 +6,10 @@ import com.sky.dto.setmeal.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
 import com.sky.projection.setmeal.SetmealIdProjection;
-import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
 import com.sky.vo.setmeal.SetmealPageQueryItemVO;
+import com.sky.vo.user.setmeal.UserSetmealDishItemVO;
 import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.MapKey;
@@ -167,15 +167,6 @@ public interface SetmealMapper {
     List< UserSetmealListItemVO > listItemVOsByCategoryIdAndStatusWithoutRelation( @Param( "categoryId" ) Long categoryId, @Param( "status" ) Integer status );
 
     /**
-     * 查询套餐包含的菜品信息
-     * <br>
-     * DishItemVO = SetmealDish + Dish
-     * <br>
-     * <b>无排序</b>
-     */
-    List< DishItemVO > selectDishItemVOListById( @Param( "setmealId" ) Long id );
-
-    /**
      * 查询某个套餐所属的分类 id, 用于组装 RedisKey
      *
      * @param id 套餐 id
@@ -189,14 +180,17 @@ public interface SetmealMapper {
     Long selectCategoryIdById( @Param( "id" ) Long id );
 
     /**
-     * 判断该 id 对应的对象是否存在，如果存在返回 1，否则 0
+     * 判断该套餐是否存在
+     *
+     * @param id 套餐 id
+     * @return 如果存在返回 1，否则 0
      */
     @Select( """
             SELECT count( * )
             FROM setmeal
             WHERE id = #{id}
             """ )
-    long countById( @Param( "id" ) Long setmealId );
+    long countById( @Param( "id" ) Long id );
 
     /**
      * 查询完整的 Setmeal 对象

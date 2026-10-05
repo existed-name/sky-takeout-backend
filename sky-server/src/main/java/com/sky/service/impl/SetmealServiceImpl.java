@@ -21,10 +21,10 @@ import com.sky.utils.ListUtils;
 import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
-import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
 import com.sky.vo.setmeal.SetmealPageQueryItemVO;
+import com.sky.vo.user.setmeal.UserSetmealDishItemVO;
 import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -306,20 +306,33 @@ public class SetmealServiceImpl implements SetmealService {
         return enabled;
     }
 
+    @Transactional( readOnly = true )
     @Override
-    public List< DishItemVO > listDishItemVOById( Long id ){
-        // 业务模块: 套餐 - 改套餐关联的所有菜品，setmealId -> dishItemVoList
-        // 业务前缀: setmeal:dish: 来区分
+    public List< UserSetmealDishItemVO > listDishItemVOById( Long id ){
+        /*
+            判断套餐存在性
+            查缓存、不存在则查数据库 + 设置缓存
+            空列表也算缓存
+            对象 UserSetmealDishItemVO = SetmealDish 的 copies + Dish 的 name, description, image
+
+            1 个分类对应的套餐列表
+            setmeal:categoryId:{categoryId} → List< Setmeal... >
+            1 个套餐对应的菜品列表
+            setmeal:dish:{setmealId} → List< SetmealDishItemVO >
+         */
+        NotFoundUtil.throwIfCountZero( setmealMapper.countById( id ), MessageConstant.SETMEAL_NOT_FOUND );
+
         String redisKey = RedisConstant.Setmeal.formatDishRedisKey( id );
         ValueOperations< String, Object > valueOperations = redisTemplate.opsForValue();
-        List< DishItemVO > dishItemVOList = ( List< DishItemVO > ) valueOperations.get( redisKey );
-        if ( dishItemVOList != null ){
-            return dishItemVOList;
+        Object object = valueOperations.get( redisKey );
+        List< UserSetmealDishItemVO > setmealDishItemVOList = ( List< UserSetmealDishItemVO > ) object;
+        if ( setmealDishItemVOList != null ){
+            return setmealDishItemVOList;
         }
 
-        dishItemVOList = setmealMapper.selectDishItemVOListById( id );
-        valueOperations.set( redisKey, dishItemVOList, RedisConstant.Setmeal.DISH_CACHE_TTL );
-        return dishItemVOList;
+        setmealDishItemVOList = setmealDishMapper.selectDishItemVOListBySetmealId( id );
+        valueOperations.set( redisKey, setmealDishItemVOList, RedisConstant.Setmeal.DISH_CACHE_TTL );
+        return setmealDishItemVOList;
     }
 
 
