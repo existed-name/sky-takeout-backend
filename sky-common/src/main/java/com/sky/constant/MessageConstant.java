@@ -48,7 +48,7 @@ public class MessageConstant {
     public static final String NOT_LOGIN = "您还没有登录哦~";
     public static final String TOKEN_INVALID = "登录参数错误, 请重新登录";
     public static final String SHOPPING_CART_ADD_NULL = "购物车添加的数据不能为空，请至少选择一个菜品或者套餐";
-    public static final String INVALID_DATABASE_DATA = "数据库数据无效";
+    public static final String DATABASE_DATA_ERROR = "数据库数据错误, 请稍后再试";
     public static final String SHOPPING_CART_NOT_FOUND = "购物车数据不存在";
     public static final String SHOPPING_CART_USER_NOT_MATCH = "该购物车数据不属于当前用户";
     public static final String DEFAULT_ADDRESS_BOOK_NOT_FOUND = "默认地址簿不存在";
@@ -91,6 +91,7 @@ public class MessageConstant {
     public static final String WECHAT_LOGIN_REPEATED = "该微信账号已经登录过了, 请检查是否已在其他设备上登录";
     public static final String WECHAT_LOGIN_STATUS_PARSE_ERROR = "微信登录状态解析错误, 可能是系统故障, 请稍后重试";
     public static final String WECHAT_LOGIN_SERVICE_ERROR = "微信登录服务异常, 可能是系统异常, 请稍后再试";
+    public static final String SHOPPING_CART_ADD_TOO_MANY = "购物车不能同时添加菜品和套餐";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )

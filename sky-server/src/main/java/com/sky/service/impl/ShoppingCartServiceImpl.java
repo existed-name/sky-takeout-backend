@@ -3,22 +3,27 @@ package com.sky.service.impl;
 import com.sky.constant.FoodCopiesConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.ShoppingCartDTO;
-import com.sky.dto.ShoppingCartQueryDTO;
+import com.sky.dto.shoppingCart.ShoppingCartDTO;
+import com.sky.dto.shoppingCart.ShoppingCartQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.ShoppingCart;
 import com.sky.exception.InvalidDataBaseDataException;
 import com.sky.exception.NotFoundException;
-import com.sky.exception.shoppingCart.IncompleteShoppingCartException;
+import com.sky.exception.shoppingCart.ShoppingCartIncompleteException;
+import com.sky.exception.shoppingCart.ShoppingCartInvalidException;
 import com.sky.exception.shoppingCart.ShoppingCartUserNotMatchException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
+import com.sky.projection.dish.DishShoppingCartProjection;
+import com.sky.projection.setmeal.SetmealShoppingCartProjection;
 import com.sky.service.ShoppingCartService;
+import com.sky.utils.NotFoundUtil;
 import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.ShoppingCartVO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -53,21 +58,46 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         * 每次要么套餐、要么菜品，因为不是批量添加、是一个一个点击
         * 并且相同菜品还需要用不同口味区分
      */
+    @Transactional( rollbackFor = Exception.class )
     @Override
-    public void add( ShoppingCartDTO shoppingCartDTO ){
-        if ( ! shoppingCartDTO.hasDish() && ! shoppingCartDTO.hasSetmeal() ){
-            // 早判断早结束
-            throw new IncompleteShoppingCartException( MessageConstant.SHOPPING_CART_ADD_NULL );
+    public void addWithUserId( Long userId, ShoppingCartDTO shoppingCartDTO ){
+        /*
+            初步思路
+            * 目标是组装完整 ShoppingCart 实体对象, 写入数据库
+              并且 ShoppingCart 没有类似 SetmealDish、DishFlavor 的关联关系表, 只需要写好这个实体就行
+            * ShoppingCart 分成菜品、套餐 2 种情况
+              分别需要查到 name、price、image
+              可以共同设置 userId, createTime
+            * number 计数,
+              看 ShoppingCart 是不是跟数据库已有的是同一类型, 同一类型则累加份数
+              数据库没有这种类型的 ShoppingCart 就单独计数
+              同一类型: dishId、dishFlavor 相同( 完全相同的菜品 )或者 setmealId 相同( 同一个套餐 )
+                        并且也必须限定是同一个用户的数据
+
+            具体实现
+            * 数据库查询该类型的 ShoppingCart
+              - 查到了说明有, 只需要修改数量
+              - 没查到则需要手动组装完整对象
+            * 由于 dto 字段很少, 暂不考虑 converter 转换
+         */
+        if ( shoppingCartDTO.hasNoDishOrSetmeal() ){
+            throw new ShoppingCartIncompleteException( MessageConstant.SHOPPING_CART_ADD_NULL );
         }
 
-        Long userId = BaseContext.getCurrentId();
+        if ( shoppingCartDTO.hasDishAndSetmeal() ){
+            throw new ShoppingCartInvalidException( MessageConstant.SHOPPING_CART_ADD_TOO_MANY );
+        }
+
         Long dishId = shoppingCartDTO.getDishId();
         Long setmealId = shoppingCartDTO.getSetmealId();
         String dishFlavor = shoppingCartDTO.getDishFlavor();
 
-        // 只看这个用户的购物车，并且由于不同菜品在一个用户的订单里面是唯一的，所以用 userId, dishId 定位
-        // 而且还要注意菜品要用 flavor 定位
-        // 但是必须确保每回完成订餐，就清除该用户购物车内容，否则会影响之后的查询(查出来多条数据,也就是以前的旧数据)
+        /*
+            只看这个用户的购物车，
+            由于不同菜品在一个用户的订单里面是唯一的，所以用 userId, dishId/setmealId 定位
+            菜品还要额外用 flavor 定位
+            必须确保每次完成订单，就清除该用户购物车内容，否则会影响之后的查询(查出来多条数据,也就是以前的旧数据)
+         */
         ShoppingCart shoppingCart = shoppingCartMapper.selectByQuery(
                 ShoppingCartQueryDTO.builder()
                         .userId( userId )
@@ -99,13 +129,17 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         if ( isInDatabase ){
             Integer number = shoppingCart.getNumber();
             if ( number == null || number <= 0 ){
-                // null, 非正数, 无效数据, 要么是上次插入非法数据，要嘛是数据库出问题
-                // DTO 不带 number 字段，只能是内部设置的 number, 只能是内部错误
-                // 所以用 JDK 系统异常
+                /*
+                    null, 非正数, 无效数据, 要么是上次插入非法数据，要嘛是数据库出问题
+                    DTO 不带 number 字段，只能是内部设置的 number, 只能是内部错误
+                    所以用 JDK 系统异常
+                    TODO: 输出日志 + 包装业务异常提醒用户该商品暂时不可用
+                 */
                 throw new IllegalStateException(
-                        String.format( "%s: id = %s 的购物车商品数量 = %s",
-                                MessageConstant.INVALID_DATABASE_DATA,
-                                shoppingCart.getId(), number )
+                        String.format( "%s: id = %s 的购物车商品数量 = %s, 至少应该 = 1",
+                                MessageConstant.DATABASE_DATA_ERROR,
+                                shoppingCart.getId(), number
+                        )
                 );
             }
             shoppingCartMapper.updateNumberById(
@@ -121,18 +155,14 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
             // 于是需要查到对应 dish/setmeal 的信息
             if ( shoppingCartDTO.hasDish() ){ // shoppingCart.isDish
-                Dish dish = dishMapper.selectById( dishId );
-                if ( dish == null ){
-                    throw new NotFoundException( MessageConstant.DISH_NOT_FOUND );
-                }
+                DishShoppingCartProjection dish = dishMapper.selectShoppingCartProjectionById( dishId );
+                NotFoundUtil.throwIfNotFound( dish, MessageConstant.DISH_NOT_FOUND );
                 name = dish.getName();
                 amount = dish.getPrice();
                 image = dish.getImage();
             } else { // shoppingCart.isSetmeal
-                Setmeal setmeal = setmealMapper.selectById( setmealId );
-                if ( setmeal == null ){
-                    throw new NotFoundException( MessageConstant.SETMEAL_NOT_FOUND );
-                }
+                SetmealShoppingCartProjection setmeal = setmealMapper.selectShoppingCartProjectionById( setmealId );
+                NotFoundUtil.throwIfNotFound( setmeal, MessageConstant.SETMEAL_NOT_FOUND );
                 name = setmeal.getName();
                 amount = setmeal.getPrice();
                 image = setmeal.getImage();
@@ -201,7 +231,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         } else if ( number == 1 ){
             int row = shoppingCartMapper.deleteById( id );
         } else { // null, 非正数, 无效数据
-            throw new InvalidDataBaseDataException( MessageConstant.INVALID_DATABASE_DATA + ": 购物车商品数量 = " + number );
+            throw new InvalidDataBaseDataException( MessageConstant.DATABASE_DATA_ERROR + ": 购物车商品数量 = " + number );
         }
     }
 

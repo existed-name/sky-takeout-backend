@@ -6,6 +6,7 @@ import com.sky.dto.setmeal.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
 import com.sky.projection.setmeal.SetmealIdProjection;
+import com.sky.projection.setmeal.SetmealShoppingCartProjection;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
 import com.sky.vo.setmeal.SetmealPageQueryItemVO;
@@ -193,14 +194,12 @@ public interface SetmealMapper {
     long countById( @Param( "id" ) Long id );
 
     /**
-     * 查询完整的 Setmeal 对象
+     * 查询某个套餐
+     *
+     * @param id 套餐 id
+     * @return <b>字段完整</b>的实体对象, <b>不存在时返回 null</b>
      */
-    @Select( """
-            SELECT id, category_id, name, price, status, description, image, create_time, update_time, create_user, update_user
-            FROM setmeal
-            WHERE id = #{id}
-            """ )
-    Setmeal selectById( @Param( "id" ) Long setmealId );
+    Setmeal selectById( @Param( "id" ) Long id );
 
 
     /**
@@ -237,4 +236,12 @@ public interface SetmealMapper {
      * @return 分类 id 链表
      */
     List< Long > selectCategoryIdsByIds( @Param( "ids" ) List< Long > ids );
+
+    /**
+     * 查询某个套餐的部分字段, 用于组装购物车数据
+     *
+     * @param id 套餐 id
+     * @return 套餐对象部分字段, <b>不存在时返回 null</b>
+     */
+    SetmealShoppingCartProjection selectShoppingCartProjectionById( @Param( "id" ) Long id );
 }

@@ -241,4 +241,28 @@
             </foreach>
     </select>
 
+    <!--
+     * 查询某个套餐
+     *
+     * @param id 套餐 id
+     * @return <b>字段完整</b>的实体对象, <b>不存在时返回 null</b>
+    -->
+    <select id="selectById" resultType="com.sky.entity.Setmeal">
+        SELECT <include refid="BaseColumns"/>
+        FROM setmeal
+        WHERE id = #{id}
+    </select>
+
+    <!--
+     * 查询某个套餐的部分字段, 用于组装购物车数据
+     *
+     * @param id 套餐 id
+     * @return 套餐对象部分字段, <b>不存在时返回 null</b>
+    -->
+    <select id="selectShoppingCartProjectionById" resultType="com.sky.projection.setmeal.SetmealShoppingCartProjection">
+        SELECT name, price, image
+        FROM setmeal
+        WHERE id = #{id}
+    </select>
+
 </mapper>

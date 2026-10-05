@@ -1,6 +1,7 @@
 package com.sky.controller.user;
 
-import com.sky.dto.ShoppingCartDTO;
+import com.sky.context.BaseContext;
+import com.sky.dto.shoppingCart.ShoppingCartDTO;
 import com.sky.result.Result;
 import com.sky.service.impl.ShoppingCartServiceImpl;
 import com.sky.vo.ShoppingCartVO;
@@ -28,7 +29,7 @@ import javax.validation.constraints.Positive;
 @Api( tags = "用户端购物车管理接口" )
 // 不过 admin 并没有购物车接口，所以这里也可以不用指定 Bean Name
 @RestController( "userShoppingCartController" )
-@RequestMapping( "/user/shoppingCart" )
+@RequestMapping( "/user/shopping-carts" )
 public class ShoppingCartController {
     // ==================== 常量 ====================
 
@@ -55,14 +56,15 @@ public class ShoppingCartController {
      * </p>
      */
     @ApiOperation( "购物车添加菜品/套餐" )
-    @PostMapping( "/add" )
-    public Result< Void > add(
-            @RequestBody
-            @NotNull( message = "购物车添加数据不能为空" )
-            ShoppingCartDTO shoppingCartDTO ){
-        // 由于 DTO 的菜品/套餐是选一个，而又不晓得用户会选哪个，所以不好用注解进行参数检验
-        log.info( "用户购物车添加菜品/套餐: {}", shoppingCartDTO );
-        shoppingCartService.add( shoppingCartDTO );
+    @PostMapping
+    public Result< Void > add( @RequestBody ShoppingCartDTO shoppingCartDTO ){
+        /*
+            由于 DTO 的菜品/套餐是选一个，而又不确定用户会选哪个，所以不好用注解进行参数检验
+            TODO: 拆分不同的 DTO 分别专门装套餐、菜品购物车数据
+         */
+        Long userId = BaseContext.getCurrentId();
+        log.info( "id = {} 的用户添加购物车数据: {}", userId, shoppingCartDTO );
+        shoppingCartService.addWithUserId( userId, shoppingCartDTO );
         return Result.success();
     }
 

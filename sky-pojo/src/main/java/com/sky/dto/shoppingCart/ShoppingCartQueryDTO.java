@@ -1,4 +1,4 @@
-package com.sky.dto;
+package com.sky.dto.shoppingCart;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,11 +8,12 @@ import lombok.NoArgsConstructor;
 /**
  * 购物车查询条件 DTO
  * <p>
- *     用于封装查询购物车时的筛选条件，作为 {@link com.sky.mapper.ShoppingCartMapper#selectExistingItemByQuery} 方法的参数。
- *     查询条件之间为 AND 关系，各字段均为可选条件，为空时则不参与筛选。
+ *     用于筛选购物车数据, 尤其是判断新增的购物车是否已有同类型的购物车数据
  * </p>
- *
- * @see com.sky.entity.ShoppingCart
+ * <p>
+ *     <b>同一类型的 ShoppingCart</b>: 同一个用户, 并且 dishId、dishFlavor 相同( 完全相同的菜品 )或者 setmealId 相同( 同一个套餐 )
+ * </p>
+ * 完整购物车字段可见{@link com.sky.entity.ShoppingCart}
  */
 @Data
 @Builder
@@ -36,7 +37,7 @@ public class ShoppingCartQueryDTO {
     /** 套餐id（与菜品id二选一，查询套餐时使用） */
     private Long setmealId;
 
-    /** 口味（如：微辣、加葱等；同一菜品不同口味视为不同记录） */
+    /** 口味（如：微辣、加葱等；同一菜品不同口味视为不同类型数据） */
     private String dishFlavor;
 
 

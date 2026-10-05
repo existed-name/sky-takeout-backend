@@ -7,8 +7,8 @@ import com.sky.exception.BusinessException;
  *
  * @CreateTime 2026/6/20 14:20
  */
-public class IncompleteShoppingCartException extends BusinessException {
-    public IncompleteShoppingCartException( String message ){
+public class ShoppingCartIncompleteException extends BusinessException {
+    public ShoppingCartIncompleteException( String message ){
         super( message );
     }
 }

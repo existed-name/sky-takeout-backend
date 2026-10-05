@@ -216,4 +216,28 @@
             )
     </select>
 
+    <!--
+     * 查询某个菜品
+     *
+     * @param id 菜品 id
+     * @return <b>字段完整</b>的实体对象, <b>不存在时返回 null</b>
+    -->
+    <select id="selectById" resultType="com.sky.entity.Dish">
+        SELECT <include refid="BaseColumns"/>
+        FROM dish
+        WHERE id = #{id}
+    </select>
+
+    <!--
+     * 查询某个菜品的部分字段, 用于组装购物车数据
+     *
+     * @param id 菜品 id
+     * @return 菜品对象部分字段, <b>不存在时返回 null</b>
+    -->
+    <select id="selectShoppingCartProjectionById" resultType="com.sky.projection.dish.DishShoppingCartProjection">
+        SELECT name, price, image
+        FROM dish
+        WHERE id = #{id}
+    </select>
+
 </mapper>

@@ -5,6 +5,7 @@ import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.dto.GoodsStatusCount;
 import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
+import com.sky.projection.dish.DishShoppingCartProjection;
 import com.sky.vo.DishVO;
 import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
@@ -153,14 +154,12 @@ public interface DishMapper {
     long countById( @Param( "id" ) Long dishId );
 
     /**
-     * 查询完整的 Dish 对象
+     * 查询某个菜品
+     *
+     * @param id 菜品 id
+     * @return <b>字段完整</b>的实体对象, <b>不存在时返回 null</b>
      */
-    @Select( """
-            SELECT id, name, category_id, price, image, description, status, create_time, update_time, create_user, update_user
-            FROM dish
-            WHERE id = #{id}
-            """ )
-    Dish selectById( @Param( "id" ) Long dishId );
+    Dish selectById( @Param( "id" ) Long id );
 
     /**
      * 查询<b>不包含审计字段</b>的 Dishes
@@ -196,4 +195,12 @@ public interface DishMapper {
      * @return 菜品数量
      */
     long countBySetmealIdAndStatus( @Param( "setmealId" ) Long setmealId, @Param( "status" ) int status );
+
+    /**
+     * 查询某个菜品的部分字段, 用于组装购物车数据
+     *
+     * @param id 菜品 id
+     * @return 菜品对象部分字段, <b>不存在时返回 null</b>
+     */
+    DishShoppingCartProjection selectShoppingCartProjectionById( @Param( "id" ) Long id );
 }

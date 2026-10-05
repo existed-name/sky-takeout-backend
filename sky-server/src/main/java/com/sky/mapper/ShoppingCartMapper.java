@@ -1,6 +1,6 @@
 package com.sky.mapper;
 
-import com.sky.dto.ShoppingCartQueryDTO;
+import com.sky.dto.shoppingCart.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
 import com.sky.vo.ShoppingCartItemVO;
 import org.apache.ibatis.annotations.Delete;
@@ -16,7 +16,10 @@ import java.util.List;
 @Mapper
 public interface ShoppingCartMapper {
     /**
-     * 新增购物车内容(菜品/套餐)
+     * 新增购物车数据(菜品/套餐)并进行主键回填
+     *
+     * @param shoppingCart 完整的购物车数据, <b>由调用方设置审计字段</b>
+     * @return 新增数据行数, 通常 = 1
      */
     @Options( useGeneratedKeys = true, keyProperty = "id" )
     @Insert( """
@@ -27,15 +30,15 @@ public interface ShoppingCartMapper {
     int insert( @Param( "shoppingCart" ) ShoppingCart shoppingCart );
 
     /**
-     * 查询用户购物车已存在的某条内容，
-     * <br>
-     * 查询条件: <b>用户 id(必须)</b>、菜品 id、菜品口味、套餐 id,
-     * <br>
-     * 可用于判断用户是否加购了某种 food
-     * <br>
-     * <b>只查一条数据，需要确保用户下单后清除该用户购物车</b>
+     * 查询某个用户创建的某个类型的购物车数据, 用于判断该用户是否加购了某种商品
+     * <p>
+     *     <b>只查一条数据，需要确保用户下单后清除该用户购物车</b>
+     * </p>
      *
-     * @return 完整字段的对象
+     * @param dto 查询条件<br>
+     *            用户 id, 用于隔离不同用户数据<br>
+     *            套餐 id 或者 菜品 id + 菜品口味, 用于筛选特定类型的购物车数据
+     * @return 完整字段的购物车实体对象, <b>不存在该类型数据时返回 null</b>
      */
     ShoppingCart selectByQuery( @Param( "dto" ) ShoppingCartQueryDTO dto );
 
@@ -86,7 +89,11 @@ public interface ShoppingCartMapper {
     int deleteById( @Param( "id" ) Long id );
 
     /**
-     * 根据主键 id 修改商品份数
+     * 修改某条购物车数据的商品份数
+     *
+     * @param id 购物车 id
+     * @param newNumber 修改后的份数
+     * @return 修改行数, <b>返回 0 表示购物车数据不存在</b>
      */
     @Update( """
             UPDATE shopping_cart
