@@ -43,18 +43,15 @@ public interface ShoppingCartMapper {
     ShoppingCart selectByQuery( @Param( "dto" ) ShoppingCartQueryDTO dto );
 
     /**
-     * 查询该用户加购的所有菜品、套餐信息
+     * 查询该用户的购物车数据
      * <p>
      *     <b>按照加购时间倒序排列</b>，时间相同按照 id 倒序排列
      * </p>
-     * <b>单价是加购时的单价，而不是实时单价</b>( dish / setmeal 表为实时单价)
+     * <b>单价是加购时的单价，而不是 dish / setmeal 表的实时单价</b>
+     *
+     * @param userId 用户 id
+     * @return 购物车数据项列表
      */
-    @Select( """
-            SELECT id, name, image, dish_id, setmeal_id, dish_flavor, number, amount, create_time
-            FROM shopping_cart
-            WHERE user_id = #{userId}
-            ORDER BY create_time DESC, id DESC
-            """ )
     List< ShoppingCartItemVO > selectItemVOListByUserId( @Param( "userId" ) Long userId );
 
     /**

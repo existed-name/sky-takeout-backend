@@ -11,9 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 购物车中包含的套餐/菜品信息 VO，
- * <br>
- * 因为 ShoppingCartSetmealVO, ShoppingCartDishVO 字段一样，提取为同一个 VO
+ * 购物车数据项展示对象, 记录购物车中每种套餐/菜品的信息
  *
  * @CreateTime 2026/6/15 10:01
  */
@@ -21,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ApiModel(description = "购物车单条数据 VO")
+@ApiModel(description = "购物车数据项展示对象")
 public class ShoppingCartItemVO {
     // ==================== 常量 ====================
 
@@ -62,9 +60,9 @@ public class ShoppingCartItemVO {
     @ApiModelProperty(value = "菜品口味", example = "微辣")
     private String dishFlavor;
 
-    /** 加购时间 */
-    @ApiModelProperty(value = "加购时间", example = "2026-06-15 10:30:00")
-    private LocalDateTime createTime;
+//    /** 加购时间 */
+//    @ApiModelProperty(value = "加购时间", example = "2026-06-15 10:30:00")
+//    private LocalDateTime createTime;
 
 
     // ==================== 构造器 ====================

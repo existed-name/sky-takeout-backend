@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ShoppingCartVO {
+public class ShoppingCartListVO {
     // ==================== 常量 ====================
 
 
@@ -27,7 +27,7 @@ public class ShoppingCartVO {
     // ==================== 实例变量 ====================
     /** 购物车中包含的所有菜品、套餐信息 */
     @ApiModelProperty(value = "购物车中包含的所有菜品、套餐信息")
-    private List< ShoppingCartItemVO > shoppingCartItemVOList = new ArrayList<>();
+    private List< ShoppingCartItemVO > items = new ArrayList<>();
 
     /** 购物车总金额 */
     @ApiModelProperty(value = "购物车总金额", example = "128.50")

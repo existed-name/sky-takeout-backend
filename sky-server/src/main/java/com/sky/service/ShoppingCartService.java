@@ -1,7 +1,7 @@
 package com.sky.service;
 
 import com.sky.dto.shoppingCart.ShoppingCartDTO;
-import com.sky.vo.ShoppingCartVO;
+import com.sky.vo.ShoppingCartListVO;
 
 public interface ShoppingCartService {
     /**
@@ -13,9 +13,12 @@ public interface ShoppingCartService {
     void addWithUserId( Long userId, ShoppingCartDTO shoppingCartDTO );
 
     /**
-     * 查看购物车所有内容
+     * 用户端查看购物车所有内容
+     *
+     * @param userId 当前用户 id, 业务类内部判断用户是否存在
+     * @return 购物车数据项列表 + 后端计算总价
      */
-    ShoppingCartVO list();
+    ShoppingCartListVO listByUserId( Long userId );
 
     /**
      * 清空购物车

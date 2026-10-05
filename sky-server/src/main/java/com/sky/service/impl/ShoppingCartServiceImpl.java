@@ -5,8 +5,6 @@ import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.shoppingCart.ShoppingCartDTO;
 import com.sky.dto.shoppingCart.ShoppingCartQueryDTO;
-import com.sky.entity.Dish;
-import com.sky.entity.Setmeal;
 import com.sky.entity.ShoppingCart;
 import com.sky.exception.InvalidDataBaseDataException;
 import com.sky.exception.NotFoundException;
@@ -16,12 +14,14 @@ import com.sky.exception.shoppingCart.ShoppingCartUserNotMatchException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
+import com.sky.mapper.UserMapper;
 import com.sky.projection.dish.DishShoppingCartProjection;
 import com.sky.projection.setmeal.SetmealShoppingCartProjection;
 import com.sky.service.ShoppingCartService;
+import com.sky.utils.ListUtils;
 import com.sky.utils.NotFoundUtil;
 import com.sky.vo.ShoppingCartItemVO;
-import com.sky.vo.ShoppingCartVO;
+import com.sky.vo.ShoppingCartListVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,14 +41,15 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final DishMapper dishMapper;
     private final ShoppingCartMapper shoppingCartMapper;
     private final SetmealMapper setmealMapper;
-
+    private final UserMapper userMapper;
 
 
     // ==================== 构造器 ====================
-    public ShoppingCartServiceImpl( DishMapper dishMapper, ShoppingCartMapper shoppingCartMapper, SetmealMapper setmealMapper ){
+    public ShoppingCartServiceImpl( DishMapper dishMapper, ShoppingCartMapper shoppingCartMapper, SetmealMapper setmealMapper, UserMapper userMapper ){
         this.dishMapper = dishMapper;
         this.shoppingCartMapper = shoppingCartMapper;
         this.setmealMapper = setmealMapper;
+        this.userMapper = userMapper;
     }
 
 
@@ -175,28 +176,27 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
     }
 
+    @Transactional( readOnly = true )
     @Override
-    public ShoppingCartVO list(){
+    public ShoppingCartListVO listByUserId( Long userId ){
         /*
-            ShoppingCartVO = List< ShoppingCartDishVO > + List< ShoppingCartSetmealVO > + totalAmount(总价)
-            于是有几种查法
-              - 查全库，拿到所有数据，直接把 Object 拿给前端: shoppingCartMapper.selectByUserId
-              - 查全库，List< Object > 在 Service 里面自己组装 VO、统计数据
-              - 分出专用方法，
-                - selectDish/SetmealVOByUserId( dish_id IS NOT NULL )查对象
-                - 不需要联表 shopping_cart + dish / setmeal，联表是获得菜品/套餐的实时价格，否则直接用购物车里面的价格
-                - 然后 Service 整理 totalAmount
-              - 注意还要时间倒序
+            ShoppingCartVO = List< ShoppingCartItemVO > + totalAmount(总价)
+            不缓存、查数据库
+              - 用户频繁修改购物车数据, 如果存缓存会频繁清理缓存
+              - 缓存只能针对 1 个用户, 不能全局共享, 收益很小
+              - 用户需要对账、需要查询实时数据
          */
-        Long userId = BaseContext.getCurrentId();
+        NotFoundUtil.throwIfCountZero( userMapper.countById( userId ), MessageConstant.USER_NOT_FOUND );
+
         List< ShoppingCartItemVO > shoppingCartItemVOList = shoppingCartMapper.selectItemVOListByUserId( userId );
-        if ( shoppingCartItemVOList == null || shoppingCartItemVOList.isEmpty() ){
-            // new ShoppingCartVo 时就初始化了属性，这里判空就可以直接返回对象
-            return new ShoppingCartVO();
+        if ( ListUtils.isEmpty( shoppingCartItemVOList ) ){
+            // 创建 ShoppingCartListVO 时内部初始化了属性、没有 null 字段, 可以安全返回
+            return new ShoppingCartListVO();
         }
+
         BigDecimal totalAmount = calculateTotalAmount( shoppingCartItemVOList );
-        return ShoppingCartVO.builder()
-                .shoppingCartItemVOList( shoppingCartItemVOList )
+        return ShoppingCartListVO.builder()
+                .items( shoppingCartItemVOList )
                 .totalAmount( totalAmount )
                 .build();
     }
@@ -238,9 +238,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     // ==================== 私有辅助方法 ====================
     /**
-     * 计算总金额
+     * 计算总金额 = Σ( 某个商品的单价 * 数量 )
      *
-     * @param shoppingCartItemVOList 用户购物车的所有信息(菜品、套餐)=
+     * @param shoppingCartItemVOList 用户的所有购物车数据
+     * @return 该用户的购物车总金额
      */
     private BigDecimal calculateTotalAmount( List< ShoppingCartItemVO > shoppingCartItemVOList ){
         BigDecimal totalAmount = BigDecimal.ZERO;

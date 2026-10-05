@@ -101,4 +101,17 @@ public interface UserMapper {
             WHERE openid = #{openid}
             """ )
     Long selectIdByOpenid( @Param( "openid" ) String openid );
+
+    /**
+     * 判断某个用户是否存在
+     *
+     * @param id 用户 id
+     * @return 1 用户存在, 0 不存在
+     */
+    @Select( """
+            SELECT count( * )
+            FROM user
+            WHERE id = #{id}
+            """ )
+    long countById( @Param( "id" ) Long id );
 }

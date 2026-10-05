@@ -4,7 +4,7 @@ import com.sky.context.BaseContext;
 import com.sky.dto.shoppingCart.ShoppingCartDTO;
 import com.sky.result.Result;
 import com.sky.service.impl.ShoppingCartServiceImpl;
-import com.sky.vo.ShoppingCartVO;
+import com.sky.vo.ShoppingCartListVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -69,14 +69,22 @@ public class ShoppingCartController {
     }
 
     /**
-     * 查看购物车所有内容
+     * 用户查看购物车的所有内容
+     * <p>
+     *     <ul>
+     *         <li>教程逻辑为纯前端计算, 添加、删除、查看购物车数据, 总价都是前端计算</li>
+     *         <li>我这里给查看购物车数据补充了总价计算, 把后端权威计算结果返回前端</li>
+     *         <li>TODO: 增删购物车数据同步做后端总价计算, 返回计算结果回显, 避免完全依赖前端计算</li>
+     *     </ul>
+     * </p>
      */
-    @ApiOperation( "查看购物车所有内容" )
-    @GetMapping( "/list" )
-    public Result< ShoppingCartVO > list(){
-        log.info( "查看购物车所有内容" );
-        ShoppingCartVO shoppingCartVO = shoppingCartService.list();
-        return Result.success( shoppingCartVO );
+    @ApiOperation( "用户查看购物车的所有内容" )
+    @GetMapping
+    public Result< ShoppingCartListVO > list(){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "id = {} 的用户查看购物车所有内容", userId );
+        ShoppingCartListVO shoppingCartListVO = shoppingCartService.listByUserId( userId );
+        return Result.success( shoppingCartListVO );
     }
 
     /**

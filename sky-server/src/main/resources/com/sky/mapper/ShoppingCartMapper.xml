@@ -45,6 +45,27 @@
     </select>
 
     <!--
+     * 查询该用户的购物车数据
+     * <p>
+     *     <b>按照加购时间倒序排列</b>，时间相同按照 id 倒序排列
+     * </p>
+     * <b>单价是加购时的单价，而不是 dish / setmeal 表的实时单价</b>
+     *
+     * @param userId 用户 id
+     * @return 购物车数据项列表
+    -->
+    <select id="selectItemVOListByUserId" resultType="com.sky.vo.ShoppingCartItemVO">
+        <!--
+        由于 ShoppingCartItemVO 的字段只比完整实体对象少了 create_time
+        所以这里直接查询全部字段, TODO: 根据实际需求修改查询的字段
+        -->
+        SELECT <include refid="BaseColumns"/>
+        FROM shopping_cart
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!--
     批量新增购物车数据
     -->
     <insert id="insertBatch">
