@@ -92,6 +92,8 @@ public class MessageConstant {
     public static final String WECHAT_LOGIN_STATUS_PARSE_ERROR = "微信登录状态解析错误, 可能是系统故障, 请稍后重试";
     public static final String WECHAT_LOGIN_SERVICE_ERROR = "微信登录服务异常, 可能是系统异常, 请稍后再试";
     public static final String SHOPPING_CART_ADD_TOO_MANY = "购物车不能同时添加菜品和套餐";
+    public static final String GENDER_INVALID = "性别无效, 请重新设置性别";
+    public static final String ADDRESS_BOOK_LABEL_INVALID = "地址簿标签无效, 请重新设置";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )

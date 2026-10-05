@@ -1,7 +1,7 @@
 package com.sky.enumeration;
 
 import com.sky.constant.MessageConstant;
-import com.sky.exception.code.GenderInvalidException;
+import com.sky.exception.common.GenderInvalidException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -109,7 +109,7 @@ public enum Gender {
     public static void throwIfInvalid( Integer code ){
         if ( ! isValid( code ) ){
             throw new GenderInvalidException(
-                    MessageConstant.GOODS_STATUS_INVALID
+                    MessageConstant.GENDER_INVALID
             );
         }
     }

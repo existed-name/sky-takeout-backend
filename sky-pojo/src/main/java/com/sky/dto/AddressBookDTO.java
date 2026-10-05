@@ -16,8 +16,10 @@ import java.io.Serializable;
 
 /**
  * 地址簿数据传输对象
- * <br>
- * 用于新增、修改地址簿信息时接收前端传入的数据
+ * <p>
+ *  用于新增、修改地址簿信息时接收前端传入的数据
+ * </p>
+ * TODO: 目前数据库 sex、label 字段都用的 varchar, 地址簿相关对象也用的 String, 但实际前端传的是数字、我在业务层检验的时候也是把 String 转的 Integer, 但为了兼容教程, 我没改字段类型, 后续可以把 sex、label 统一为 Integer、byteint
  * <pre>
  *     观察教程的小程序端传参 json
  *     <code>
@@ -111,8 +113,8 @@ public class AddressBookDTO implements Serializable {
     @NotBlank( message = "详细地址不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private String detail;
 
-    /** 标签（如：家、公司、学校） */
-    @ApiModelProperty( value = "标签", example = "家", required = false )
+    /** 标签, 1 公司 2 家 3 学校 */
+    @ApiModelProperty( value = "标签", example = "1", required = false )
     private String label;
 
     /** 是否默认地址：0 否  1 是 */
