@@ -21,9 +21,11 @@ public interface ShoppingCartService {
     ShoppingCartListVO listByUserId( Long userId );
 
     /**
-     * 清空购物车
+     * 用户端某个用户清空自己的购物车
+     *
+     * @param userId 用户 id, 业务类内部判断用户是否存在
      */
-    void clean();
+    void cleanByUserId( Long userId );
 
     /**
      * 减少加购的商品数量

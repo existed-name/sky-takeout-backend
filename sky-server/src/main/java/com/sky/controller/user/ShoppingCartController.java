@@ -91,10 +91,11 @@ public class ShoppingCartController {
      * 清空购物车
      */
     @ApiOperation( "清空购物车" )
-    @DeleteMapping( "/clean" )
+    @DeleteMapping
     public Result< Void > clean(){
-        log.info( "清空购物车" );
-        shoppingCartService.clean();
+        Long userId = BaseContext.getCurrentId();
+        log.info( "id = {} 的用户清空购物车", userId );
+        shoppingCartService.cleanByUserId( userId );
         return Result.success();
     }
 

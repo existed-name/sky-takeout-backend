@@ -56,6 +56,9 @@ public interface ShoppingCartMapper {
 
     /**
      * 清空该用户的购物车
+     *
+     * @param userId 用户 id
+     * @return 删除数据行数
      */
     @Delete( """
             DELETE FROM shopping_cart

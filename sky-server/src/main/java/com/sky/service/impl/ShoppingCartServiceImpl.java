@@ -201,9 +201,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 .build();
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
-    public void clean(){
-        Long userId = BaseContext.getCurrentId();
+    public void cleanByUserId( Long userId ){
+        NotFoundUtil.throwIfCountZero( userMapper.countById( userId ), MessageConstant.USER_NOT_FOUND );
         shoppingCartMapper.deleteByUserId( userId );
     }
 
