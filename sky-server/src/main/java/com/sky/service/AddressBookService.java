@@ -2,14 +2,18 @@ package com.sky.service;
 
 import com.sky.dto.AddressBookDTO;
 import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookListItemVO;
 
 import java.util.List;
 
 public interface AddressBookService {
     /**
-     * 查看所有收货地址
+     * 用户端查看该用户的所有收货地址
+     *
+     * @param userId 用户 id
+     * @return 地址簿数据项列表, <b>用户不存在时返回空列表</b>
      */
-    List< AddressBookVO > listByUserId( Long userId );
+    List< AddressBookListItemVO > listByUserId( Long userId );
 
     /**
      * 用户端新增收货地址

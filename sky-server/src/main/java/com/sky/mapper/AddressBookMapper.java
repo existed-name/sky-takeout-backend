@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.sky.entity.AddressBook;
 import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -141,4 +142,12 @@ public interface AddressBookMapper {
             WHERE id = #{id}
             """ )
     long countById( @Param( "id" ) Long id );
+
+    /**
+     * 查询某个用户的所有地址簿
+     *
+     * @param userId 用户 id, <b>不能为空</b>
+     * @return 地址簿数据项列表, <b>用户不存在时返回空列表</b>
+     */
+    List< AddressBookListItemVO > selectItemVOListByUserId( @Param( "userId" ) Long userId );
 }

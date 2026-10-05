@@ -12,6 +12,7 @@ import com.sky.vo.AddressBookVO;
 import com.sky.entity.AddressBook;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.service.AddressBookService;
+import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +42,9 @@ public class AddressBookServiceImpl implements AddressBookService {
     // ==================== 公有方法 ====================
     @Transactional( readOnly = true )
     @Override
-    public List< AddressBookVO > listByUserId( Long userId ){
-        List< AddressBookVO > addressBookVOList = addressBookMapper.selectVOListByUserId( userId );
-        return addressBookVOList;
+    public List< AddressBookListItemVO > listByUserId( Long userId ){
+        List< AddressBookListItemVO > addressBookListItemVOs = addressBookMapper.selectItemVOListByUserId( userId );
+        return addressBookListItemVOs;
     }
 
     @Transactional( rollbackFor = Exception.class )

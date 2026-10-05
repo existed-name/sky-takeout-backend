@@ -6,6 +6,7 @@ import com.sky.validation.ValidationGroups;
 import com.sky.vo.AddressBookVO;
 import com.sky.result.Result;
 import com.sky.service.AddressBookService;
+import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -56,12 +57,12 @@ public class AddressBookController {
      * 查看所有收货地址
      */
     @ApiOperation( "查看所有收货地址" )
-    @GetMapping( "/list" )
-    public Result< List< AddressBookVO > > list(){
+    @GetMapping
+    public Result< List< AddressBookListItemVO > > list(){
         Long userId = BaseContext.getCurrentId();
-        log.info( "查看 id  = {} 的用户的所有收货地址", userId );
-        List< AddressBookVO > addressBookVOList = addressBookService.listByUserId( userId );
-        return Result.success( addressBookVOList );
+        log.info( "id = {} 的用户查看自己所有的收货地址", userId );
+        List< AddressBookListItemVO > addressBookListItemVOs = addressBookService.listByUserId( userId );
+        return Result.success( addressBookListItemVOs );
     }
 
     /**

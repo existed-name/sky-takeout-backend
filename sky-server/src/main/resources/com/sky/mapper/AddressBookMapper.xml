@@ -5,6 +5,34 @@
 <mapper namespace="com.sky.mapper.AddressBookMapper">
 
     <!--
+    数据库表完整字段, 可复用
+    -->
+    <sql id="BaseColumns">
+        id, user_id, consignee, sex, phone,
+        province_code, province_name, city_code, city_name, district_code, district_name,
+        detail, label, is_default
+    </sql>
+
+    <!--
+    AddressBookVO 完整字段, 可复用
+    -->
+    <sql id="AddressBookVOColumns">
+        id, consignee, sex, phone,
+        province_code, province_name, city_code, city_name, district_code, district_name,
+        detail, label, is_default
+    </sql>
+
+    <!--
+    AddressBookListItemVO 完整字段, 可复用
+    -->
+    <sql id="AddressBookListItemVOColumns">
+        id, consignee, sex, phone,
+        province_name, city_name, district_name,
+        detail, label, is_default
+    </sql>
+
+
+    <!--
     编辑地址
     不会修改 user_id
     -->
@@ -50,5 +78,17 @@
         </set>
         WHRER id = #{addressBook.id} AND user_id = #{addressBook.userId}
     </update>
+
+    <!--
+     * 查询某个用户的所有地址簿
+     *
+     * @param userId 用户 id, <b>不能为空</b>
+     * @return 地址簿数据项列表, <b>用户不存在时返回空列表</b>
+    -->
+    <select id="selectItemVOListByUserId" resultType="com.sky.vo.user.addressBook.AddressBookListItemVO">
+        SELECT <include refid="AddressBookListItemVOColumns"/>
+        FROM address_book
+        WHERE user_id = #{userId}
+    </select>
 
 </mapper>

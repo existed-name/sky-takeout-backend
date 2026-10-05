@@ -45,8 +45,8 @@ public class AddressBookVO {
     @ApiModelProperty(value = "收货人手机号", example = "13800138000")
     private String phone;
 
-    /** 性别：0 女  1 男 */
-    @ApiModelProperty(value = "性别：0 女  1 男", example = "1")
+    /** 性别：1 男 2 女 */
+    @ApiModelProperty(value = "性别：1 男 2 女", example = "1")
     private String sex;
 
     /** 省级区划编号 */
