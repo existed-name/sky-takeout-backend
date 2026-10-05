@@ -28,7 +28,10 @@ public interface ShoppingCartService {
     void cleanByUserId( Long userId );
 
     /**
-     * 减少加购的商品数量
+     * 用户端某个用户给某个商品数量减一
+     *
+     * @param id 购物车数据 id
+     * @param userId 用户 id, 业务类内部判断用户是否存在、数据是否归属该用户
      */
-    void decrementById( Long id );
+    void decrementByIdAndUserId( Long id, Long userId );
 }

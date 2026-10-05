@@ -81,6 +81,11 @@ public interface ShoppingCartMapper {
 
     /**
      * 删除某条购物车数据
+     * <p>
+     *     涉及数据归属权限时请使用{@link #deleteByIdAndUserId}
+     * </p>
+     * @param id 购物车数据 id
+     * @return 删除数据行数, 通常为 1, <b>数据不存在时返回 0</b>
      */
     @Delete( """
             DELETE FROM shopping_cart
@@ -90,6 +95,9 @@ public interface ShoppingCartMapper {
 
     /**
      * 修改某条购物车数据的商品份数
+     * <p>
+     *     涉及数据归属权限时请使用{@link #updateNumberByIdAndUserId}
+     * </p>
      *
      * @param id 购物车 id
      * @param newNumber 修改后的份数
@@ -106,4 +114,67 @@ public interface ShoppingCartMapper {
      * 批量新增购物车数据
      */
     int insertBatch( @Param( "shoppingCarts" ) List< ShoppingCart > shoppingCarts );
+
+    /**
+     * 查询某个用户、某条购物车数据的商品数量
+     *
+     * @param id 购物车数据 id
+     * @param userId 用户 id
+     * @return 该购物车的商品数量, <b>购物车数据不存在或者不属于该用户时返回 null</b>
+     */
+    @Select( """
+            SELECT number
+            FROM shopping_cart
+            WHERE id = #{id}
+            AND user_id = #{userId}
+            """ )
+    Integer selectNumberByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+
+    /**
+     * 判断购物车数据是否存在
+     *
+     * @param id 购物车数据 id
+     * @return 0 不存在, 1 存在
+     */
+    @Select( """
+            SELECT count( * )
+            FROM shopping_cart
+            WHERE id = #{id}
+            """ )
+    long countById( @Param( "id" ) Long id );
+
+    /**
+     * 修改某个用户、某条购物车数据的商品数量
+     *
+     * @param id 购物车数据 id, 用于确保数据存在
+     * @param userId 用户 id, 用于确保数据属于该用户
+     * @param newNumber 修改后的商品数量
+     * @return 修改行数, <b>返回 0 说明购物车数据不存在或者不属于该用户</b>
+     */
+    @Update( """
+            UPDATE shopping_cart
+            SET number = #{newNumber}
+            WHERE id = #{id}
+            AND user_id = #{userId}
+            """ )
+    int updateNumberByIdAndUserId(
+            @Param( "id" ) Long id,
+            @Param( "userId" ) Long userId,
+            @Param( "newNumber" ) int newNumber
+    );
+
+    /**
+     * 删除某个用户的某条购物车数据
+     *
+     * @param id 购物车数据 id, 用于确保数据存在
+     * @param userId 用户 id, 用于确保数据属于该用户
+     * @return 删除数据行数, 通常为 1,
+     *          <b>返回 0 说明购物车数据不存在或者不属于该用户</b>
+     */
+    @Delete( """
+            DELETE FROM shopping_cart
+            WHERE id = #{id}
+            AND user_id = #{userId}
+            """ )
+    int deleteByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 }

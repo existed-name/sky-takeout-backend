@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
 /**
@@ -100,16 +99,18 @@ public class ShoppingCartController {
     }
 
     /**
-     * 减少加购的商品数量
+     * 某个商品数量减一
      */
-    @ApiOperation( "减少加购的商品数量" )
-    @PutMapping( "/decrement/{id}" )
+    @ApiOperation( "某个商品数量减一" )
+    @PutMapping( "/{id}/decrement" )
     public Result< Void > decrement(
-            @PathVariable( name = "id" )
-            @NotNull( message = "购物车数据 id 不能为空" )
-            @Positive( message = "购物车数据 id 必须是正整数" ) Long id ){
-        log.info( "减少购物车数据 id = {} 的商品数量", id );
-        shoppingCartService.decrementById( id );
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "购物车数据 id 必须是正整数" )
+            Long id
+    ){
+        Long userId = BaseContext.getCurrentId();
+        log.info( "id = {} 的购物车商品数量减一, 进行操作的用户 id = {}", id, userId );
+        shoppingCartService.decrementByIdAndUserId( id, userId );
         return Result.success();
     }
 

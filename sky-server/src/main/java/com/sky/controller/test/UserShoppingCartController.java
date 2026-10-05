@@ -1,6 +1,5 @@
 package com.sky.controller.test;
 
-import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.ShoppingCartService;
 import com.sky.vo.ShoppingCartListVO;
@@ -10,6 +9,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +24,7 @@ import javax.validation.constraints.Positive;
  */
 @Validated
 @Slf4j
-@RestController( "TestUserShoppingCartController" )
+@RestController( "testUserShoppingCartController" )
 @RequestMapping( "/test/shopping-carts" )
 @Profile( "dev" )
 public class UserShoppingCartController {
@@ -73,6 +74,24 @@ public class UserShoppingCartController {
     ){
         log.info( "id = {} 的用户清空购物车", userId );
         shoppingCartService.cleanByUserId( userId );
+        return Result.success();
+    }
+
+    /**
+     * 某个商品数量减一
+     */
+    @ApiOperation( "某个商品数量减一" )
+    @PutMapping( "/{id}/decrement" )
+    public Result< Void > decrement(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "购物车数据 id 必须是正整数" )
+            Long id,
+            @RequestParam( name = "userId", required = true )
+            @Positive( message = "用户 id 必须是正整数" )
+            Long userId
+    ){
+        log.info( "id = {} 的购物车商品数量减一, 进行操作的用户 id = {}", id, userId );
+        shoppingCartService.decrementByIdAndUserId( id, userId );
         return Result.success();
     }
 

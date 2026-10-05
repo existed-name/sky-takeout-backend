@@ -2,12 +2,10 @@ package com.sky.service.impl;
 
 import com.sky.constant.FoodCopiesConstant;
 import com.sky.constant.MessageConstant;
-import com.sky.context.BaseContext;
 import com.sky.dto.shoppingCart.ShoppingCartDTO;
 import com.sky.dto.shoppingCart.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
-import com.sky.exception.InvalidDataBaseDataException;
-import com.sky.exception.NotFoundException;
+import com.sky.exception.DataBaseDataInvalidException;
 import com.sky.exception.shoppingCart.ShoppingCartIncompleteException;
 import com.sky.exception.shoppingCart.ShoppingCartInvalidException;
 import com.sky.exception.shoppingCart.ShoppingCartUserNotMatchException;
@@ -208,31 +206,40 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         shoppingCartMapper.deleteByUserId( userId );
     }
 
+    @Transactional( rollbackFor = Exception.class )
     @Override
-    public void decrementById( Long id ){
-        Long userId = BaseContext.getCurrentId();
-        // id 完全可定位该条数据，就不需要再添 userId 之类的了
-        ShoppingCart shoppingCart = shoppingCartMapper.selectById( id );
-        if ( shoppingCart == null ){
-            throw new NotFoundException( MessageConstant.SHOPPING_CART_NOT_FOUND );
-        }
-
-        // AI 提醒: 由于使用 id 定位，需要确保 userId 相同
-        if ( ! userId.equals( shoppingCart.getUserId() ) ){
+    public void decrementByIdAndUserId( Long id, Long userId ){
+        /*
+            补充实现思路
+            id 用来定位数据是否存在、userId 用来判断数据是否属于该用户
+            拿到该用户指定的购物车数据的商品数量
+            如果 > 1 则把 - 1 后的数据写入数据库
+            否则直接删数据就行
+         */
+        Integer number = shoppingCartMapper.selectNumberByIdAndUserId( id, userId );
+        if ( number == null ){
+            /*
+                定位逻辑
+                用 id、userId 同时定位为 null => 数据不存在或者不属于该用户
+                那么继续用 id 定位 => 不能定位, 说明数据不存在
+                能定位, 说明不属于该用户
+             */
+            NotFoundUtil.throwIfCountZero( shoppingCartMapper.countById( id ), MessageConstant.SHOPPING_CART_NOT_FOUND );
             throw new ShoppingCartUserNotMatchException( MessageConstant.SHOPPING_CART_USER_NOT_MATCH );
         }
 
-        // 数量为 1 -> 减为 0 -> 删除，否则只是减一
-        Integer number = shoppingCart.getNumber();
         if ( number > 1 ){
-            // 既然有了准确 id，就不需要 dishId, setmealId 定位了
-            shoppingCartMapper.updateNumberById(
-                    id, FoodCopiesConstant.decrement( shoppingCart.getNumber() )
-            );
-        } else if ( number == 1 ){
-            int row = shoppingCartMapper.deleteById( id );
+            int newNumber = FoodCopiesConstant.decrement( number );
+            shoppingCartMapper.updateNumberByIdAndUserId( id, userId, newNumber );
+        } else if ( number.equals( 1 ) ){
+            int row = shoppingCartMapper.deleteByIdAndUserId( id, userId );
         } else { // null, 非正数, 无效数据
-            throw new InvalidDataBaseDataException( MessageConstant.DATABASE_DATA_ERROR + ": 购物车商品数量 = " + number );
+            throw new IllegalStateException(
+                    String.format( "%s: id = %s 的购物车商品数量 = %s, 至少应该 = 1",
+                            MessageConstant.DATABASE_DATA_ERROR,
+                            id, number
+                    )
+            );
         }
     }
 
