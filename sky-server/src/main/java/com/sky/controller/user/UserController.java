@@ -24,7 +24,7 @@ import javax.validation.Valid;
 @Slf4j
 @Api( tags = "用户模块接口" )
 @RestController
-@RequestMapping( "/user/user" )
+@RequestMapping( "/user/users" )
 public class UserController {
     // ==================== 常量 ====================
 
