@@ -135,15 +135,18 @@ public class AddressBookServiceImpl implements AddressBookService {
     public void setDefaultByIdAndUserId( Long id, Long userId ){
         /*
             * 由于只能有 1 个默认地址，所以需要先把之前的默认地址设为非默认，再设置现在的地址为默认
-            * 撤销之前的默认地址: 直接修改( user_id + is_default = 1 定位 )
-            * 使用 id、userId 2 个参数精准定位 + Mapper 修改行数判断异常，确保数据匹配当前用户
-            * 由于重置默认状态有 WHERE is_default = 1 可能用户不存在默认地址，就会干扰判断
-            * 所以先设置默认地址, 此时只有 WHERE id = #{id}, user_id = #{userId}
-            * 再把其他地址设为非默认
+            * 撤销之前的默认地址: user_id + is_default = 1 定位
+            * 再使用 id、userId 把目标地址修改为默认地址
+            * 然后根据修改行数判断数据不存在、不匹配当前用户
+            * 然而 2 次修改都会返回修改行数
+              - 如果先撤销, 可能因为之前并没有默认地址, 导致拿到的修改行数 = 0, 进而干扰判断
+            * 所以先设置默认地址, 用 id、userId 定位并检验修改行数
+            * 再把其他地址设为非默认地址
+              - 优化点在加上 where is_default = 1 只重置旧的默认地址
          */
         int updatedRow = addressBookMapper.updateIsDefaultByIdAndUserId( id, userId, AddressBookConstant.IS_DEFAULT );
         validateUpdatedRowById( id, updatedRow );
-        addressBookMapper.resetDefaultByIdAndUserId( id, userId );
+        addressBookMapper.resetDefaultByIdAndUserId( id, userId, AddressBookConstant.IS_DEFAULT );
     }
 
 

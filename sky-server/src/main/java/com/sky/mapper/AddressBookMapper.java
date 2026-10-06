@@ -98,10 +98,15 @@ public interface AddressBookMapper {
     AddressBookVO selectVOByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
-     * 将当前用户<b>除了指定 id 的地址</b>以外的默认地址重置为非默认状态(<b>指定 id 的地址是刚设置的默认地址</b>)
+     * 将当前用户<b>除了指定 id 的地址</b>以外的默认地址重置为非默认状态
+     * ( <b>指定 id 的地址通常在上一步设置为了默认地址</b> )
      * <p>
      *     注意: <b>SQL 语句的<code>is_default</code>硬编码，业务变化后需要修改</b>
      * </p>
+     * @param idExclusive 被排除的地址簿 id, 不会修改该地址簿的默认状态
+     * @param userId 用户 id, 用来确认该用户的地址簿数据
+     * @param isDefault 地址簿默认状态, 此处应传入{@link com.sky.constant.AddressBookConstant#IS_DEFAULT},
+     *                  用于排除已经是默认的地址
      * @return 修改行数: <br>
      *          * 0 => <b>没有默认地址</b>(排除用户不存在的情况); <br>
      *          * 1 => 正常
@@ -109,13 +114,22 @@ public interface AddressBookMapper {
     @Update( """
             UPDATE address_book
             SET is_default = 0
-            WHERE user_id = #{userId} AND is_default = 1
+            WHERE user_id = #{userId}
+                AND is_default = #{isDefault}
                 AND id != #{id}
             """ )
-    int resetDefaultByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+    int resetDefaultByIdAndUserId(
+            @Param( "id" ) Long idExclusive,
+            @Param( "userId" ) Long userId,
+            @Param( "isDefault" ) Integer isDefault
+    );
 
     /**
-     * 修改目标地址的默认状态
+     * 修改某个用户、某个地址的默认状态
+     *
+     * @param id 地址簿 id
+     * @param userId 用户 id, 用来确认该用户的地址簿数据
+     * @param isDefault 修改后的默认状态值
      * @return 修改行数: <br>
      *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
      *          * 1 => 正常
@@ -128,7 +142,8 @@ public interface AddressBookMapper {
     int updateIsDefaultByIdAndUserId(
             @Param( "id" ) Long id,
             @Param( "userId" ) Long userId,
-            @Param( "isDefault" ) Integer isDefault );
+            @Param( "isDefault" ) Integer isDefault
+    );
 
     /**
      * 判断该 id 对应的数据是否存在

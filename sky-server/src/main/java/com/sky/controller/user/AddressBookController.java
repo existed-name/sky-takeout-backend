@@ -147,14 +147,14 @@ public class AddressBookController {
      * 设置默认地址
      */
     @ApiOperation( "设置默认地址" )
-    @PutMapping( "/default/{id}" )
+    @PutMapping( "/{id}/default" )
     public Result< Void > setDefault(
-            @PathVariable( name = "id" )
-            @NotNull( message = "收货地址 id 不能为空" )
-            @Positive( message = "收货地址 id 必须是正整数" ) Long id
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "收货地址 id 必须是正整数" )
+            Long id
     ){
         Long userId = BaseContext.getCurrentId();
-        log.info( "修改地址为默认地址: id = {}, userId = {}", id, userId );
+        log.info( "id = {} 的用户设置 id = {} 的地址为默认地址", userId, id );
         addressBookService.setDefaultByIdAndUserId( id, userId );
         return Result.success(  );
     }

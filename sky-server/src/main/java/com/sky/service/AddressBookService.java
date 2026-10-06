@@ -52,9 +52,10 @@ public interface AddressBookService {
     AddressBookVO getByIdAndUserId( Long id, Long userId );
 
     /**
-     * 设置默认地址
+     * 用户端某个用户设置默认地址
      *
-     * @param userId 用于检验该条地址数据是否属于当前用户
+     * @param id 地址簿 id, 用于判断数据存在性
+     * @param userId 用户 id, 用于判断数据是否属于当前用户
      */
     void setDefaultByIdAndUserId( Long id, Long userId );
 }
