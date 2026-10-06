@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -169,7 +170,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler( value = BusinessException.class )
     public Result< String > handleBusinessException( BusinessException ex){
-        log.warn( "业务异常信息：{}", ex.getMessage() );
+        log.warn( "业务异常信息: {}", ex.getMessage() );
         return Result.error( ex.getMessage() );
     }
 
@@ -283,8 +284,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler( value = SQLException.class )
     public Result< String > handleSQLException( SQLException e ){
         log.error( "未知 SQL 异常", e );
-        return Result.error( MessageConstant.UNKNOWN_DATABASE_ERROR );
+        return Result.error( MessageConstant.DATABASE_UNKNOWN_ERROR );
     }
+
+    /**
+     * 处理 SQL 语法错误
+     */
+    @ExceptionHandler( value = BadSqlGrammarException.class )
+    public Result< String > handleSQLException( BadSqlGrammarException e ){
+//        String sql = e.getSql(); mybatis 会返回空字符串
+        String message = e.getMessage();
+        log.error( "SQL 语法错误, 异常信息 = {}", message );
+        return Result.error( MessageConstant.DATABASE_UNKNOWN_ERROR );
+    }
+
 
     /**
      * 数据库连接异常(没有启动)
