@@ -51,7 +51,7 @@ public class MessageConstant {
     public static final String DATABASE_DATA_ERROR = "数据库数据错误, 请稍后再试";
     public static final String SHOPPING_CART_NOT_FOUND = "购物车数据不存在";
     public static final String SHOPPING_CART_USER_NOT_MATCH = "该购物车数据不属于当前用户";
-    public static final String DEFAULT_ADDRESS_BOOK_NOT_FOUND = "默认地址簿不存在";
+    public static final String ADDRESS_BOOK_DEFAULT_NOT_FOUND = "您还没有设置默认地址~";
     public static final String ADDRESS_BOOK_USER_NOT_MATCH = "该地址簿数据不属于当前用户";
     public static final String ADDRESS_BOOK_NOT_FOUND = "该地址簿数据不存在";
     public static final String UNSATISFIED_FIELD_CONSTRAINT = "不满足数据库字段约束, 请重新填写";

@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.sky.entity.AddressBook;
 import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookDefaultVO;
 import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import org.apache.ibatis.annotations.Delete;
@@ -46,17 +47,13 @@ public interface AddressBookMapper {
     int insert( @Param( "addressBook" ) AddressBook addressBook );
 
     /**
-     * 查询默认地址
+     * 用户查询默认地址
      *
-     * @return 不包括 userId、其他字段完整的 VO
+     * @param userId 用户 id, 用来确认该用户的地址簿数据
+     * @param isDefault 地址默认状态, 查询默认地址请传入{@link com.sky.constant.AddressBookConstant#IS_DEFAULT}
+     * @return 默认地址展示对象
      */
-    @Select( """
-            SELECT id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default
-            FROM address_book
-            WHERE user_id = #{userId}
-            AND is_default = #{isDefault}
-            """ )
-    AddressBookVO selectVOByUserIdAndIsDefault( @Param( "userId" ) Long userId, @Param( "isDefault" ) Integer isDefault );
+    AddressBookDefaultVO selectVOByUserIdAndIsDefault( @Param( "userId" ) Long userId, @Param( "isDefault" ) Integer isDefault );
 
 
     /**

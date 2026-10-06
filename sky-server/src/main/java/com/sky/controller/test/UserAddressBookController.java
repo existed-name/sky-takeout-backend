@@ -4,7 +4,7 @@ import com.sky.dto.AddressBookDTO;
 import com.sky.result.Result;
 import com.sky.service.AddressBookService;
 import com.sky.validation.ValidationGroups;
-import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookDefaultVO;
 import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import io.swagger.annotations.Api;
@@ -90,16 +90,19 @@ public class UserAddressBookController {
 
     /**
      * 查询默认地址
+     * <p>
+     *     业务场景: 用户准备下单时, 查询、使用默认地址作为收货地址
+     * </p>
      */
     @ApiOperation( "查询默认地址" )
     @GetMapping( "/default" )
-    public Result< AddressBookVO > getDefault(
+    public Result< AddressBookDefaultVO > getDefault(
             @RequestParam( name = "userId", required = true )
             @Positive( message = "用户 id 必须是正整数" )
             Long userId
     ){
-        log.info( "查看 id = {} 的用户的默认地址", userId );
-        AddressBookVO addressBookVO = addressBookService.getDefaultByUserId( userId );
+        log.info( "id = {} 的用户查看默认地址", userId );
+        AddressBookDefaultVO addressBookVO = addressBookService.getDefaultByUserId( userId );
         return Result.success( addressBookVO );
     }
 

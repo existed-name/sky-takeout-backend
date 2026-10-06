@@ -40,6 +40,15 @@
         detail, label, is_default
     </sql>
 
+    <!--
+    AddressBookDefaultVO 完整字段, 可复用
+    -->
+    <sql id="AddressBookDefaultVOColumns">
+        id, consignee, sex, phone,
+        province_name, city_name, district_name,
+        detail, label, is_default
+    </sql>
+
 
     <!--
     编辑地址
@@ -108,6 +117,16 @@
         FROM address_book
         WHERE id = #{id}
                 AND user_id = #{userId}
+    </select>
+
+    <!--
+    用户查询默认地址
+    -->
+    <select id="selectVOByUserIdAndIsDefault" resultType="com.sky.vo.user.addressBook.AddressBookDefaultVO">
+        SELECT <include refid="AddressBookDefaultVOColumns"/>
+        FROM address_book
+        WHERE user_id = #{userId}
+                AND is_default = #{isDefault}
     </select>
 
 </mapper>

@@ -8,11 +8,12 @@ import com.sky.enumeration.AddressBookLabel;
 import com.sky.enumeration.Gender;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
+import com.sky.mapper.UserMapper;
 import com.sky.utils.NotFoundUtil;
-import com.sky.vo.AddressBookVO;
 import com.sky.entity.AddressBook;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.service.AddressBookService;
+import com.sky.vo.user.addressBook.AddressBookDefaultVO;
 import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import org.springframework.stereotype.Service;
@@ -31,12 +32,14 @@ public class AddressBookServiceImpl implements AddressBookService {
     // ==================== 实例变量 ====================
     private final AddressBookMapper addressBookMapper;
     private final AddressBookConverter addressBookConverter;
+    private final UserMapper userMapper;
 
 
     // ==================== 构造器 ====================
-    public AddressBookServiceImpl( AddressBookMapper addressBookMapper, AddressBookConverter addressBookConverter ){
+    public AddressBookServiceImpl( AddressBookMapper addressBookMapper, AddressBookConverter addressBookConverter, UserMapper userMapper ){
         this.addressBookMapper = addressBookMapper;
         this.addressBookConverter = addressBookConverter;
+        this.userMapper = userMapper;
     }
 
 
@@ -79,15 +82,20 @@ public class AddressBookServiceImpl implements AddressBookService {
 
     @Transactional( readOnly = true )
     @Override
-    public AddressBookVO getDefaultByUserId( Long userId ){
-        AddressBookVO addressBookVO = addressBookMapper.selectVOByUserIdAndIsDefault(
+    public AddressBookDefaultVO getDefaultByUserId( Long userId ){
+        AddressBookDefaultVO addressBookDefaultVO = addressBookMapper.selectVOByUserIdAndIsDefault(
                 userId, AddressBookConstant.IS_DEFAULT
         );
-        // 看了教程过后才发现没有考虑用户没设置默认地址的情况
-        if ( addressBookVO == null ){
-            throw new NotFoundException( MessageConstant.DEFAULT_ADDRESS_BOOK_NOT_FOUND );
+        /*
+            考虑到大多数正常情况, 用户存在、并且也设置了默认地址, 就会直接查询、返回
+            只有少数情况, 才可能出现用户没设置默认地址、甚至用户不存在导致查询对象为空
+            所以这里是在查询结果为空时才检查用户是否存在, 尽可能减少数据库往返
+         */
+        if ( addressBookDefaultVO == null ){
+            NotFoundUtil.throwIfCountZero( userMapper.countById( userId ), MessageConstant.USER_NOT_FOUND );
+            NotFoundUtil.throwIfNotFound( addressBookDefaultVO, MessageConstant.ADDRESS_BOOK_DEFAULT_NOT_FOUND );
         }
-        return addressBookVO;
+        return addressBookDefaultVO;
     }
 
     @Transactional( rollbackFor = Exception.class )

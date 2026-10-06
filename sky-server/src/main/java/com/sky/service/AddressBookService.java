@@ -1,7 +1,7 @@
 package com.sky.service;
 
 import com.sky.dto.AddressBookDTO;
-import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookDefaultVO;
 import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 
@@ -25,9 +25,12 @@ public interface AddressBookService {
     void saveWithUserId( Long userId, AddressBookDTO addressBookDTO  );
 
     /**
-     * 查询默认地址
+     * 用户端某个用户查询默认地址
+     *
+     * @param userId 用户 id
+     * @return 默认地址展示对象
      */
-    AddressBookVO getDefaultByUserId( Long userId );
+    AddressBookDefaultVO getDefaultByUserId( Long userId );
 
     /**
      * 用户端某个用户修改地址信息
