@@ -51,11 +51,11 @@ public class AddressBookDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /** 地址簿id（修改时必填） */
-    @ApiModelProperty( value = "地址簿id（修改时必填）", example = "1", required = false )
-    @NotNull( message = "地址簿 id 不能为空", groups = ValidationGroups.Update.class )
-    @Positive( message = "地址簿 id 必须是正整数", groups = ValidationGroups.Update.class )
-    private Long id;
+//    /** 地址簿id（修改时必填） */
+//    @ApiModelProperty( value = "地址簿id（修改时必填）", example = "1", required = false )
+//    @NotNull( message = "地址簿 id 不能为空", groups = ValidationGroups.Update.class )
+//    @Positive( message = "地址簿 id 必须是正整数", groups = ValidationGroups.Update.class )
+//    private Long id;
 
 //    /** 用户id */
 //    @ApiModelProperty( value = "用户id", example = "1", required = false )

@@ -4,6 +4,7 @@ import com.sky.dto.AddressBookDTO;
 import com.sky.vo.AddressBookVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 public interface AddressBookService {
@@ -29,9 +30,13 @@ public interface AddressBookService {
     AddressBookVO getDefaultByUserId( Long userId );
 
     /**
-     * 修改地址
+     * 用户端某个用户修改地址信息
+     *
+     * @param id 地址簿 id
+     * @param userId 用户 id
+     * @param addressBookDTO 修改后的地址簿信息
      */
-    void updateByIdAndUserId( Long userId, AddressBookDTO addressBookDTO );
+    void updateByIdAndUserId( Long id, Long userId, AddressBookDTO addressBookDTO );
 
     /**
      * 根据 id 删除地址

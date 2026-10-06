@@ -8,6 +8,7 @@ import com.sky.enumeration.AddressBookLabel;
 import com.sky.enumeration.Gender;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
+import com.sky.utils.NotFoundUtil;
 import com.sky.vo.AddressBookVO;
 import com.sky.entity.AddressBook;
 import com.sky.mapper.AddressBookMapper;
@@ -16,6 +17,7 @@ import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Service
@@ -90,13 +92,24 @@ public class AddressBookServiceImpl implements AddressBookService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void updateByIdAndUserId( Long userId, AddressBookDTO addressBookDTO ){
+    public void updateByIdAndUserId( Long id, Long userId, AddressBookDTO addressBookDTO ){
+        /*
+            思路类似新增地址簿
+            对部分字段进行业务检验: 性别、标签
+            然后写入数据库时用 id、userId 定位, 判断数据存在性、是否属于当前用户
+         */
+        Gender.throwIfInvalid( Integer.valueOf( addressBookDTO.getSex() ) );
+        String label = addressBookDTO.getLabel();
+        if ( label != null ){
+            AddressBookLabel.throwIfInvalid( Integer.valueOf( label ) );
+        }
+
         AddressBook entity = addressBookConverter.toEntity( addressBookDTO );
+        entity.setId( id );
         entity.setUserId( userId );
-        // 猛然想起: userId 是 BaseContext，dto 不带 userId 但是有 id, 修改之前应该先看这个 id 是不是当前用户的
-        // 这里用 id、userId 定位，找得到说明是这个用户的数据
+
         int row = addressBookMapper.updateByIdAndUserId( entity );
-        validateUpdatedRowById( entity.getId(), row );
+        validateUpdatedRowById( id, row );
     }
 
     @Transactional( rollbackFor = Exception.class )
@@ -138,7 +151,10 @@ public class AddressBookServiceImpl implements AddressBookService {
     // ==================== 私有辅助方法 ====================
 
     /**
-     * 根据 Mapper 修改行数判断异常: id 对应的数据不存在、或者跟当前用户不匹配
+     * <b>mapper 使用 id、userId 定位数据并修改后</b>, 根据修改行数判断异常: id 对应的数据不存在、或者跟当前用户不匹配
+     * <p>
+     *     当修改行数 = 0 时, 调用{@link #throwIfNotFoundOrNotMatch}抛出异常
+     * </p>
      *
      * @param id 数据库表 id
      * @param updatedRow 修改行数
@@ -150,16 +166,20 @@ public class AddressBookServiceImpl implements AddressBookService {
     }
 
     /**
-     * 判断异常: id 对应的数据不存在、或者跟当前用户不匹配
+     * 当 id 对应的数据不存在、或者跟当前用户不匹配时, 抛出业务异常
+     * <p>
+     *     使用前提: <b>mapper 已经使用了 id、userId 共同确定修改行数 = 0 或者查询对象 = null</b>,
+     * </p>
+     * <b>该方法一定会抛出异常</b>, 在使用前提下, 只要数据不存在, 就可以断定数据不匹配
      *
-     * @param id 数据库表 id
+     * @param id 数据库表 id, 用于判断该数据是否存在
+     * @throws NotFoundException 当数据不存在时抛出
+     * @throws AddressBookUserNotMatchException 当数据存在, 也就是数据不属于该用户时抛出,
      */
     private void throwIfNotFoundOrNotMatch( Long id ){
         // 理论上 id, userId 定位到同一条数据，然而修改行数为 0
         // 说明 id 跟 userId 对不上 => id 错误(无效)或者 userId 错误(该数据不属于当前用户)
-        if ( addressBookMapper.countById( id ) == 0 ){
-            throw new NotFoundException( MessageConstant.ADDRESS_BOOK_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfCountZero( addressBookMapper.countById( id ), MessageConstant.ADDRESS_BOOK_NOT_FOUND );
         throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
     }
 

@@ -21,11 +21,11 @@ public interface AddressBookConverter {
     /**
      * DTO 转 entity
      * <p>
-     * <b>AddressBook 忽略字段</b>: userId, concatAddress
-     * <p>
-     *     注: <b>创建时 id = null, 修改时 id 非空</b>, 都映射到 AddressBook
+     *      AddressBook 忽略字段: id, userId, concatAddress,
+     *      <b>由调用方手动设置</b>
      * </p>
      */
+    @Mapping( target = "id", ignore = true )
     @Mapping( target = "userId", ignore = true )
     @Mapping( target = "concatAddress", ignore = true )
     AddressBook toEntity( AddressBookDTO dto );

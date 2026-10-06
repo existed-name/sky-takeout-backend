@@ -32,7 +32,7 @@ import java.util.List;
 @Validated
 @Slf4j
 @Api( tags = "用户端地址簿管理接口" )
-@RestController( "userAddressController" )
+@RestController( "userAddressBookController" )
 @RequestMapping( "/user/address-books" )
 public class AddressBookController {
     // ==================== 常量 ====================
@@ -97,14 +97,17 @@ public class AddressBookController {
      * 修改地址
      */
     @ApiOperation( "修改地址" )
-    @PutMapping
+    @PutMapping( "/{id}" )
     public Result< Void > update(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "地址簿 id 必须是正整数" )
+            Long id,
             @RequestBody @Validated( ValidationGroups.Update.class )
             AddressBookDTO addressBookDTO
     ){
         Long userId = BaseContext.getCurrentId();
-        log.info( "id  = {} 的用户修改收货地址: {}", userId, addressBookDTO );
-        addressBookService.updateByIdAndUserId( userId, addressBookDTO );
+        log.info( "id  = {} 的用户修改 id = {} 的收货地址: {}", userId, id, addressBookDTO );
+        addressBookService.updateByIdAndUserId( id, userId, addressBookDTO );
         return Result.success();
     }
 

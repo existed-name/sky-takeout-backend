@@ -54,7 +54,7 @@ public class NotFoundUtil {
      *
      * @param countById 计数结果, 基本数据类型、而不是包装类型
      * @param message 异常信息
-     * @throws NotFoundException 计算结果 = 0 时抛出
+     * @throws NotFoundException 计数结果 = 0 时抛出
      */
     public static void throwIfCountZero( long countById, String message ){
         if ( countById == 0L ){

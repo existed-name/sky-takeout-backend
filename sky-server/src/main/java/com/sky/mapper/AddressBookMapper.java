@@ -59,10 +59,9 @@ public interface AddressBookMapper {
 
 
     /**
-     * 编辑地址
-     * <br>
-     * <b>不会修改 user_id</b>
+     * 修改地址簿信息, <b>不会修改 user_id</b>
      *
+     * @param entity 修改后的地址簿信息, <b>由调用方设置非空的 id、userId</b>
      * @return 修改行数:<br>
      *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
      *          * 1 => 正常

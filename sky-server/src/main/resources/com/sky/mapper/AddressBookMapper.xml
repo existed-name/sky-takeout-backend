@@ -76,7 +76,7 @@
                 is_default = #{addressBook.isDefault},
             </if>
         </set>
-        WHRER id = #{addressBook.id} AND user_id = #{addressBook.userId}
+        WHERE id = #{addressBook.id} AND user_id = #{addressBook.userId}
     </update>
 
     <!--
