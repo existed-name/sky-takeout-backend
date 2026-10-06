@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddressBookDetailVO {
+public class AddressBookInfoVO {
 
     /** 地址簿id（修改时必填） */
     @ApiModelProperty( value = "地址簿id（修改时必填）", example = "1" )

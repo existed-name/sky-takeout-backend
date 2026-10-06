@@ -3,7 +3,7 @@ package com.sky.mapper;
 import com.sky.entity.AddressBook;
 import com.sky.vo.user.addressBook.AddressBookVO;
 import com.sky.vo.user.addressBook.AddressBookDefaultVO;
-import com.sky.vo.user.addressBook.AddressBookDetailVO;
+import com.sky.vo.user.addressBook.AddressBookInfoVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
@@ -160,5 +160,5 @@ public interface AddressBookMapper {
      * @return 地址簿详情展示对象, <br>
      *          返回 null => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(包含用户不存在的情况);
      */
-    AddressBookDetailVO selectDetailVOByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+    AddressBookInfoVO selectDetailVOByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 }

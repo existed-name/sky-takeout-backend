@@ -112,7 +112,7 @@
     <!--
     查询用户的某个地址簿
     -->
-    <select id="selectDetailVOByIdAndUserId" resultType="com.sky.vo.user.addressBook.AddressBookDetailVO">
+    <select id="selectDetailVOByIdAndUserId" resultType="com.sky.vo.user.addressBook.AddressBookInfoVO">
         SELECT <include refid="AddressBookDetailVOColumns"/>
         FROM address_book
         WHERE id = #{id}

@@ -2,7 +2,7 @@ package com.sky.service;
 
 import com.sky.dto.user.addressBook.AddressBookDTO;
 import com.sky.vo.user.addressBook.AddressBookDefaultVO;
-import com.sky.vo.user.addressBook.AddressBookDetailVO;
+import com.sky.vo.user.addressBook.AddressBookInfoVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 
 import java.util.List;
@@ -56,7 +56,7 @@ public interface AddressBookService {
      * @param userId 用户 id, 用于判断数据是否属于当前用户
      * @return 地址簿详情
      */
-    AddressBookDetailVO getByIdAndUserId( Long id, Long userId );
+    AddressBookInfoVO getByIdAndUserId( Long id, Long userId );
 
     /**
      * 用户端某个用户设置默认地址

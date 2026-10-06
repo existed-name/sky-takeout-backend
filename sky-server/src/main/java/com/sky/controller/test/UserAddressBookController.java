@@ -5,7 +5,7 @@ import com.sky.result.Result;
 import com.sky.service.AddressBookService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.user.addressBook.AddressBookDefaultVO;
-import com.sky.vo.user.addressBook.AddressBookDetailVO;
+import com.sky.vo.user.addressBook.AddressBookInfoVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -149,7 +149,7 @@ public class UserAddressBookController {
      */
     @ApiOperation( "根据 id 查询地址信息" )
     @GetMapping( "/{id}" )
-    public Result< AddressBookDetailVO > getInfo(
+    public Result< AddressBookInfoVO > getInfo(
             @PathVariable( name = "id", required = true )
             @Positive( message = "收货地址 id 必须是正整数" )
             Long id,
@@ -158,8 +158,8 @@ public class UserAddressBookController {
             Long userId
     ){
         log.info( "id = {} 的用户查看 id = {} 的地址簿详情", userId, id );
-        AddressBookDetailVO addressBookDetailVO = addressBookService.getByIdAndUserId( id, userId );
-        return Result.success( addressBookDetailVO );
+        AddressBookInfoVO addressBookInfoVO = addressBookService.getByIdAndUserId( id, userId );
+        return Result.success( addressBookInfoVO );
     }
 
     /**
