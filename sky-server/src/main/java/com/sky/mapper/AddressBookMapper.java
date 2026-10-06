@@ -1,7 +1,7 @@
 package com.sky.mapper;
 
 import com.sky.entity.AddressBook;
-import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookVO;
 import com.sky.vo.user.addressBook.AddressBookDefaultVO;
 import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
@@ -18,19 +18,6 @@ import java.util.List;
 @Mapper
 public interface AddressBookMapper {
 
-
-    /**
-     * 查看该用户的所有收货地址, 按照 id(创建次序) 降序排列
-     *
-     * @return 不包括 userId、其他字段完整的 VO 列表
-     */
-    @Select( """
-            SELECT id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default
-            FROM address_book
-            WHERE user_id = #{userId}
-            ORDER BY id DESC
-            """ )
-    List< AddressBookVO > selectVOListByUserId( @Param( "userId" ) Long userId );
 
     /**
      * 新增收货地址, 并进行主键回填

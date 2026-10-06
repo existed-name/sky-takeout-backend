@@ -20,7 +20,7 @@ import com.sky.mapper.UserMapper;
 import com.sky.projection.order.StatusProjection;
 import com.sky.properties.ShopInfoProperties;
 import com.sky.service.BaiduMapService;
-import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

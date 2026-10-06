@@ -1,4 +1,4 @@
-package com.sky.vo;
+package com.sky.vo.user.addressBook;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -7,18 +7,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serial;
-
 /**
- * 地址簿视图对象
- * <br>
- * 我觉得只展示前端给用户看的东西 + 需要前端持久化/排序的东西(id),所以之前我拼接完整地址
- * <br>
- * 然后 AI 分析生产环境拆开的字段、完整地址都要传，前者可以精确定位、后者展示用
- * <br>
- * 而教程的只传拆分字段，是通用的基础操作
+ * 地址簿视图对象, 用于在用户端涉及地址簿的场景展示地址信息
  *
  * @CreateTime 2026/6/16
+ * @deprecated 该对象算是通用对象, 字段基本跟实体类一样, 前端各个场景全用的它;<br>
+ *              我在重构之后, 每个场景单独用的 1 个 vo 展示数据;<br>
+ *              新代码请使用特定场景的 vo{@link com.sky.vo.user.addressBook}
  */
 @ApiModel(description = "地址簿视图对象 VO")
 @Data

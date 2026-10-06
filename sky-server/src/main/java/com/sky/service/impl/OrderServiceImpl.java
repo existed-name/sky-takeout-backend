@@ -55,7 +55,7 @@ import com.sky.service.BaiduMapService;
 import com.sky.service.OrderService;
 import com.sky.utils.OrderCacheManager;
 import com.sky.utils.PageUtil;
-import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookVO;
 import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;

@@ -3,7 +3,7 @@ package com.sky.convertor;
 import com.sky.config.GlobalMappingConfiguration;
 import com.sky.dto.user.addressBook.AddressBookDTO;
 import com.sky.entity.AddressBook;
-import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -34,6 +34,7 @@ public interface AddressBookConverter {
      * entity 转 VO
      * <p>
      * <b>AddressBookVO 忽略字段</b>: 无
+     * </p>
      */
     AddressBookVO toVO( AddressBook entity );
 
