@@ -117,12 +117,12 @@ public class AddressBookController {
     @ApiOperation( "根据 id 删除地址" )
     @DeleteMapping( "/{id}" )
     public Result< Void > delete(
-            @PathVariable( name = "id" )
-            @NotNull( message = "收货地址 id 不能为空" )
-            @Positive( message = "收货地址 id 必须是正整数" ) Long id
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "收货地址 id 必须是正整数" )
+            Long id
     ){
         Long userId = BaseContext.getCurrentId();
-        log.info( "删除收货地址: id = {}, userId = {}", id, userId );
+        log.info( "id = {} 的用户删除 id = {} 的地址簿", userId, id );
         addressBookService.deleteByIdAndUserId( id, userId );
         return Result.success();
     }

@@ -72,6 +72,8 @@ public interface AddressBookMapper {
     /**
      * 删除该用户的某个地址
      *
+     * @param id 地址簿 id
+     * @param userId 用户 id
      * @return 修改行数:<br>
      *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
      *          * 1 => 正常

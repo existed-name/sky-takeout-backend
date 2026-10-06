@@ -115,7 +115,7 @@ public class AddressBookServiceImpl implements AddressBookService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void deleteByIdAndUserId( Long id, Long userId ){
-        // 直接用 id + userId 定位数据，根据修改行数判断是数据不存在、数据不匹配(可见底部 setDefaultById 方法)
+        // 直接用 id + userId 定位数据，根据修改行数判断数据不存在、数据不匹配
         int row = addressBookMapper.deleteByIdAndUserId( id, userId );
         validateUpdatedRowById( id, row );
     }

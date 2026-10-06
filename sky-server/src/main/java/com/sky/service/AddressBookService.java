@@ -39,9 +39,10 @@ public interface AddressBookService {
     void updateByIdAndUserId( Long id, Long userId, AddressBookDTO addressBookDTO );
 
     /**
-     * 根据 id 删除地址
+     * 用户端某个用户删除某个地址簿
      *
-     * @param userId 用于检验该条地址数据是否属于当前用户
+     * @param id 地址簿 id, 用于判断数据存在性
+     * @param userId 用户 id, 用于判断数据是否属于当前用户
      */
     void deleteByIdAndUserId( Long id, Long userId );
 
