@@ -1,6 +1,6 @@
 package com.sky.controller.test;
 
-import com.sky.dto.AddressBookDTO;
+import com.sky.dto.user.addressBook.AddressBookDTO;
 import com.sky.result.Result;
 import com.sky.service.AddressBookService;
 import com.sky.validation.ValidationGroups;

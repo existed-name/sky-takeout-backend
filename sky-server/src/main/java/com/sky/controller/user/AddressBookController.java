@@ -1,7 +1,7 @@
 package com.sky.controller.user;
 
 import com.sky.context.BaseContext;
-import com.sky.dto.AddressBookDTO;
+import com.sky.dto.user.addressBook.AddressBookDTO;
 import com.sky.validation.ValidationGroups;
 import com.sky.result.Result;
 import com.sky.service.AddressBookService;

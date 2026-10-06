@@ -1,6 +1,6 @@
 package com.sky.service;
 
-import com.sky.dto.AddressBookDTO;
+import com.sky.dto.user.addressBook.AddressBookDTO;
 import com.sky.vo.user.addressBook.AddressBookDefaultVO;
 import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;

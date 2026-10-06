@@ -1,7 +1,7 @@
 package com.sky.convertor;
 
 import com.sky.config.GlobalMappingConfiguration;
-import com.sky.dto.AddressBookDTO;
+import com.sky.dto.user.addressBook.AddressBookDTO;
 import com.sky.entity.AddressBook;
 import com.sky.vo.AddressBookVO;
 import org.mapstruct.Mapper;

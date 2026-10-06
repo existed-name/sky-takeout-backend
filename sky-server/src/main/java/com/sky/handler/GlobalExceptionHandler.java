@@ -375,7 +375,7 @@ public class GlobalExceptionHandler {
     private String extractBusinessMessage( BindException exception ){
         /*
             Validation failed for argument [0] in public com.sky.result.Result<java.lang.Void>
-            com.sky.controller.user.AddressBookController.save(com.sky.dto.AddressBookDTO):
+            com.sky.controller.user.AddressBookController.save(com.sky.dto.user.addressBook.AddressBookDTO):
             [
                 Field error in object 'addressBookDTO' on field 'isDefault':
                     rejected value [null];
@@ -395,7 +395,7 @@ public class GlobalExceptionHandler {
             ]
 
             注: 换行、tab 是自己加的，实际只有一行
-            Validation failed for argument [0] in public com.sky.result.Result<java.lang.Void> com.sky.controller.user.AddressBookController.save(com.sky.dto.AddressBookDTO): [Field error in object 'addressBookDTO' on field 'isDefault': rejected value [null]; codes [NotNull.addressBookDTO.isDefault,NotNull.isDefault,NotNull.java.lang.Integer,NotNull]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [addressBookDTO.isDefault,isDefault]; arguments []; default message [isDefault]]; default message [默认地址标记不能为空]]
+            Validation failed for argument [0] in public com.sky.result.Result<java.lang.Void> com.sky.controller.user.AddressBookController.save(com.sky.dto.user.addressBook.AddressBookDTO): [Field error in object 'addressBookDTO' on field 'isDefault': rejected value [null]; codes [NotNull.addressBookDTO.isDefault,NotNull.isDefault,NotNull.java.lang.Integer,NotNull]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [addressBookDTO.isDefault,isDefault]; arguments []; default message [isDefault]]; default message [默认地址标记不能为空]]
 
             找规律:
               - 我们要的信息在第 2 个 / 最后 1 个 default message
