@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.sky.entity.AddressBook;
 import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
@@ -63,7 +64,7 @@ public interface AddressBookMapper {
      *
      * @param entity 修改后的地址簿信息, <b>由调用方设置非空的 id、userId</b>
      * @return 修改行数:<br>
-     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(包含用户不存在的情况); <br>
      *          * 1 => 正常
      */
     int updateByIdAndUserId( @Param( "addressBook" ) AddressBook entity );
@@ -75,7 +76,7 @@ public interface AddressBookMapper {
      * @param id 地址簿 id
      * @param userId 用户 id
      * @return 修改行数:<br>
-     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(包含用户不存在的情况); <br>
      *          * 1 => 正常
      */
     @Delete( """
@@ -88,7 +89,7 @@ public interface AddressBookMapper {
      * 根据 id、userId 查询地址信息
      *
      * @return 不包括 userId、其他字段完整的 VO<br>
-     *          * 假如 null => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况)
+     *          * 假如 null => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(包含用户不存在的情况)
      */
     @Select( """
             SELECT id, consignee, sex, phone, province_code, province_name, city_code, city_name, district_code, district_name, detail, label, is_default
@@ -108,7 +109,7 @@ public interface AddressBookMapper {
      * @param isDefault 地址簿默认状态, 此处应传入{@link com.sky.constant.AddressBookConstant#IS_DEFAULT},
      *                  用于排除已经是默认的地址
      * @return 修改行数: <br>
-     *          * 0 => <b>没有默认地址</b>(排除用户不存在的情况); <br>
+     *          * 0 => <b>没有默认地址</b>(包含用户不存在的情况); <br>
      *          * 1 => 正常
      */
     @Update( """
@@ -131,7 +132,7 @@ public interface AddressBookMapper {
      * @param userId 用户 id, 用来确认该用户的地址簿数据
      * @param isDefault 修改后的默认状态值
      * @return 修改行数: <br>
-     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 0 => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(包含用户不存在的情况); <br>
      *          * 1 => 正常
      */
     @Update( """
@@ -166,4 +167,14 @@ public interface AddressBookMapper {
      * @return 地址簿数据项列表, <b>用户不存在时返回空列表</b>
      */
     List< AddressBookListItemVO > selectItemVOListByUserId( @Param( "userId" ) Long userId );
+
+    /**
+     * 查询用户的某个地址簿
+     *
+     * @param id 地址簿 id, <b>不能为空</b>
+     * @param userId 用户 id, 用来确认该用户的地址簿数据, <b>不能为空</b>
+     * @return 地址簿详情展示对象, <br>
+     *          返回 null => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(包含用户不存在的情况);
+     */
+    AddressBookDetailVO selectDetailVOByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 }

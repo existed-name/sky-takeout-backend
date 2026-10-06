@@ -2,9 +2,9 @@ package com.sky.service;
 
 import com.sky.dto.AddressBookDTO;
 import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 public interface AddressBookService {
@@ -47,9 +47,13 @@ public interface AddressBookService {
     void deleteByIdAndUserId( Long id, Long userId );
 
     /**
-     * 根据 id 查询地址信息
+     * 查询某个地址簿
+     *
+     * @param id 地址簿 id, 用于判断数据存在性
+     * @param userId 用户 id, 用于判断数据是否属于当前用户
+     * @return 地址簿详情
      */
-    AddressBookVO getByIdAndUserId( Long id, Long userId );
+    AddressBookDetailVO getByIdAndUserId( Long id, Long userId );
 
     /**
      * 用户端某个用户设置默认地址

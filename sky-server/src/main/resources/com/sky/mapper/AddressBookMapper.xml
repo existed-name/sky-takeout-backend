@@ -31,6 +31,15 @@
         detail, label, is_default
     </sql>
 
+    <!--
+    AddressBookDetailVO 完整字段, 可复用
+    -->
+    <sql id="AddressBookDetailVOColumns">
+        id, consignee, sex, phone,
+        province_code, province_name, city_code, city_name, district_code, district_name,
+        detail, label, is_default
+    </sql>
+
 
     <!--
     编辑地址
@@ -89,6 +98,16 @@
         SELECT <include refid="AddressBookListItemVOColumns"/>
         FROM address_book
         WHERE user_id = #{userId}
+    </select>
+
+    <!--
+    查询用户的某个地址簿
+    -->
+    <select id="selectDetailVOByIdAndUserId" resultType="com.sky.vo.user.addressBook.AddressBookDetailVO">
+        SELECT <include refid="AddressBookDetailVOColumns"/>
+        FROM address_book
+        WHERE id = #{id}
+                AND user_id = #{userId}
     </select>
 
 </mapper>

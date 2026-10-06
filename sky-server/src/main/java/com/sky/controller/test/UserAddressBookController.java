@@ -1,11 +1,11 @@
 package com.sky.controller.test;
 
-import com.sky.context.BaseContext;
 import com.sky.dto.AddressBookDTO;
 import com.sky.result.Result;
 import com.sky.service.AddressBookService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.AddressBookVO;
+import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -147,18 +146,17 @@ public class UserAddressBookController {
      */
     @ApiOperation( "根据 id 查询地址信息" )
     @GetMapping( "/{id}" )
-    public Result< AddressBookVO > getInfo(
-            @PathVariable( name = "id" )
-            @NotNull( message = "收货地址 id 不能为空" )
+    public Result< AddressBookDetailVO > getInfo(
+            @PathVariable( name = "id", required = true )
             @Positive( message = "收货地址 id 必须是正整数" )
             Long id,
             @RequestParam( name = "userId", required = true )
             @Positive( message = "用户 id 必须是正整数" )
             Long userId
     ){
-        log.info( "查看地址: id = {}, userId = {}", id, userId );
-        AddressBookVO addressBookVO = addressBookService.getByIdAndUserId( id, userId );
-        return Result.success( addressBookVO );
+        log.info( "id = {} 的用户查看 id = {} 的地址簿详情", userId, id );
+        AddressBookDetailVO addressBookDetailVO = addressBookService.getByIdAndUserId( id, userId );
+        return Result.success( addressBookDetailVO );
     }
 
     /**

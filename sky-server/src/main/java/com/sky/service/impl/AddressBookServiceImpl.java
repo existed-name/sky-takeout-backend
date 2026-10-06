@@ -13,11 +13,11 @@ import com.sky.vo.AddressBookVO;
 import com.sky.entity.AddressBook;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.service.AddressBookService;
+import com.sky.vo.user.addressBook.AddressBookDetailVO;
 import com.sky.vo.user.addressBook.AddressBookListItemVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Service
@@ -122,12 +122,12 @@ public class AddressBookServiceImpl implements AddressBookService {
 
     @Transactional( readOnly = true )
     @Override
-    public AddressBookVO getByIdAndUserId( Long id, Long userId ){
-        AddressBookVO addressBookVO = addressBookMapper.selectVOByIdAndUserId( id, userId );
-        if ( addressBookVO == null ){
+    public AddressBookDetailVO getByIdAndUserId( Long id, Long userId ){
+        AddressBookDetailVO addressBookDetailVO = addressBookMapper.selectDetailVOByIdAndUserId( id, userId );
+        if ( addressBookDetailVO == null ){
             throwIfNotFoundOrNotMatch( id );
         }
-        return addressBookVO;
+        return addressBookDetailVO;
     }
 
     @Transactional( rollbackFor = Exception.class )
