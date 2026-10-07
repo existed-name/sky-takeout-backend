@@ -172,10 +172,9 @@ public class OrderController {
      * 再来一单
      */
     @ApiOperation( "再来一单" )
-    @PostMapping( "/repetition/{id}" )
+    @PostMapping( "/{id}/repetition" )
     public Result< Void > reorder(
-            @PathVariable( name = "id" )
-            @NotNull( message = "订单 id 不能为空" )
+            @PathVariable( name = "id", required = true )
             @Positive( message = "订单 id 必须是正整数" )
             Long id
     ){
@@ -189,7 +188,7 @@ public class OrderController {
      * 用户催促商家接受订单
      */
     @ApiOperation( "用户催促商家接受订单" )
-    @PostMapping( "/{id}/urge-accept" )
+    @PostMapping( "/{id}/urge-acceptance" )
     public Result< Void > urgeAccept(
             @PathVariable( name = "id", required = true )
             @Positive( message = "订单 id 必须是正整数" )

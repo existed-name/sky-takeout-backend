@@ -133,7 +133,7 @@ public interface OrderMapper {
     Integer selectStatusByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
-     * 判断该数据的存在性、匹配性
+     * 判断订单是否存在并且属于该用户
      *
      * @return 定位的数据条数: <br>
      *          * 0 => <b>id 对应的数据不存在 | 数据不属于该用户</b>(包含用户不存在的情况); <br>

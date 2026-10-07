@@ -1063,7 +1063,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             json = objectMapper.writeValueAsString( webSocketMessageVO );
         } catch ( JsonProcessingException e ){
-            log.error( "向商家发送信息时, 消息对象 json 序列化失败, 消息对象 = {}", webSocketMessageVO );
+            log.error( "向商家发送信息时, 消息对象 json 序列化失败, 订单 id = {}, 消息对象 = {}", orderId, webSocketMessageVO );
             throw new IllegalStateException( e );
         }
         webSocketServer.sendToAllClients( json );

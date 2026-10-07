@@ -72,7 +72,7 @@ public interface OrderService {
     /**
      * 用户端-再来一单
      *
-     * @param userId 用户 id
+     * @param userId 用户 id, 用于确定数据属于该用户
      * @param id     订单 id
      */
     void reorderByIdAndUserId( Long id, Long userId );
@@ -140,7 +140,7 @@ public interface OrderService {
      * 用户催促商家接受订单
      *
      * @param id 订单 id
-     * @param userId 用户 id
+     * @param userId 用户 id, 用于确定数据属于该用户
      */
     void urgeAcceptByIdAndUserId( Long id, Long userId );
 }
