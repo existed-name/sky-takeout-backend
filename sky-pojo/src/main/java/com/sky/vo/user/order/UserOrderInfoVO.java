@@ -1,4 +1,4 @@
-package com.sky.vo.order;
+package com.sky.vo.user.order;
 
 import com.sky.entity.OrderDetail;
 import io.swagger.annotations.ApiModel;

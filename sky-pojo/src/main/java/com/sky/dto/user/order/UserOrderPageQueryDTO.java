@@ -1,4 +1,4 @@
-package com.sky.dto.order;
+package com.sky.dto.user.order;
 
 import com.sky.dto.PageQueryDTO;
 import io.swagger.annotations.ApiModel;
@@ -7,9 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 
 /**
  * 用户端 - 条件分页查询订单的参数

@@ -2,7 +2,7 @@ package com.sky.mapper;
 
 import com.sky.dto.order.AdminOrderPageQueryDTO;
 import com.sky.dto.order.OrderStatusCount;
-import com.sky.dto.order.UserOrderPageQueryDTO;
+import com.sky.dto.user.order.UserOrderPageQueryDTO;
 import com.sky.dto.report.OrderCompletionRateItem;
 import com.sky.dto.report.UnitPriceItem;
 import com.sky.entity.Orders;

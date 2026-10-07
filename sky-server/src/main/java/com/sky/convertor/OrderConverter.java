@@ -7,7 +7,7 @@ import com.sky.entity.Orders;
 import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
 import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
-import com.sky.vo.order.UserOrderInfoVO;
+import com.sky.vo.user.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderSubmitVO;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
