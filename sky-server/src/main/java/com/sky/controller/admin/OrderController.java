@@ -173,7 +173,7 @@ public class OrderController {
      * @param id 订单状态
      */
     @ApiOperation( "取消订单" )
-    @PutMapping( "/{id}/cancel" )
+    @PutMapping( "/{id}/cancelation" )
     @LogOperation( description = "取消订单", operationType = OperationType.UPDATE )
     public Result< Void > cancel(
             @PathVariable( name = "id", required = true )
@@ -192,7 +192,7 @@ public class OrderController {
      * 处理取消订单时缺失 id 路径变量的情况
      */
     @ApiOperation( "处理取消订单缺失 id 路径变量的情况" )
-    @RequestMapping( "/cancel" )
+    @PutMapping( "/cancelation" )
     public Result< String > handleCancelOrderMissingId(){
         return Result.error( "取消订单 id 不能为空" );
     }
@@ -201,7 +201,7 @@ public class OrderController {
      * 派送订单
      */
     @ApiOperation( "派送订单" )
-    @PutMapping( "/{id}/deliver" )
+    @PutMapping( "/{id}/delivery" )
     @LogOperation( description = "派送订单", operationType = OperationType.UPDATE )
     public Result< Void > deliver(
             @PathVariable( name = "id", required = true )
@@ -218,7 +218,7 @@ public class OrderController {
      * 处理派送订单时缺失 id 路径变量的情况
      */
     @ApiOperation( "处理派送订单缺失 id 路径变量的情况" )
-    @RequestMapping( "/deliver" )
+    @PutMapping( "/delivery" )
     public Result< String > handleDeliverOrderMissingId(){
         return Result.error( "派送订单的 id 不能为空" );
     }
@@ -227,7 +227,7 @@ public class OrderController {
      * 完成订单
      */
     @ApiOperation( "完成订单" )
-    @PutMapping( "/{id}/complete" )
+    @PutMapping( "/{id}/completion" )
     @LogOperation( description = "完成订单", operationType = OperationType.UPDATE )
     public Result< Void > complete(
         @PathVariable( name = "id", required = true )
@@ -244,7 +244,7 @@ public class OrderController {
      * 处理完成订单时缺失 id 路径变量的情况
      */
     @ApiOperation( "处理完成订单缺失 id 路径变量的情况" )
-    @RequestMapping( "/complete" )
+    @PutMapping( "/completion" )
     public Result< String > handleCompleteOrderMissingId(){
         return Result.error( "完成订单的 id 不能为空" );
     }

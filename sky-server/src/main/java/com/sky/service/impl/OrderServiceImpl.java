@@ -624,9 +624,9 @@ public class OrderServiceImpl implements OrderService {
          */
 
         OrderStatisticsVO build = OrderStatisticsVO.builder()
-                .toBeConfirmed( getValidStatusCountFromMap( statusToCountMap, OrderConstant.Status.TO_BE_CONFIRMED ) )
-                .confirmed( getValidStatusCountFromMap( statusToCountMap, OrderConstant.Status.CONFIRMED ) )
-                .deliveryInProgress( getValidStatusCountFromMap( statusToCountMap, OrderConstant.Status.DELIVERY_IN_PROGRESS ) )
+                .toBeConfirmed( getValidStatusCountFromMap( statusToCountMap, OrderStatus.TO_BE_CONFIRMED.getValue() ) )
+                .confirmed( getValidStatusCountFromMap( statusToCountMap, OrderStatus.CONFIRMED.getValue() ) )
+                .deliveryInProgress( getValidStatusCountFromMap( statusToCountMap, OrderStatus.DELIVERY_IN_PROGRESS.getValue() ) )
                 .build();
         return build;
     }
@@ -753,12 +753,10 @@ public class OrderServiceImpl implements OrderService {
               - 存在性检验
               - 状态检验、满足要求的才可以取消
               - 支付状态判断、付了钱就退款
-            * 涉及字段: status, pay_status, cancel_reason, cancel_timed
+            * 涉及字段: status, pay_status, cancel_reason, cancel_time
          */
         OrderStatusProjection orderStatusProjection = orderMapper.selectStatusProjectionById( id );
-        if ( orderStatusProjection == null ){
-            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotFound( orderStatusProjection, MessageConstant.ORDER_NOT_FOUND );
 
         Integer orderStatus = orderStatusProjection.getStatus();
         if ( OrderStatus.canAdminCancel( orderStatus ) ){
@@ -794,9 +792,7 @@ public class OrderServiceImpl implements OrderService {
               - status
          */
         Integer orderStatus = orderMapper.selectStatusById( id );
-        if ( orderStatus == null ){
-            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotFound( orderStatus, MessageConstant.ORDER_NOT_FOUND );
 
         if ( OrderStatus.CONFIRMED.getValue() == orderStatus ){
             deliver( id );
@@ -820,9 +816,7 @@ public class OrderServiceImpl implements OrderService {
               - status, delivery_time 送达时间
          */
         Integer orderStatus = orderMapper.selectStatusById( id );
-        if ( orderStatus == null ){
-            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotFound( orderStatus, MessageConstant.ORDER_NOT_FOUND );
 
         if ( OrderStatus.DELIVERY_IN_PROGRESS.getValue() == orderStatus ){
             complete( id );
@@ -988,7 +982,7 @@ public class OrderServiceImpl implements OrderService {
      * <br>
      * 由调用方保证数据非空、合法
      *
-     * @param statusToCountMap 订单状态 → < 状态, 数量 >封装对象
+     * @param statusToCountMap 订单状态 → {@code < 状态, 数量 >}封装对象
      * @param orderStatus 目标订单状态
      * @return 该状态的订单数量
      */

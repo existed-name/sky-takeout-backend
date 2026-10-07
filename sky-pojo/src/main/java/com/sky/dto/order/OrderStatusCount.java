@@ -20,7 +20,7 @@ public class OrderStatusCount {
 
 
     // ==================== 实例变量 ====================
-    /** 订单状态, {@link com.sky.constant.OrderConstant.Status} */
+    /** 订单状态, {@link com.sky.enumeration.OrderStatus} */
     private Integer status;
 
     /** 订单数量 */

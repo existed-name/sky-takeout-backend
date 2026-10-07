@@ -21,11 +21,6 @@ import java.io.Serializable;
 @Data
 public class AdminOrderCancelDTO implements Serializable {
 
-//    请求路径已经有了 id, dto 不再冗余
-//    /** 订单 id */
-//    @ApiModelProperty( name = "订单 id", required = true, example = "1" )
-//    private Long id;
-
     /** 订单取消原因 */
     @ApiModelProperty( name = "订单取消原因", required = true, example = "用户打电话说不想要了" )
     @NotBlank( message = "订单取消原因不能为空" )
