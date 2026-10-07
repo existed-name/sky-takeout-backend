@@ -17,7 +17,7 @@ import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.mapper.UserMapper;
-import com.sky.projection.order.StatusProjection;
+import com.sky.projection.order.OrderStatusProjection;
 import com.sky.properties.ShopInfoProperties;
 import com.sky.service.BaiduMapService;
 import com.sky.vo.user.addressBook.AddressBookVO;
@@ -228,12 +228,12 @@ public class OrderServiceImplTest {
         /*
             Mock 数据库返回值
          */
-        StatusProjection statusProjection = new StatusProjection();
-        statusProjection.setStatus( OrderStatus.CONFIRMED.getValue() );
-        statusProjection.setPayStatus( OrderPayStatus.PAID.getValue() );
+        OrderStatusProjection orderStatusProjection = new OrderStatusProjection();
+        orderStatusProjection.setStatus( OrderStatus.CONFIRMED.getValue() );
+        orderStatusProjection.setPayStatus( OrderPayStatus.PAID.getValue() );
 
         when( orderMapper.selectStatusProjectionById( ORDER_ID ) )
-                .thenReturn( statusProjection );
+                .thenReturn( orderStatusProjection );
 
         /*
             跑业务逻辑

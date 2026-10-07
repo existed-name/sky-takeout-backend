@@ -6,8 +6,8 @@ import com.sky.dto.user.order.UserOrderPageQueryDTO;
 import com.sky.dto.report.OrderCompletionRateItem;
 import com.sky.dto.report.UnitPriceItem;
 import com.sky.entity.Orders;
+import com.sky.projection.order.OrderStatusProjection;
 import com.sky.projection.order.PaymentTimeoutProjection;
-import com.sky.projection.order.StatusProjection;
 import com.sky.vo.user.order.UserOrderHistoryItemVO;
 import com.sky.vo.report.OrderCountItemVO;
 import com.sky.vo.report.OrderValidCountItemVO;
@@ -227,7 +227,7 @@ public interface OrderMapper {
             FROM orders
             WHERE id = #{id}
             """ )
-    StatusProjection selectStatusProjectionById( @Param( "id" ) Long id );
+    OrderStatusProjection selectStatusProjectionById( @Param( "id" ) Long id );
 
     /**
      * 管理端更新订单状态

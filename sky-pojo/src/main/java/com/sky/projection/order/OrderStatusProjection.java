@@ -3,12 +3,12 @@ package com.sky.projection.order;
 import lombok.Data;
 
 /**
- * mapper 投影对象, 只查询订单状态、支付状态 2 个字段给 service 使用
+ * 订单状态投影对象, 只查询订单状态、支付状态 2 个字段给 service 使用
  *
  * @CreateTime 2026/8/30 14:13
  */
 @Data
-public class StatusProjection {
+public class OrderStatusProjection {
     // ==================== 常量 ====================
 
 

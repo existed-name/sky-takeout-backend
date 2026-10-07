@@ -50,7 +50,7 @@ import com.sky.mapper.UserMapper;
 import com.sky.projection.addressBook.AddressBookOrderInfoProjection;
 import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
 import com.sky.projection.user.UserOrderInfoProjection;
-import com.sky.projection.order.StatusProjection;
+import com.sky.projection.order.OrderStatusProjection;
 import com.sky.properties.ShopInfoProperties;
 import com.sky.result.PageResult;
 import com.sky.service.BaiduMapService;
@@ -659,6 +659,7 @@ public class OrderServiceImpl implements OrderService {
               - 可以被接受的 → 只有已付款( 待接单 )的订单可以接受
               - 不可以接受 → 待付款  |  已接单、派送中、已完成、已取消
               - 不存在的订单 → 由于涉及数值比较, 这里先进行存在性检验, 没有看 Mapper 修改行数
+            审计字段: 无, 只需要修改订单状态
          */
         Integer orderStatus = orderMapper.selectStatusById( id );
         NotFoundUtil.throwIfNotFound( orderStatus, MessageConstant.ORDER_NOT_FOUND );
@@ -681,51 +682,51 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void rejectById( Long id, OrdersRejectionDTO orderRejectionDTO ){
         /*
-            * 业务规则
-              - 订单不存在、已接单不能拒单( 那个是取消订单 )
-              * 拒绝已付款的订单需要退款
-              - 只有订单处于“待接单”状态时可以执行拒单操作
-              - 拒单时需要指定拒单原因 rejection_reason
-              - 已完成不能拒单
-            * 没考虑再对查出来的 orderStatus 判断有效性
-            * 审计字段:
+            补充思路整理
+            查出订单状态, 判断是否可以拒单, 不可以则抛异常, 可以则修改订单信息
+
+            拒绝订单 → 主要是修改订单状态, TODO: 提示用户端订单被拒绝
+            可以拒绝 → 只有“待接单”状态可以拒单
+              - 并且拒绝已付款的订单需要退款
+            不可以拒绝 → 其他状态的订单, 待付款 | 已接单(待派送)、派送中、已完成、已取消
+
+            * 涉及字段, 主要是审计字段
+              - cancel_reason
               - status,
               - pay_status,
               - cancel_time 用户端取消订单 + 管理端拒绝/取消订单共用
          */
-        StatusProjection statusProjection = orderMapper.selectStatusProjectionById( id );
-        if ( statusProjection == null ){
-            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
-        }
+        // TODO: 没考虑再对查出来的 orderStatus、payStatus 判断有效性, 需要的话可以补一个
+        OrderStatusProjection orderStatusProjection = orderMapper.selectStatusProjectionById( id );
+        NotFoundUtil.throwIfNotFound( orderStatusProjection, MessageConstant.ORDER_NOT_FOUND );
 
         /*
               - 待付款 状态我觉得可以拒单, 虽然前端原型没有展示待付款订单, 但是语义上讲、只要没有接单那就可以拒单
         // 待付款: 拒单、无需退款
-        if ( OrderConstant.Status.PENDING_PAYMENT.equals( orderStatus ) ){
-            orderMapper.updateStatusById( id, OrderConstant.Status.CANCELLED );
+        if ( OrderStatus.PENDING_PAYMENT.getValue() == orderStatus ){
+            orderMapper.updateStatusById( id, OrderStatus.CANCELLED.getValue() );
             // PayStatus 依然为 UN_PAID
             return;
         }
          */
 
         // 待接单: 已付款、拒单需要退款, 同步订单状态、支付状态、拒单原因
-        if ( OrderConstant.Status.TO_BE_CONFIRMED.equals( statusProjection.getStatus() ) ){
+        if ( OrderStatus.TO_BE_CONFIRMED.getValue() == orderStatusProjection.getStatus() ){
             /*
                 理论上待接单的订单已经完成了支付, 但是教程还是做了支付状态判断,
-                我在想除了保险、还是保险 => 未支付/已退款就不进行退款
-                ( 原型也暂时没展示要拒绝待付款的订单 )
+                我在想除了保险、还是保险
              */
             Orders build = Orders.builder()
                     .id( id )
-                    .status( OrderConstant.Status.CANCELLED )
-//                    .payStatus( OrderConstant.PayStatus.REFUND )
+                    .status( OrderStatus.CANCELLED.getValue() )
+//                    .payStatus( OrderPayStatus.REFUND )
                     .rejectionReason( orderRejectionDTO.getRejectionReason() )
                     .cancelTime( LocalDateTime.now() )
                     .build();
             // 先退款、再写库, 防止写库失败导致退款失败、影响用户体验
-            if ( OrderConstant.PayStatus.PAID.equals( statusProjection.getPayStatus() ) ){
+            if ( OrderPayStatus.PAID.getValue() == orderStatusProjection.getPayStatus() ){
                 refund( id );
-                build.setPayStatus( OrderConstant.PayStatus.REFUND );
+                build.setPayStatus( OrderPayStatus.REFUND.getValue() );
             }
             orderMapper.updateById( build );
             return;
@@ -734,7 +735,7 @@ public class OrderServiceImpl implements OrderService {
         // 剩下的就是不可以拒单的: 1待付款 3已接单 4派送中 5已完成 6已取消
         throw new OrderRejectFailedException(
                 MessageConstant.formOrderRejectFailedMessage(
-                        OrderConstant.Status.toChineseName( statusProjection.getStatus() )
+                        OrderStatus.toChineseName( orderStatusProjection.getStatus() )
                 )
         );
     }
@@ -754,12 +755,12 @@ public class OrderServiceImpl implements OrderService {
               - 支付状态判断、付了钱就退款
             * 涉及字段: status, pay_status, cancel_reason, cancel_timed
          */
-        StatusProjection statusProjection = orderMapper.selectStatusProjectionById( id );
-        if ( statusProjection == null ){
+        OrderStatusProjection orderStatusProjection = orderMapper.selectStatusProjectionById( id );
+        if ( orderStatusProjection == null ){
             throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
         }
 
-        Integer orderStatus = statusProjection.getStatus();
+        Integer orderStatus = orderStatusProjection.getStatus();
         if ( OrderStatus.canAdminCancel( orderStatus ) ){
             Orders build = Orders.builder()
                     .id( id )
@@ -767,7 +768,7 @@ public class OrderServiceImpl implements OrderService {
                     .cancelTime( LocalDateTime.now() )
                     .cancelReason( orderCancelDTO.getCancelReason() )
                     .build();
-            Integer payStatus = statusProjection.getPayStatus();
+            Integer payStatus = orderStatusProjection.getPayStatus();
             if ( OrderPayStatus.PAID.getValue() == payStatus ){
                 refund( id );
                 build.setPayStatus( OrderPayStatus.REFUND.getValue() );

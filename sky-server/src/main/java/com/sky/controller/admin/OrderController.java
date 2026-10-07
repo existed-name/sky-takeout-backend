@@ -117,15 +117,10 @@ public class OrderController {
     }
 
     /**
-     * 拒绝订单,
-     * <p>
-     *     RESTful 设计, 请求路径
-     *     <code>/orders/{id}/reject</code> 定位资源和动作,
-     *     dto 传递信息, dto 不需要再带 id
-     * </p>
+     * 拒绝订单
      */
     @ApiOperation( "拒绝订单" )
-    @PutMapping( "/{id}/reject" )
+    @PutMapping( "/{id}/rejection" )
     @LogOperation( description = "拒绝订单", operationType = OperationType.UPDATE )
     public Result< Void > reject(
             @PathVariable( name = "id", required = true )
@@ -147,9 +142,27 @@ public class OrderController {
      *     而刚好存在接口<code>GET /admin/orders/{id}</code>, 于是把<code>reject</code>当作 id,
      *     结果请求方法不匹配
      * </p>
+     * <p>
+     *     AI 给的几种方案和我的考虑
+     *     <ul>
+     *         <li>给路径变量加上正则表达式约束{@code @PutMapping("/{id:\\d+}")}: 我感觉不清晰、路径字符串太长</li>
+     *         <li>请求路径移到最后: 也就是教程的操作, 但并不能解决问题, 而且 id 应该移到前面来定位资源</li>
+     *         <li>改为请求参数: 也不符合 RESTful 语义</li>
+     *         <li>兜底端点: 我这种操作, 但是会写很多重复方法</li>
+     *     </ul>
+     *     我的思考: 不需要兜底端点, 正常情况不会漏传路径变量, 而且路径缩写导致匹配端点失败, 问题也不大,
+     *     除非匹配到了其他端点、做了错误操作; 那么最后还是正常的写就行, 除非必须要求处理漏传路径变量的问题
+     * </p>
+     * <p>
+     * 我觉得问题本质是: 传参不带路径变量时，
+     * SpringBoot没有把 null 绑定到请求路径变量上面、进而无法让 @PathVariable 之类的注解进行检验，
+     * 进而导致请求路径缩写;
+     * 不过 ai 说 SpringBoot 也没有这种处理机制...
+     * 就不管了
+     * </p>
      */
     @ApiOperation( "处理拒绝订单缺失 id 路径变量的问题" )
-    @RequestMapping( "/reject" )
+    @PutMapping( "/rejection" )
     public Result< String > handleRejectOrderMissingId(){
         return Result.error( "拒绝订单 id 不能为空" );
     }
