@@ -103,7 +103,7 @@ public class OrderController {
      * 而 accept 接受、履行相关职责
      */
     @ApiOperation( "接受订单" )
-    @PutMapping( "/{id}/accept" )
+    @PutMapping( "/{id}/acceptance" )
     @LogOperation( description = "接受订单", operationType = OperationType.UPDATE )
     public Result< Void > accept(
         @PathVariable( name = "id", required = true )

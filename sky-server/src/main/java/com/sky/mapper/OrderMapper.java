@@ -233,7 +233,7 @@ public interface OrderMapper {
      * 管理端更新订单状态
      *
      * @param id 订单 id
-     * @param status 订单状态, {@link com.sky.constant.OrderConstant.Status}
+     * @param status 订单状态, {@link com.sky.enumeration.OrderStatus}
      * @return 修改行数, 0 => 订单不存在, 1 => 修改成功
      */
     @Update( """

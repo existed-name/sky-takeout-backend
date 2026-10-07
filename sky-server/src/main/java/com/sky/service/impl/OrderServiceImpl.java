@@ -641,9 +641,7 @@ public class OrderServiceImpl implements OrderService {
             之后改字段只需要改 converter
          */
         Orders order = orderMapper.selectById( id );
-        if ( order == null ){
-            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotFound( order, MessageConstant.ORDER_NOT_FOUND );
         // 如果 order == null, converter 后仍然返回 null
         AdminOrderInfoVO adminOrderInfoVO = orderConverter.toAdminInfoVO( order );
         List< OrderDetail > orderDetailList = orderDetailMapper.selectByOrderId( id );
@@ -655,31 +653,28 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void acceptById( Long id ){
         /*
+            补充思路整理
+            接受订单 → 状态修改为已接受、待派送
             业务考虑:
-            * 不存在的订单报错提醒 → 可以直接看 Mapper.update 返回的修改行数
-            * 理论上待接单的订单已经付款( OrderConstant.PayStatus.PAID ), 这里没有再多考虑支付状态
-            * 已经接单的订单不能重复接单 →
-              - mapper 只对待接单状态的订单进行修改, 但不能显式提醒
-              - 或者显式查询该订单的状态、进行判断
-            * 全部丢在 mapper 处理也是可行的, 但不够清晰, 于是选择先查状态
+              - 可以被接受的 → 只有已付款( 待接单 )的订单可以接受
+              - 不可以接受 → 待付款  |  已接单、派送中、已完成、已取消
+              - 不存在的订单 → 由于涉及数值比较, 这里先进行存在性检验, 没有看 Mapper 修改行数
          */
         Integer orderStatus = orderMapper.selectStatusById( id );
-        if ( orderStatus == null ){
-            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
-        }
+        NotFoundUtil.throwIfNotFound( orderStatus, MessageConstant.ORDER_NOT_FOUND );
 
-        // 待付款
-        if ( OrderConstant.Status.PENDING_PAYMENT.equals( orderStatus ) ){
+        // 排除待付款的订单
+        if ( OrderStatus.PENDING_PAYMENT.getValue() == orderStatus ){
             throw new OrderAcceptFailedException( MessageConstant.ORDER_PENDING_PAYMENT );
         }
 
-        // 已付款 & 已接单
-        if ( ! OrderConstant.Status.TO_BE_CONFIRMED.equals( orderStatus ) ){
+        // 排除已经接单、派送中、已完成、已取消的订单
+        if ( OrderStatus.TO_BE_CONFIRMED.getValue() != orderStatus ){
             throw new OrderAcceptFailedException( MessageConstant.ORDER_HAS_ACCEPTED );
         }
 
-        // 之前已判空, 修改行数应该恒为 1
-        int updatedRow = orderMapper.updateStatusById( id, OrderConstant.Status.CONFIRMED );
+        // 剩下的就是已付款、待接单的订单
+        orderMapper.updateStatusById( id, OrderStatus.CONFIRMED.getValue() );
     }
 
     @Transactional( rollbackFor = Exception.class )
