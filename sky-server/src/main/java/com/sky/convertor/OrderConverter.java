@@ -5,7 +5,6 @@ import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
-import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
 import com.sky.vo.order.UserOrderInfoVO;
@@ -93,8 +92,9 @@ public interface OrderConverter {
 
     /**
      * 完整订单实体类 → 用户端查询订单明细 VO
-     * <p>
-     * <b>OrderInfoVO 忽略字段</b>: orderDetailList 由业务类查找组装
+     *
+     * @param order 完整的订单实体对象
+     * @return 用户端订单详情, <b>忽略字段</b>: orderDetailList 由业务类查找组装
      */
 //    @Mapping( target = "userId", ignore = true )
 //    @Mapping( target = "userName", ignore = true )
@@ -103,7 +103,7 @@ public interface OrderConverter {
 //    @Mapping( target = "cancelTime", ignore = true )
 //    @Mapping( target = "rejectionReason", ignore = true )
     @Mapping( target = "orderDetailList", ignore = true )
-    UserOrderInfoVO toInfoVO( Orders order );
+    UserOrderInfoVO toUserOrderInfoVO( Orders order );
 
     /**
      * 完整订单实体类转管理端订单条件分页查询 VO 列表, converter 会循环调用{@link #toPageVO(Orders)}

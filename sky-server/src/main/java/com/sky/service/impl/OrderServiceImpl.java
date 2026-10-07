@@ -369,15 +369,18 @@ public class OrderServiceImpl implements OrderService {
     @Transactional( readOnly = true )
     @Override
     public UserOrderInfoVO getByIdAndUserId( Long id, Long userId ){
-        // orderInfoVO = order 部分字段 + orderDetailList, 1 + 1 查询
+        /*
+            orderInfoVO = order 部分字段 + orderDetailList, 1 + 1 查询
+            由于 UserOrderInfoVO 字段也太多( 只比实体对象少 7 个左右 )
+            所以这里没有查 vo 而是查完整对象、然后 converter 映射
+         */
         Orders order = orderMapper.selectByIdAndUserId( id, userId );
         if ( order == null ){
             throwIfNotExistsOrNotMatches( id );
         }
 
-        UserOrderInfoVO orderInfoVO = orderConverter.toInfoVO( order );
+        UserOrderInfoVO orderInfoVO = orderConverter.toUserOrderInfoVO( order );
         List< OrderDetail > orderDetailList = orderDetailMapper.selectByOrderId( id );
-        // 这里不会空指针，因为前面判空时已经抛了异常
         orderInfoVO.setOrderDetailList( orderDetailList );
         return orderInfoVO;
     }

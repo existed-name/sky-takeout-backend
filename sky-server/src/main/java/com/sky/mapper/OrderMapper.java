@@ -59,7 +59,7 @@ public interface OrderMapper {
      *      </pre>
      * @param order 修改后的订单信息, <b>由调用方设置 id、userId、审计字段、订单状态/支付状态</b>
      * @return 修改行数: <br>
-     *          * 0 => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 0 => <b>id 对应的数据不存在 | 数据不属于该用户</b>(包含用户不存在的情况); <br>
      *          * 1 => 正常
      */
     int updateByIdAndUserId( @Param( "order" ) Orders order );
@@ -107,10 +107,13 @@ public interface OrderMapper {
     List< UserOrderHistoryItemVO > selectByUserIdAndQuery( @Param( "userId" ) Long userId, @Param( "query" ) UserOrderPageQueryDTO userOrderPageQueryDTO );
 
     /**
-     * 查询完整订单实体类
+     * 查询用户的某个订单
      *
-     * @return 完整 order，<b>由调用方决定保留哪些字段</b><br>
-     *          如果返回 null => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况)
+     * @param id 订单 id, <b>不可为空</b>
+     * @param userId 用户 id, 用于确认该用户的订单数据, <b>不可为空</b>
+     * @return 完整订单实体对象，<b>由调用方决定保留哪些字段( 通过 orderConverter 映射需要的对象 )</b>
+     *          <br>
+     *          如果返回 null => <b>id 对应的数据不存在 | 数据不属于该用户</b>(包含用户不存在的情况)
      */
     Orders selectByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
@@ -118,7 +121,7 @@ public interface OrderMapper {
      * 查询订单状态
      *
      * @return <b>只含 status 字段</b>的 order<br>
-     *          如果返回 null => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况)
+     *          如果返回 null => <b>id 对应的数据不存在 | 数据不属于该用户</b>(包含用户不存在的情况)
      */
     @Select( """
             SELECT status
@@ -131,7 +134,7 @@ public interface OrderMapper {
      * 判断该数据的存在性、匹配性
      *
      * @return 定位的数据条数: <br>
-     *          * 0 => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况); <br>
+     *          * 0 => <b>id 对应的数据不存在 | 数据不属于该用户</b>(包含用户不存在的情况); <br>
      *          * 1 => 正常
      */
     @Select( """

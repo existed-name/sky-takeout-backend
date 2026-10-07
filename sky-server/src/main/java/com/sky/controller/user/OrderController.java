@@ -138,10 +138,9 @@ public class OrderController {
      * 查询订单详情
      */
     @ApiOperation( "查询订单详情" )
-    @GetMapping( "/orderDetail/{id}" )
+    @GetMapping( "/{id}" )
     public Result< UserOrderInfoVO > getInfo(
-            @PathVariable( name = "id" )
-            @NotNull( message = "订单 id 不能为空" )
+            @PathVariable( name = "id", required = true )
             @Positive( message = "订单 id 必须是正整数" )
             Long id
     ){

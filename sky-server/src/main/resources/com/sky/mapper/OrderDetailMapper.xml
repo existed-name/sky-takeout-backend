@@ -97,4 +97,14 @@
         LIMIT #{limit}
     </select>
 
+    <!--
+    查询某个订单的关联数据
+    Returns: 字段完整的订单明细列表
+    -->
+    <select id="selectByOrderId" resultType="com.sky.entity.OrderDetail">
+        SELECT <include refid="BaseColumns"/>
+        FROM order_detail
+        WHERE order_id = #{orderId}
+    </select>
+
 </mapper>

@@ -30,14 +30,13 @@ public interface OrderDetailMapper {
 
     /**
      * 查询某个订单的关联数据
-     * <br>
-     * 排序规则: 无
+     * <p>
+     *     排序规则: 无
+     * </p>
+     *
+     * @param orderId 订单 id
+     * @return <b>字段完整的</b>订单明细列表
      */
-    @Select( """
-            SELECT id, name, image, order_id, dish_id, setmeal_id, dish_flavor, number, amount
-            FROM order_detail
-            WHERE order_id = #{orderId}
-            """ )
     List< OrderDetail > selectByOrderId( @Param( "orderId" ) Long orderId );
 
     /**

@@ -50,11 +50,11 @@ public interface OrderService {
     PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO );
 
     /**
-     * 用户端-查询订单所有信息
+     * 用户端-查询订单详情
      *
-     * @param userId 用户 id
+     * @param userId 用户 id, 用于确定数据属于该用户
      * @param id     订单 id
-     * @return 订单详情 = order 部分展示字段 + orderDetail
+     * @return 订单详情 = order 部分字段 + orderDetail
      */
     UserOrderInfoVO getByIdAndUserId( Long id, Long userId );
 
