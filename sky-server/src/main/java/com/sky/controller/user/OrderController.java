@@ -7,6 +7,7 @@ import com.sky.dto.user.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
+import com.sky.vo.user.order.UserOrderHistoryItemVO;
 import com.sky.vo.user.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderSubmitVO;
@@ -125,12 +126,12 @@ public class OrderController {
      */
     @ApiOperation( "分页查询指定状态的历史订单" )
     @GetMapping( "/history" )
-    public Result< PageResult > pageQuery( // ?page=x&pageSize=y&status=
+    public Result< PageResult< UserOrderHistoryItemVO > > pageQuery( // ?page=x&pageSize=y&status=
                @Validated UserOrderPageQueryDTO userOrderPageQueryDTO
     ){
         Long userId = BaseContext.getCurrentId();
         log.info( "userId = {} 的用户查询历史订单，查询参数: {}", userId, userOrderPageQueryDTO );
-        PageResult pageResult = orderService.pageByUserIdAndQuery( userId, userOrderPageQueryDTO );
+        PageResult< UserOrderHistoryItemVO > pageResult = orderService.pageByUserIdAndQuery( userId, userOrderPageQueryDTO );
         return Result.success( pageResult );
     }
 

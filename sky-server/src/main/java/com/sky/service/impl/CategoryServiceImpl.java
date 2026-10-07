@@ -67,7 +67,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional( readOnly = true )
     @Override
-    public PageResult page( CategoryPageQueryDTO categoryPageQueryDTO ){
+    public PageResult< CategoryPageQueryItemVO > page( CategoryPageQueryDTO categoryPageQueryDTO ){
         // 业务检验查询参数
         Integer type = categoryPageQueryDTO.getType();
         if ( type != null ){

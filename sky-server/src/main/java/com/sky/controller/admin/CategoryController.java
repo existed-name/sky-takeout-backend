@@ -11,6 +11,7 @@ import com.sky.result.Result;
 import com.sky.service.CategoryService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.category.CategoryListItemVO;
+import com.sky.vo.category.CategoryPageQueryItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -74,10 +75,10 @@ public class CategoryController {
      */
     @GetMapping
     @ApiOperation( value = "对分类进行条件分页查询" )
-    public Result< PageResult > page( @Valid CategoryPageQueryDTO categoryPageQueryDTO ){
+    public Result< PageResult< CategoryPageQueryItemVO > > page( @Valid CategoryPageQueryDTO categoryPageQueryDTO ){
         Long operatorId = BaseContext.getCurrentId();
         log.info( "id = {} 的管理员条件分页查询商品分类, 查询参数 = {}", operatorId, categoryPageQueryDTO );
-        PageResult pageResult = categoryService.page( categoryPageQueryDTO );
+        PageResult< CategoryPageQueryItemVO > pageResult = categoryService.page( categoryPageQueryDTO );
         return Result.success( pageResult );
     }
 

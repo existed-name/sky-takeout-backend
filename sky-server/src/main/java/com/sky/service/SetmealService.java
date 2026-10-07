@@ -5,6 +5,7 @@ import com.sky.dto.setmeal.SetmealPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
+import com.sky.vo.setmeal.SetmealPageQueryItemVO;
 import com.sky.vo.user.setmeal.UserSetmealDishItemVO;
 import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 
@@ -31,7 +32,7 @@ public interface SetmealService {
      * @param setmealPageQueryDTO 条件分页查询参数
      * @return 数据列表分页包装结果
      */
-    PageResult page( SetmealPageQueryDTO setmealPageQueryDTO );
+    PageResult< SetmealPageQueryItemVO > page( SetmealPageQueryDTO setmealPageQueryDTO );
 
     /**
      * 管理端批量删除套餐

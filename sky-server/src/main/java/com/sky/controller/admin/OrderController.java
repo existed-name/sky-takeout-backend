@@ -10,6 +10,7 @@ import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.order.AdminOrderInfoVO;
+import com.sky.vo.order.OrderPageQueryItemVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
 @Slf4j
@@ -56,12 +56,12 @@ public class OrderController {
      */
     @GetMapping
     @ApiOperation( value = "条件分页查询订单" )
-    public Result< PageResult > page(
+    public Result< PageResult< OrderPageQueryItemVO > > page(
             @Valid AdminOrderPageQueryDTO orderPageQueryDTO
     ){
         Long adminId = BaseContext.getCurrentId();
         log.info( "id = {} 的管理员条件分页查询订单, 查询参数 = {}", adminId, orderPageQueryDTO );
-        PageResult pageResult = orderService.pageByQuery( orderPageQueryDTO );
+        PageResult< OrderPageQueryItemVO > pageResult = orderService.pageByQuery( orderPageQueryDTO );
         return Result.success( pageResult );
     }
 

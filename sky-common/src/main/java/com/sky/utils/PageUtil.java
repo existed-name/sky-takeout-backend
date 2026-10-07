@@ -49,14 +49,13 @@ public class PageUtil {
      *
      * @param queryResult 条件分页查询的结果(泛型)
      */
-    public static PageResult buildPageResult( List< ? > queryResult ){
+    public static <T> PageResult< T > buildPageResult( List< T > queryResult ){
         if ( queryResult == null ){
             throw new IllegalArgumentException( "参数 queryResult 不能为 null" );
         }
-        // 不过 instanceof 对 null 直接 false
-        if ( queryResult instanceof Page ){
-            Page< ? > page = ( Page< ? > ) queryResult;
-            return new PageResult( page.getTotal(), page.getResult() );
+        // instanceof 对 null 会直接 false
+        if ( queryResult instanceof Page< T > page ){
+            return new PageResult<>( page.getTotal(), page.getResult() );
         }
         // 普通 List，无法获取 total，需要外部传入
         throw new IllegalArgumentException( "参数 queryResult 不是 Page 对象，请使用 buildPageResult( total, list ) 构建 PageResult" );
@@ -72,8 +71,8 @@ public class PageUtil {
      * @param queryResult 条件分页查询的结果或者查询后自己包装的链表(泛型)
      * @param total 条件分页查询的数据总量, 无需包装、使用基本数据类型 long
      */
-    public static PageResult buildPageResult( long total, List< ? > queryResult ){
-        return new PageResult( total, queryResult );
+    public static <T> PageResult< T > buildPageResult( long total, List< T > queryResult ){
+        return new PageResult<>( total, queryResult );
     }
 
     /**
@@ -91,8 +90,8 @@ public class PageUtil {
      *     </code>
      * </pre>
      */
-    public static PageResult buildEmptyPageResult(){
-        return new PageResult();
+    public static <T> PageResult< T > buildEmptyPageResult(){
+        return new PageResult<>();
     }
 
 

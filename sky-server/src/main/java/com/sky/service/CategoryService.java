@@ -4,6 +4,7 @@ import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.category.CategoryListItemVO;
+import com.sky.vo.category.CategoryPageQueryItemVO;
 import com.sky.vo.user.category.UserCategoryListItemVO;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public interface CategoryService {
      * @param categoryPageQueryDTO 查询条件
      * @return 分页包装数据链表
      */
-    PageResult page( CategoryPageQueryDTO categoryPageQueryDTO );
+    PageResult< CategoryPageQueryItemVO > page( CategoryPageQueryDTO categoryPageQueryDTO );
 
     /**
      * 管理端删除某个商品分类

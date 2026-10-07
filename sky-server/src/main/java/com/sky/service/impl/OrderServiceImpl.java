@@ -294,7 +294,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional( readOnly = true )
     @Override
-    public PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO ){
+    public PageResult< UserOrderHistoryItemVO > pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO ){
         /*
             补充思路整理
             核心是查订单主体 + 关联信息
@@ -558,7 +558,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional( readOnly = true )
     @Override
-    public PageResult pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO ){
+    public PageResult< OrderPageQueryItemVO > pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO ){
         /*
             补充思路整理
             对查询参数进行业务检验
@@ -575,7 +575,8 @@ public class OrderServiceImpl implements OrderService {
         PageUtil.validateParamsAndStartPage( orderPageQueryDTO.getPage(), orderPageQueryDTO.getPageSize() );
         // 自动分页, List 实际会被 PageHelper 转成 Page, 并且查出来的 List 不可能为 null
         Page< Orders > ordersPage = ( Page< Orders > ) orderMapper.selectByQuery( orderPageQueryDTO );
-        List< OrderPageQueryItemVO > orderPageVOList = orderConverter.toPageVOList( ordersPage.getResult() );
+        // 注意: 第 1 次查询的 Page 带有 total 字段, 留到最后用来包装 PageResult
+        List< OrderPageQueryItemVO > orderPageItemVOs = orderConverter.toPageVOList( ordersPage.getResult() );
 
         // 对于未完成的订单需要展示菜品数据
         if ( ! OrderStatus.isEnd( orderStatus ) ){
@@ -586,7 +587,7 @@ public class OrderServiceImpl implements OrderService {
                 于是我认为单条 vo 数据不需要返回 orderDetails, 而是直接返回 orderDishesStr
              */
 
-            List< Long > orderIds = orderPageVOList.stream()
+            List< Long > orderIds = orderPageItemVOs.stream()
                     .map( OrderPageQueryItemVO::getId )
                     .toList();
             List< OrderDetail > allOrderDetails = orderDetailMapper.selectByOrderIds( orderIds );
@@ -594,12 +595,12 @@ public class OrderServiceImpl implements OrderService {
             /*
                 这里查到的是待展示 orders 对应的所有 orderDetails,
                 先按 orderId 分组, 每个组内拼接自己的 orderDishesStr
-                然后遍历 orderPageVOList, 每个 VO 设置 orderDishesStr
+                然后遍历 orderPageItemVOs, 每个 VO 设置 orderDishesStr
              */
             Map< Long, List< OrderDetail > > orderIdToDetailsMap = allOrderDetails.stream()
                     .collect( Collectors.groupingBy( OrderDetail::getOrderId ) );
             // TODO: 这里暂时嵌套 for, 之后可以优化在 for 外面拼接每个 order 的 orderDishes
-            for ( OrderPageQueryItemVO pageQueryVO : orderPageVOList ){
+            for ( OrderPageQueryItemVO pageQueryVO : orderPageItemVOs ){
                 pageQueryVO.setOrderDishes(
                         concatOrderDishes(
                                 orderIdToDetailsMap.get( pageQueryVO.getId() )
@@ -608,7 +609,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        return PageUtil.buildPageResult( ordersPage.getTotal(), orderPageVOList );
+        return PageUtil.buildPageResult( ordersPage.getTotal(), orderPageItemVOs );
     }
 
     @Transactional( readOnly = true )

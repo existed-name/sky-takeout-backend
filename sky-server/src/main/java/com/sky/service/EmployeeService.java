@@ -5,6 +5,7 @@ import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.employee.EmployeePageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeePageQueryItemVO;
 import com.sky.vo.employee.EmployeeVO;
 
 import javax.validation.constraints.Positive;
@@ -32,7 +33,7 @@ public interface EmployeeService {
      * @param pageQueryDTO 条件分页查询参数
      * @return 查询结果
      */
-    PageResult page( EmployeePageQueryDTO pageQueryDTO );
+    PageResult< EmployeePageQueryItemVO > page( EmployeePageQueryDTO pageQueryDTO );
 
     /**
      * 修改员工状态(启用/禁用账号)

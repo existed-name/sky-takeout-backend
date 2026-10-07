@@ -134,7 +134,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Transactional( readOnly = true )
     @Override
-    public PageResult page( EmployeePageQueryDTO pageQueryDTO ){
+    public PageResult< EmployeePageQueryItemVO > page( EmployeePageQueryDTO pageQueryDTO ){
         PageUtil.validateParamsAndStartPage( pageQueryDTO.getPage(), pageQueryDTO.getPageSize() );
         List< EmployeePageQueryItemVO > employeePageQueryItemVOList = employeeMapper.selectItemVOListByQuery( pageQueryDTO );
         return PageUtil.buildPageResult( employeePageQueryItemVOList );

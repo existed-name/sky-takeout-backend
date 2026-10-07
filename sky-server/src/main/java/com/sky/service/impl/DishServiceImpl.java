@@ -126,7 +126,7 @@ public class DishServiceImpl implements DishService {
 
     @Transactional( readOnly = true )
     @Override
-    public PageResult pageQuery( DishPageQueryDTO dishPageQueryDTO ){
+    public PageResult< DishPageQueryItemVO > pageQuery( DishPageQueryDTO dishPageQueryDTO ){
         /*
             * 补充思路描述
             1. 之前的思路

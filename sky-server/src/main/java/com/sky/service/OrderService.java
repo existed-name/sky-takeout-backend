@@ -8,6 +8,7 @@ import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.user.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.order.AdminOrderInfoVO;
+import com.sky.vo.order.OrderPageQueryItemVO;
 import com.sky.vo.user.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
@@ -49,7 +50,7 @@ public interface OrderService {
      * @param userOrderPageQueryDTO 分页查询条件
      * @return 分页查询结果, 包装历史订单数据项列表{@link UserOrderHistoryItemVO}
      */
-    PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO );
+    PageResult< UserOrderHistoryItemVO > pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO );
 
     /**
      * 用户端-查询订单详情
@@ -83,7 +84,7 @@ public interface OrderService {
      * @param orderPageQueryDTO 订单条件分页查询参数
      * @return 包装查询数据列表的分页结果
      */
-    PageResult pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO );
+    PageResult< OrderPageQueryItemVO > pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO );
 
     /**
      * 管理端统计<code>待接单、待派送、派送中</code>的订单数量

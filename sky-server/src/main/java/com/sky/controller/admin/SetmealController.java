@@ -12,6 +12,7 @@ import com.sky.service.SetmealService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.SetmealVO;
 import com.sky.vo.setmeal.SetmealInfoVO;
+import com.sky.vo.setmeal.SetmealPageQueryItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -82,12 +83,12 @@ public class SetmealController {
      */
     @ApiOperation( value = "条件分页查询套餐" )
     @GetMapping
-    public Result< PageResult > page(
+    public Result< PageResult< SetmealPageQueryItemVO > > page(
             @Valid SetmealPageQueryDTO setmealPageQueryDTO
     ){
         Long operatorId = BaseContext.getCurrentId();
         log.info( "id = {} 的管理员条件分页查询套餐, 查询参数 = {}", operatorId, setmealPageQueryDTO );
-        PageResult pageResult = setmealService.page( setmealPageQueryDTO );
+        PageResult< SetmealPageQueryItemVO > pageResult = setmealService.page( setmealPageQueryDTO );
         return Result.success( pageResult );
     }
 

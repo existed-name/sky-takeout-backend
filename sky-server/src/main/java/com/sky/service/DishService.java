@@ -5,6 +5,7 @@ import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.DishVO;
 import com.sky.vo.dish.DishListItemVO;
+import com.sky.vo.dish.DishPageQueryItemVO;
 import com.sky.vo.user.dish.UserDishListItemVO;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public interface DishService {
      * @param dishPageQueryDTO 查询条件
      * @return 分页包装列表数据
      */
-    PageResult pageQuery( DishPageQueryDTO dishPageQueryDTO );
+    PageResult< DishPageQueryItemVO > pageQuery( DishPageQueryDTO dishPageQueryDTO );
 
     /**
      * 管理端批量删除菜品

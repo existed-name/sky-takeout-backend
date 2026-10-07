@@ -12,6 +12,7 @@ import com.sky.service.DishService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.DishVO;
 import com.sky.vo.dish.DishListItemVO;
+import com.sky.vo.dish.DishPageQueryItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -82,12 +83,12 @@ public class DishController {
      */
     @ApiOperation( value = "条件分页查询菜品" )
     @GetMapping
-    public Result< PageResult > page(
+    public Result< PageResult< DishPageQueryItemVO > > page(
             @Valid DishPageQueryDTO dishPageQueryDTO
     ){
         Long operatorId = BaseContext.getCurrentId();
         log.info( "id = {} 的管理员条件分页查询菜品, 查询参数 = {}", operatorId, dishPageQueryDTO );
-        PageResult dishList = dishService.pageQuery( dishPageQueryDTO );
+        PageResult< DishPageQueryItemVO > dishList = dishService.pageQuery( dishPageQueryDTO );
         return Result.success( dishList );
     }
 

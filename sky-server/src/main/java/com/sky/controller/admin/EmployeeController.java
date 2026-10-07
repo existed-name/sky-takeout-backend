@@ -12,6 +12,7 @@ import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeePageQueryItemVO;
 import com.sky.vo.employee.EmployeeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -94,10 +95,10 @@ public class EmployeeController {
      */
     @GetMapping
     @ApiOperation( value = "条件分页查询员工" )
-    public Result< PageResult > page( @Valid EmployeePageQueryDTO pageQueryDTO ){
+    public Result< PageResult< EmployeePageQueryItemVO > > page( @Valid EmployeePageQueryDTO pageQueryDTO ){
         Long empId = BaseContext.getCurrentId();
         log.info( "id = {} 的员工条件分页查询员工信息, 查询参数 = {}", empId, pageQueryDTO );
-        PageResult pageResult = employeeService.page( pageQueryDTO );
+        PageResult< EmployeePageQueryItemVO > pageResult = employeeService.page( pageQueryDTO );
         return Result.success( pageResult );
     }
 

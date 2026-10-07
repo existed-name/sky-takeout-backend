@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ApiModel(description = "分页查询结果")
-public class PageResult implements Serializable {
+public class PageResult< T > implements Serializable {
 
     /** 分页前, 满足筛选条件的总记录数 */
     @ApiModelProperty(value = "分页前, 满足筛选条件的总记录数", example = "100")
@@ -27,6 +27,6 @@ public class PageResult implements Serializable {
 
     /** 当前页数据 List 集合 */
     @ApiModelProperty(value = "当前页数据 List 集合")
-    private List records;
+    private List< T > records;
 
 }

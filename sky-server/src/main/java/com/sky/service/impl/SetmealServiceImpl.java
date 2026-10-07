@@ -123,7 +123,7 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Transactional( readOnly = true )
     @Override
-    public PageResult page( SetmealPageQueryDTO setmealPageQueryDTO ){
+    public PageResult< SetmealPageQueryItemVO > page( SetmealPageQueryDTO setmealPageQueryDTO ){
         /*
             前端只展示套餐本体信息, 不用查询关联菜品
             只需要套餐、分类联合拿到分类名称就行
