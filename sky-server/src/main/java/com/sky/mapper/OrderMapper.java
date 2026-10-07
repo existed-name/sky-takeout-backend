@@ -44,7 +44,7 @@ public interface OrderMapper {
     int insert( @Param( "order" ) Orders order );
 
     /**
-     * 根据 id、userId 修改订单信息, 修改前会对传入对象的字段判空
+     * 修改某个用户的订单信息, 修改前会对传入对象的字段判空
      * <br>
      * 不会修改:
      *      <pre>
@@ -57,6 +57,7 @@ public interface OrderMapper {
      *        * 餐具 tableware_number, tableware_status
      *        * 送达时间 estimated_delivery_time, delivery_status
      *      </pre>
+     * @param order 修改后的订单信息, <b>由调用方设置 id、userId、审计字段、订单状态/支付状态</b>
      * @return 修改行数: <br>
      *          * 0 => <b>id 对应的数据不存在 | 数据不属于该用户</b>(排除用户不存在的情况); <br>
      *          * 1 => 正常
@@ -80,9 +81,9 @@ public interface OrderMapper {
     /**
      * 判断该订单是否为特定的支付状态(比如已支付)
      *
-     * @param payStatus 支付状态,{@link com.sky.constant.OrderConstant.PayStatus}
+     * @param payStatus 支付状态,{@link com.sky.enumeration.OrderPayStatus}
      * @return 统计数据<br>
-     *          * 0 => <b>该订单支付状态 ≠ 指定的支付状态</b>(比如不是已支付)<br>
+     *          * 0 => <b>该订单支付状态 ≠ 指定的支付状态</b>(比如未支付)<br>
      *          * 1 => 该订单支付状态 = 指定的支付状态(比如已支付)
      */
     @Select( """

@@ -35,6 +35,7 @@ import com.sky.exception.order.OrderCompleteFailedException;
 import com.sky.exception.order.OrderDeliverFailedException;
 import com.sky.exception.order.OrderFinishedCannotCancelException;
 import com.sky.exception.order.OrderDetailIncompleteException;
+import com.sky.exception.order.OrderPaidException;
 import com.sky.exception.order.OrderRejectFailedException;
 import com.sky.exception.order.OrderStatusInvalidException;
 import com.sky.exception.order.OrderCannotCancelException;
@@ -257,18 +258,26 @@ public class OrderServiceImpl implements OrderService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void paySuccessfullyWithIdAndUserId( Long id, Long userId ){
-        // AI 提醒: 避免重复修改，已经支付的就不需要修改了
-        // 检查 payStatus、status, TODO: 这里只看是不是已支付，可能还需要补充额外判断
-        if ( orderMapper.countByIdAndPayStatus( id, OrderConstant.PayStatus.PAID ) == 1L ){
-            return;
+        /*
+            补充思路整理
+            创建订单 → 支付 → 支付成功, 拆开了 3 个动作分别负责一部分
+            而支付成功负责修改订单状态、审计字段
+            于是先检验状态是否已经是完成支付
+            状态符合要求的、就修改字段
+            然后通知商家接单
+            同时清理用户购物车数据，避免干扰之后买东西
+         */
+        // 订单状态有 status 和 pay_status, 这里只看的 pay_status, TODO: 根据需求看 status 或者 2 个字段都看
+        if ( orderMapper.countByIdAndPayStatus( id, OrderPayStatus.PAID.getValue() ) == 1L ){
+            throw new OrderPaidException( MessageConstant.ORDER_PAID );
         }
 
         // 支付成功 → 修改订单信息(status,payStatus,checkoutTime) → 删除该用户所有购物车数据
         Orders build = Orders.builder()
                 .id( id )
                 .userId( userId )
-                .status( OrderConstant.Status.TO_BE_CONFIRMED )
-                .payStatus( OrderConstant.PayStatus.PAID )
+                .status( OrderStatus.TO_BE_CONFIRMED.getValue() )
+                .payStatus( OrderPayStatus.PAID.getValue() )
                 .checkoutTime( LocalDateTime.now() )
                 .build();
         int row = orderMapper.updateByIdAndUserId( build );
@@ -909,25 +918,15 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * <b>仅用于 orderMapper id, userId 双重定位失败的情况</b> => 修改行数为 0 | 查出对象为空
-     * <br>
+     * <p>
      * 此时如果 id 对应的数据不存在，则抛出{@link NotFoundException}, 否则不做判断、直接抛{@link OrderUserNotMatchException}
+     * </p>
      *
      * @param orderId 订单 id
      */
     private void throwIfNotExistsOrNotMatches( Long orderId ){
-        throwIfNotExists( orderId );
+        NotFoundUtil.throwIfCountZero( orderMapper.countById( orderId ), MessageConstant.ORDER_NOT_FOUND );
         throw new OrderUserNotMatchException( MessageConstant.ORDER_USER_NOT_MATCH );
-    }
-
-    /**
-     * 如果 id 对应的订单不存在，抛出{@link NotFoundException}
-     *
-     * @param orderId 订单 id
-     */
-    private void throwIfNotExists( Long orderId ){
-        if ( orderMapper.countById( orderId ) == 0 ){
-            throw new NotFoundException( MessageConstant.ORDER_NOT_FOUND );
-        }
     }
 
     /**

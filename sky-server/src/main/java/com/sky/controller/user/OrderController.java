@@ -90,10 +90,9 @@ public class OrderController {
      *
      */
     @ApiOperation( "支付订单" )
-    @PostMapping( "/pay/{id}" )
+    @PostMapping( "/{id}/payment" )
     public Result< OrderPaymentVO > pay(
-            @PathVariable( name = "id" )
-            @NotNull( message = "订单 id 不能为空" )
+            @PathVariable( name = "id", required = true )
             @Positive( message = "订单 id 必须是正整数" )
             Long id
     ){
@@ -109,10 +108,9 @@ public class OrderController {
      * 本来该专门放到 PayNotifyController，然后暴露到公网上，但是这里简化
      */
     @ApiOperation( "支付回调通知" )
-    @PostMapping( "/pay/success/{id}" )
+    @PostMapping( "/{id}/payment/success" )
     public Result< Void > paySuccess(
-            @PathVariable( name = "id" )
-            @NotNull( message = "订单 id 不能为空" )
+            @PathVariable( name = "id", required = true )
             @Positive( message = "订单 id 必须是正整数" )
             Long id
     ){
