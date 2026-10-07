@@ -14,7 +14,7 @@ public class MessageConstant {
     public static final String USER_NOT_LOGIN = "用户未登录";
     public static final String CATEGORY_BE_RELATED_BY_SETMEAL = "当前分类关联了套餐,不能删除";
     public static final String CATEGORY_BE_RELATED_BY_DISH = "当前分类关联了菜品,不能删除";
-    public static final String SHOPPING_CART_IS_NULL = "购物车数据为空，不能下单";
+    public static final String SHOPPING_CART_EMPTY = "购物车数据为空，不能下单";
     public static final String ADDRESS_BOOK_IS_NULL = "用户地址为空，不能下单";
     public static final String LOGIN_FAILED = "登录失败";
     public static final String UPLOAD_FAILED = "文件上传失败";
@@ -94,6 +94,9 @@ public class MessageConstant {
     public static final String SHOPPING_CART_ADD_TOO_MANY = "购物车不能同时添加菜品和套餐";
     public static final String GENDER_INVALID = "性别无效, 请重新设置性别";
     public static final String ADDRESS_BOOK_LABEL_INVALID = "地址簿标签无效, 请重新设置";
+    public static final String PAYMENT_METHOD_INVALID = "订单支付方式无效, 请选择微信支付或支付宝支付";
+    public static final String TABLEWARE_STATUS_INVALID = "餐具数量状态无效, 请指定具体数量或者根据餐量提供";
+    public static final String DELIVERY_STATUS_INVALID = "配送状态无效, 请选择立即配送或者指定配送时间";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )

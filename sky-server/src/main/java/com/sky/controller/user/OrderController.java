@@ -34,13 +34,9 @@ import javax.validation.constraints.Positive;
 @Validated
 @Api( tags = "用户端-订单管理接口" )
 @RestController( "userOrderController" )
-@RequestMapping( "/user/order" )
+@RequestMapping( "/user/orders" )
 public class OrderController {
-    private final OrderService orderService;
 
-    public OrderController( OrderService orderService ){
-        this.orderService = orderService;
-    }
     // ==================== 常量 ====================
 
 
@@ -48,9 +44,13 @@ public class OrderController {
 
 
     // ==================== 实例变量 ====================
+    private final OrderService orderService;
 
 
     // ==================== 构造器 ====================
+    public OrderController( OrderService orderService ){
+        this.orderService = orderService;
+    }
 
 
     // ==================== 公有方法 ====================
@@ -58,10 +58,9 @@ public class OrderController {
      * 用户下单、生成订单、返回订单必要数据
      */
     @ApiOperation( "用户下单并返回订单必要数据" )
-    @PostMapping( "/submit" )
+    @PostMapping
     public Result< OrderSubmitVO > submit(
-            @RequestBody @Validated // 虽然 RequestBody 自动判空，但是异常信息不太友好，还是手动 NotNull 判空
-            @NotNull( message = "提交的订单信息不能为空" )
+            @RequestBody @Validated
             OrdersSubmitDTO ordersSubmitDTO
     ){
         Long userId = BaseContext.getCurrentId();

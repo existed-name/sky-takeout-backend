@@ -1,6 +1,7 @@
 package com.sky.mapper;
 
 import com.sky.entity.AddressBook;
+import com.sky.projection.addressBook.AddressBookOrderInfoProjection;
 import com.sky.vo.user.addressBook.AddressBookVO;
 import com.sky.vo.user.addressBook.AddressBookDefaultVO;
 import com.sky.vo.user.addressBook.AddressBookInfoVO;
@@ -161,4 +162,14 @@ public interface AddressBookMapper {
      *          返回 null => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(包含用户不存在的情况);
      */
     AddressBookInfoVO selectDetailVOByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+
+    /**
+     * 查询组装订单实体对象、检验派送距离需要的地址簿字段
+     *
+     * @param id 地址簿 id, <b>不能为空</b>
+     * @param userId 用户 id, 用来确认数据属于该用户, <b>不能为空</b>
+     * @return 地址簿订单信息投影对象, <br>
+     *          返回 null => <b>id 对应的数据不存在 | 该条数据不属于该用户</b>(包含用户不存在的情况);
+     */
+    AddressBookOrderInfoProjection selectOrderInfoProjectionByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 }

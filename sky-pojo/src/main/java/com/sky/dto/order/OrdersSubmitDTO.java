@@ -27,15 +27,15 @@ public class OrdersSubmitDTO implements Serializable {
     /** 付款方式：1 微信支付  2 支付宝支付 */
     @NotNull( message = "订单支付方式不能为空" )
     @ApiModelProperty( value = "付款方式：1 微信支付  2 支付宝支付", required = true, example = "1" )
-    private int payMethod;
+    private Integer payMethod;
 
     /** 订单备注 */
     @ApiModelProperty( value = "订单备注", example = "不要辣" )
     private String remark;
 
-    /** 预计送达时间 */
+    /** 期望送达时间, TODO: 把表字段、订单相关对象的字段改为 expectedDeliveryTime 避免歧义 */
     @JsonFormat( shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss" )
-    @ApiModelProperty( value = "预计送达时间", example = "2024-01-01 12:00:00" )
+    @ApiModelProperty( value = "期望送达时间", example = "2024-01-01 12:00:00" )
     private LocalDateTime estimatedDeliveryTime;
 
     /** 配送状态：1 立即送出  0 选择具体时间 */
@@ -48,7 +48,7 @@ public class OrdersSubmitDTO implements Serializable {
     private Integer tablewareNumber;
 
     /** 餐具数量状态：1 按餐量提供  0 选择具体数量 */
-    @NotNull( message = "餐具状态不能为空" )
+    @NotNull( message = "餐具数量状态不能为空" )
     @ApiModelProperty( value = "餐具数量状态：1 按餐量提供  0 选择具体数量", required = true, example = "1" )
     private Integer tablewareStatus;
 

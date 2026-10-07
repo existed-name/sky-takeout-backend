@@ -66,6 +66,17 @@
     </select>
 
     <!--
+    查询组装订单明细{@link com.sky.entity.OrderDetail}需要的字段
+    -->
+    <select id="selectOrderDetailProjectionByUserId" resultType="com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection">
+        SELECT name, image, user_id,
+                dish_id, setmeal_id, dish_flavor,
+                number, amount
+        FROM shopping_cart
+        WHERE user_id = #{userId}
+    </select>
+
+    <!--
     批量新增购物车数据
     -->
     <insert id="insertBatch">

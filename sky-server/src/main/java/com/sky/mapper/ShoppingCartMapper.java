@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.sky.dto.shoppingCart.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
+import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
 import com.sky.vo.ShoppingCartItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
@@ -177,4 +178,15 @@ public interface ShoppingCartMapper {
             AND user_id = #{userId}
             """ )
     int deleteByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+
+    /**
+     * 查询用户的购物车数据, 用于组装订单明细{@link com.sky.entity.OrderDetail}
+     * <p>
+     *     排序规则: 无
+     * </p>
+     *
+     * @param userId 用户 id, 用于定位该用户的数据
+     * @return 组装订单明细需要的字段
+     */
+    List< ShoppingCartOrderDetailProjection > selectOrderDetailProjectionByUserId( @Param( "userId" ) Long userId );
 }

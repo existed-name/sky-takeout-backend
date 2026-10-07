@@ -20,9 +20,11 @@ import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.Setmeal;
 import com.sky.entity.ShoppingCart;
-import com.sky.entity.User;
+import com.sky.enumeration.DeliveryStatus;
 import com.sky.enumeration.OrderPayStatus;
 import com.sky.enumeration.OrderStatus;
+import com.sky.enumeration.PaymentMethod;
+import com.sky.enumeration.TablewareStatus;
 import com.sky.enumeration.WebSocketMessageType;
 import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
@@ -39,7 +41,7 @@ import com.sky.exception.order.OrderCannotCancelException;
 import com.sky.exception.order.OrderHasCanceledException;
 import com.sky.exception.order.OrderUserNotMatchException;
 import com.sky.exception.order.ReorderFailedException;
-import com.sky.exception.shoppingCart.EmptyShoppingCartException;
+import com.sky.exception.shoppingCart.ShoppingCartEmptyException;
 import com.sky.external.DirectionDTO;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.DishMapper;
@@ -48,15 +50,19 @@ import com.sky.mapper.OrderMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.mapper.UserMapper;
+import com.sky.projection.addressBook.AddressBookOrderInfoProjection;
+import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
+import com.sky.projection.user.UserOrderInfoProjection;
 import com.sky.projection.order.StatusProjection;
 import com.sky.properties.ShopInfoProperties;
 import com.sky.result.PageResult;
 import com.sky.service.BaiduMapService;
 import com.sky.service.OrderService;
+import com.sky.utils.AssertUtils;
+import com.sky.utils.ListUtils;
+import com.sky.utils.NotFoundUtil;
 import com.sky.utils.OrderCacheManager;
 import com.sky.utils.PageUtil;
-import com.sky.vo.user.addressBook.AddressBookVO;
-import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
 import com.sky.vo.order.OrderHistoryItemVO;
@@ -127,6 +133,18 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderSubmitVO createWithUserId( Long userId, OrdersSubmitDTO ordersSubmitDTO ){
         /*
+            补充精简的思路
+            字段业务检验
+            dto 转订单实体对象
+            查出用户信息、地址信息, 组装完整订单实体
+            同时根据地址信息判断是否超过派送距离
+            再组装订单关联的商品信息
+         */
+        PaymentMethod.throwIfInvalid( ordersSubmitDTO.getPayMethod() );
+        DeliveryStatus.throwIfInvalid( ordersSubmitDTO.getDeliveryStatus() );
+        TablewareStatus.throwIfInvalid( ordersSubmitDTO.getTablewareStatus() );
+
+        /*
          * 看看组装完整的 Orders 需要哪些东西
          * dto = addressBookId + payMethod + remark + estimatedDeliveryTime 预计送达时间
          *        + deliveryStatus 配送时间选择 + tablewareNumber + tablewareStatus
@@ -151,74 +169,66 @@ public class OrderServiceImpl implements OrderService {
          */
         Orders entity = orderConverter.toEntity( ordersSubmitDTO );
 
-        // 设置用户信息
+        /*
+            设置用户信息
+            由于用户名可能为空, 直接用用户名来判空必定抛不存在异常
+            然后又不想多做一次数据库查询( countById )
+            所以选择查询投影对象, 对投影对象进行判空
+         */
+        UserOrderInfoProjection user = userMapper.selectOrderInfoProjectionById( userId );
+        NotFoundUtil.throwIfNotFound( user, MessageConstant.USER_NOT_FOUND );
         entity.setUserId( userId );
-        User user = userMapper.selectById( userId );
-        if ( user == null ){ // 虽然但是，还是判空保险一点
-            throw new NotFoundException( MessageConstant.USER_NOT_FOUND );
-        }
         entity.setUserName( user.getName() );
 
-        // 设置地址簿信息
+        /*
+            设置地址簿信息
+            id, userId 双重定位 => 数据不存在 | 数据不匹配该用户
+         */
         Long addressBookId = ordersSubmitDTO.getAddressBookId();
-        AddressBookVO addressBookVO = addressBookMapper.selectVOByIdAndUserId( addressBookId, userId );
-        // TODO: 对了，前端会自动选择默认地址簿???
-        // id, userId 双重定位 => id 对应数据不存在 | 数据不匹配该用户
-        if ( addressBookVO == null ){
-            if ( addressBookMapper.countById( addressBookId ) == 0 ){
-                throw new NotFoundException( MessageConstant.ADDRESS_BOOK_NOT_FOUND );
-            }
+        AddressBookOrderInfoProjection addressBook = addressBookMapper.selectOrderInfoProjectionByIdAndUserId( addressBookId, userId );
+        if ( addressBook == null ){
+            NotFoundUtil.throwIfCountZero( addressBookMapper.countById( addressBookId ), MessageConstant.ADDRESS_BOOK_NOT_FOUND );
             throw new AddressBookUserNotMatchException( MessageConstant.ADDRESS_BOOK_USER_NOT_MATCH );
         }
 
         /*
             day09 新需求: 用户下单之前检验收货地址距离商家地址是否过远
-            这里拼装的 `xx省xx市xx具体地址`, 获取配置文件的商家地址,
-            然后调百度地图服务类获取 2 点距离
-            如果最短距离都超过距离限制、那就拒绝派送
          */
-        String userCompleteAddress = String.format( "%s%s%s",
-                addressBookVO.getProvinceName(),
-                addressBookVO.getCityName(),
-                addressBookVO.getDetail() );
-        String shopAddress = shopInfoProperties.getAddress();
-        DirectionDTO directionDTO = baiduMapService.listDistances( shopAddress, userCompleteAddress );
-        List< Double > distances = directionDTO.getDistances();
-        Double minDistance = distances.stream()
-                // Double::compare
-                .min( ( a, b ) -> Double.compare( a, b ) )
-                // TODO: 补充存在性判断( 理论上 baiduMapService 里面响应状态正常就有 distance、否则就抛异常, 但是不能完全确保遗漏 )
-                .get();
-        if ( Double.compare( minDistance, shopInfoProperties.getLimitDistance() ) > 0 ){
-            throw new DistanceLimitExceededException( MessageConstant.formDistanceLimitExceededMessage( shopInfoProperties.getLimitDistance() ) );
-        }
+        String userCompleteAddress = concatAndValidateCompleteAddress( addressBook );
 
-        // 继续设置信息、创建订单
-        entity.setConsignee( addressBookVO.getConsignee() );
-        entity.setAddress( addressBookVO.getDetail() );
-        entity.setPhone( addressBookVO.getPhone() );
+        // 继续设置地址簿信息
+        entity.setConsignee( addressBook.getConsignee() );
+        // 外卖单好像通常只标了细节地址, 没标完整的地址, TODO: 根据业务需求替换为完整地址
+        entity.setAddress( addressBook.getDetail() );
+        entity.setPhone( addressBook.getPhone() );
 
-        // 设置订单号、订单状态、支付状态(未支付)、下单时间
+        /*
+            设置订单号、订单状态、支付状态(未支付)、下单时间
+         */
         LocalDateTime now = LocalDateTime.now();
 
         entity.setNumber( generateOrderNumber( now ) );
-        entity.setStatus( OrderConstant.Status.PENDING_PAYMENT );
-        entity.setPayStatus( OrderConstant.PayStatus.UN_PAID );
+        entity.setStatus( OrderStatus.PENDING_PAYMENT.getValue() );
+        entity.setPayStatus( OrderPayStatus.UN_PAID.getValue() );
         entity.setOrderTime( now );
 
-        // 主键回填
+        /*
+            主键回填
+         */
         orderMapper.insert( entity );
         Long orderId = entity.getId();
-        if ( orderId == null ){
-            throw new IllegalStateException( "用户下单、Mapper 插入 Order 时主键回填失败" );
-        }
+        AssertUtils.assertIdBackfilled(
+                orderId, String.format( "用户创建订单时主键回填失败, 订单信息 = %s", entity.toString() )
+        );
 
-        // 查关联菜品、套餐数据，组装 orderDetail, 设置 orderId 外键
-        List< ShoppingCartItemVO > shoppingCartItemVOList = shoppingCartMapper.selectItemVOListByUserId( userId );
-        if ( shoppingCartItemVOList == null || shoppingCartItemVOList.isEmpty() ){
-            throw new EmptyShoppingCartException( MessageConstant.SHOPPING_CART_IS_NULL );
+        /*
+            找该用户的购物车数据，组装 orderDetail, 设置 orderId 外键
+         */
+        List< ShoppingCartOrderDetailProjection > shoppingCarts = shoppingCartMapper.selectOrderDetailProjectionByUserId( userId );
+        if ( ListUtils.isEmpty( shoppingCarts ) ){
+            throw new ShoppingCartEmptyException( MessageConstant.SHOPPING_CART_EMPTY );
         }
-        List< OrderDetail > orderDetailList = orderConverter.toDetailList( shoppingCartItemVOList );
+        List< OrderDetail > orderDetailList = orderConverter.toDetailList( shoppingCarts );
         orderDetailList.forEach( orderDetail -> orderDetail.setOrderId( orderId ) );
         orderDetailMapper.insertBatch( orderDetailList );
 
@@ -228,11 +238,11 @@ public class OrderServiceImpl implements OrderService {
             * AI: 教程的做法是简化版，很多真实外卖确实是下单就清（因为下单即锁定库存，购物车商品可能变价/售罄）
          */
 
-        // 转 VO
+        // 最后转 VO 回显
         return orderConverter.toSubmitVO( entity );
     }
 
-//    @Transactional( rollbackFor = Exception.class )
+    //    @Transactional( rollbackFor = Exception.class )
     @Override
     public OrderPaymentVO payWithIdAndUserId( Long id, Long userId ){
         /*
@@ -816,6 +826,41 @@ public class OrderServiceImpl implements OrderService {
 
 
     // ==================== 私有辅助方法 ====================
+
+    /**
+     * 用户下单之前检验收货地址距离商家地址是否过远
+     *
+     * @param addressBook 地址簿数据, 必须包含省、市、区、详细地址, 用于拼接完整地址
+     * @return 用户的完整地址, 格式为{@code xx省xx市xx区xx地址}
+     * @throws DistanceLimitExceededException 当用户收货地址距离商家地址超过限制时抛出
+     */
+    private String concatAndValidateCompleteAddress( AddressBookOrderInfoProjection addressBook ){
+        /*
+            这里拼装的 `xx省xx市xx区 + 具体地址`, 获取配置文件的商家地址,
+            然后调百度地图服务类获取 2 点距离
+            如果最短距离都超过距离限制、那就拒绝派送
+         */
+        StringBuilder addressBuilder = new StringBuilder();
+        addressBuilder.append( addressBook.getProvinceName() )
+                .append( addressBook.getCityName() )
+                .append( addressBook.getDistrictName() )
+                .append( addressBook.getDetail() );
+        String userCompleteAddress = addressBuilder.toString();
+
+        String shopAddress = shopInfoProperties.getAddress();
+        DirectionDTO directionDTO = baiduMapService.listDistances( shopAddress, userCompleteAddress );
+        List< Double > distances = directionDTO.getDistances();
+        Double minDistance = distances.stream()
+                // Double::compare
+                .min( ( a, b ) -> Double.compare( a, b ) )
+                // TODO: 补充存在性判断( 理论上 baiduMapService 里面响应状态正常就有 distance、否则就抛异常, 但是不能完全确保遗漏 )
+                .get();
+
+        if ( Double.compare( minDistance, shopInfoProperties.getLimitDistance() ) > 0 ){
+            throw new DistanceLimitExceededException( MessageConstant.formDistanceLimitExceededMessage( shopInfoProperties.getLimitDistance() ) );
+        }
+        return userCompleteAddress;
+    }
 
     /**
      * 生成订单号

@@ -1,8 +1,7 @@
 package com.sky.mapper;
 
-import com.sky.annotation.AutoFill;
 import com.sky.entity.User;
-import com.sky.enumeration.OperationType;
+import com.sky.projection.user.UserOrderInfoProjection;
 import com.sky.vo.report.UserCountItemVO;
 import com.sky.vo.report.UserGrowthItemVO;
 import org.apache.ibatis.annotations.Insert;
@@ -48,14 +47,12 @@ public interface UserMapper {
     User selectByOpenid( @Param( "openid" ) String openid );
 
     /**
-     * 根据 id 查询用户( <b>所有字段</b> )
+     * 根据 id 查询用户
+     *
+     * @param id 用户 id
+     * @return <b>字段完整</b>的用户实体对象
      */
-    @Select( """
-            SELECT id, openid, name, phone, sex, id_number, avatar, create_time, update_time
-            FROM user
-            WHERE id = #{id}
-            """ )
-    User selectById( @Param( "id" ) Long userId );
+    User selectById( @Param( "id" ) Long id );
 
     /**
      * 统计某一天之前的总用户量( 不包含这天 )
@@ -114,4 +111,12 @@ public interface UserMapper {
             WHERE id = #{id}
             """ )
     long countById( @Param( "id" ) Long id );
+
+    /**
+     * 查询某个用户的信息, 用于组装订单实体对象
+     *
+     * @param id 用户 id
+     * @return 组装订单实体需要的用户信息, <b>用户不存在时返回 null</b>
+     */
+    UserOrderInfoProjection selectOrderInfoProjectionById( @Param( "id" ) Long id );
 }

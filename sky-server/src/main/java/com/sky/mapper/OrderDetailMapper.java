@@ -13,9 +13,12 @@ import java.util.List;
 public interface OrderDetailMapper {
 
     /**
-     * 批量新增订单明细(关联的 food 数据)
+     * 批量新增订单明细( 订单关联的商品数据 )
+     *
+     * @param orderDetailList 订单明细列表, 通常由用户的购物车数据转换而来
+     * @return 插入数据行数, 通常 = 列表长度
      */
-    void insertBatch( @Param( "orderDetailList" ) List< OrderDetail > orderDetailList );
+    int insertBatch( @Param( "orderDetailList" ) List< OrderDetail > orderDetailList );
 
     /**
      * 查询多个订单的关联数据

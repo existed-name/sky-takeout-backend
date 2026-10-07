@@ -4,6 +4,7 @@ import com.sky.config.GlobalMappingConfiguration;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
+import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
 import com.sky.vo.ShoppingCartItemVO;
 import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
@@ -43,27 +44,10 @@ import java.util.List;
 @Mapper( config = GlobalMappingConfiguration.class )
 public interface OrderConverter {
     /**
-     * 用户下单 dto 转订单 entity
-     * <p>
-     * <b>Orders 忽略字段</b>: 除了 dto 包含的字段, 其他都忽略、业务类设置
-     */
-    /*
-    Entity 字段 >> DTO, 建议手动映射
-    @Mapping( target = "id", ignore = true )
-    @Mapping( target = "number", ignore = true )
-    @Mapping( target = "status", ignore = true )
-    @Mapping( target = "userId", ignore = true )
-    @Mapping( target = "orderTime", ignore = true )
-    @Mapping( target = "checkoutTime", ignore = true )
-    @Mapping( target = "payStatus", ignore = true )
-    @Mapping( target = "userName", ignore = true )
-    @Mapping( target = "phone", ignore = true )
-    @Mapping( target = "address", ignore = true )
-    @Mapping( target = "consignee", ignore = true )
-    @Mapping( target = "cancelReason", ignore = true )
-    @Mapping( target = "rejectionReason", ignore = true )
-    @Mapping( target = "cancelTime", ignore = true )
-    @Mapping( target = "deliveryTime", ignore = true )
+     * 用户下单 dto 转订单实体对象
+     *
+     * @param submitDTO 订单创建信息
+     * @return 订单实体对象, 只包含 dto 的字段, 其他字段由业务类设置
      */
     @BeanMapping( ignoreByDefault = true )
     @Mapping( source = "submitDTO.addressBookId", target = "addressBookId" )
@@ -79,9 +63,11 @@ public interface OrderConverter {
 
 
     /**
-     * 用户下单后，订单 entity 转 vo 展示支付订单界面
-     * <p>
-     * <b>OrderSubmitVO 忽略字段</b>: 无
+     * 用户下单后，订单实体转 vo 用于展示支付订单界面
+     *
+     * @param order 创建好的订单实体对象
+     * @return 用户下单的回显信息,
+     *          <b>映射时忽略的字段</b>: 无, 全部映射
      */
     @Mapping( source = "order.number", target = "orderNumber" )
     @Mapping( source = "order.amount", target = "orderAmount" )
@@ -89,18 +75,21 @@ public interface OrderConverter {
 
     /**
      * 用户购物车数据转为订单明细, 2 种对象记录的内容基本一样
-     * <p>
-     *     <b>orderDetail 忽略字段</b>: id, orderId
-     * </p>
+     *
+     * @param shoppingCart 购物车数据, 此处为专门的投影对象
+     * @return 订单明细实体对象, <b>映射时忽略的字段</b>: id, orderId
      */
     @Mapping( target = "id", ignore = true )
     @Mapping( target = "orderId", ignore = true )
-    OrderDetail toDetail( ShoppingCartItemVO shoppingCart );
+    OrderDetail toDetail( ShoppingCartOrderDetailProjection shoppingCart );
 
     /**
-     * 用户购物车数据批量转为订单明细, 该接口方法编译后循环调用{@link #toDetail(ShoppingCartItemVO)}
+     * 用户购物车数据批量转为订单明细, 该接口方法编译后循环调用{@link #toDetail(ShoppingCartOrderDetailProjection)}
+     *
+     * @param shoppingCarts 购物车数据列表, 此处为专门的投影对象列表
+     * @return 订单明细列表
      */
-    List< OrderDetail > toDetailList( List< ShoppingCartItemVO > shoppingCartItemVOList );
+    List< OrderDetail > toDetailList( List< ShoppingCartOrderDetailProjection > shoppingCarts );
 
     /**
      * 完整订单实体类 → 用户端查询订单明细 VO

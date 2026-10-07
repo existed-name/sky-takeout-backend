@@ -29,10 +29,11 @@ import java.util.Map;
 @Mapper
 public interface OrderMapper {
 
-
-
     /**
      * 用户下单、创建订单、主键回填
+     *
+     * @param order 完整的订单实体类( 不包含 id ), <b>由调用方设置审计字段</b>
+     * @return 新建数据行数, 通常 = 1
      */
     @Insert( """
             INSERT INTO orders

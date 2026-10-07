@@ -129,4 +129,14 @@
                 AND is_default = #{isDefault}
     </select>
 
+    <!--
+    查询组装订单实体对象、检验派送距离需要的地址簿字段
+    -->
+    <select id="selectOrderInfoProjectionByIdAndUserId" resultType="com.sky.projection.addressBook.AddressBookOrderInfoProjection">
+        SELECT consignee, phone, province_name, city_name, district_name, detail
+        FROM address_book
+        WHERE id = #{id}
+        AND user_id = #{userId}
+    </select>
+
 </mapper>

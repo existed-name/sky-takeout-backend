@@ -5,6 +5,14 @@
 <mapper namespace="com.sky.mapper.UserMapper">
 
     <!--
+    数据库表完整字段, 可复用
+    -->
+    <sql id="BaseColumns">
+        id, openid, name, phone, sex,
+        id_number, avatar, create_time, update_time
+    </sql>
+
+    <!--
     统计截止到某一天的总用户量
     -->
     <select id="countAllBeforeDate" resultType="com.sky.vo.report.UserCountItemVO">
@@ -30,6 +38,24 @@
           所以这里 group by 用的完整 date( .. )
         -->
 
+    </select>
+
+    <!--
+    根据 id 查询用户( 所有字段 )
+    -->
+    <select id="selectById" resultType="com.sky.entity.User">
+        SELECT <include refid="BaseColumns"/>
+        FROM user
+        WHERE id = #{id}
+    </select>
+
+    <!--
+    查询某个用户的信息, 用于组装订单实体对象
+    -->
+    <select id="selectOrderInfoProjectionById" resultType="com.sky.projection.user.UserOrderInfoProjection">
+        SELECT name
+        FROM user
+        WHERE id = #{id}
     </select>
 
 </mapper>
