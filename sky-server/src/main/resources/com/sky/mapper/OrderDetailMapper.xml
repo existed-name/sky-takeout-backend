@@ -5,6 +5,13 @@
 <mapper namespace="com.sky.mapper.OrderDetailMapper">
 
     <!--
+    所有字段，可复用到查完整 order 对象
+    -->
+    <sql id="BaseColumns">
+        id, name, image, order_id, dish_id, setmeal_id, dish_flavor, number, amount
+    </sql>
+
+    <!--
     批量新增订单明细(关联的 food 数据)
     -->
     <insert id="insertBatch">
@@ -20,7 +27,7 @@
     查询多个订单的关联数据
     -->
     <select id="selectByOrderIds" resultType="com.sky.entity.OrderDetail">
-        SELECT id, name, image, order_id, dish_id, setmeal_id, dish_flavor, number, amount
+        SELECT <include refid="BaseColumns"/>
         FROM order_detail
         WHERE order_id IN
                 <foreach collection="orderIds" item="orderId" open="(" close=")" separator=",">

@@ -12,12 +12,7 @@ import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
-import com.sky.vo.report.OrderReportVO;
-import com.sky.vo.report.SalesReportVO;
-import com.sky.vo.report.TurnoverReportVO;
-import com.sky.vo.report.UserReportVO;
-
-import java.time.LocalDate;
+import com.sky.vo.user.order.UserOrderHistoryItemVO;
 
 public interface OrderService {
     /**
@@ -48,7 +43,9 @@ public interface OrderService {
     /**
      * 用户端-分页查询指定状态的历史订单
      *
-     * @return 分页查询结果
+     * @param userId 用户 id
+     * @param userOrderPageQueryDTO 分页查询条件
+     * @return 分页查询结果, 包装历史订单数据项列表{@link UserOrderHistoryItemVO}
      */
     PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO );
 

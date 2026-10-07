@@ -1,5 +1,8 @@
 package com.sky.enumeration;
 
+import com.sky.constant.MessageConstant;
+import com.sky.exception.order.OrderStatusInvalidException;
+import com.sky.exception.order.TablewareStatusInvalidException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -55,15 +58,13 @@ public enum OrderStatus {
     /**
      * 将状态数值转换为对应的订单状态实例
      *
-     * @param statusValue 订单状态数值, 非空
+     * @param statusValue 订单状态数值
      * @return 订单状态实例
      * @throws IllegalArgumentException 当订单状态数值无效时
      */
-    public static OrderStatus toInstance( int statusValue ){
+    public static OrderStatus toInstance( Integer statusValue ){
+        requireValid( statusValue );
         OrderStatus orderStatus = VALUE_TO_INSTANCE.get( statusValue );
-        if ( orderStatus == null ){
-            throw new IllegalArgumentException( String.format( "无效的订单状态数值: %d", statusValue ) );
-        }
         return orderStatus;
     }
 
@@ -71,33 +72,32 @@ public enum OrderStatus {
 
     /**
      * 订单状态数值是否有效
-     * <p>
-     *     备注: 一个脑筋急转弯, 如果拿到了枚举实例, 那一定是有效的、不需要检验有效性
-     * </p>
      *
-     * @param statusValue 状态数值, 非空
-     * @return true, 有效; false 无效
+     * @param statusValue 状态数值
+     * @return true, 有效; false 无效( null 也无效 )
      */
-    public static boolean isValid( int statusValue ){
-        return VALUE_TO_INSTANCE.containsKey( statusValue );
+    public static boolean isValid( Integer statusValue ){
+        return statusValue != null && VALUE_TO_INSTANCE.containsKey( statusValue );
     }
 
     /**
      * 该订单是否结束: {@link #COMPLETED}, {@link #CANCELLED}
-     * @param statusValue 订单状态数值, 非空
+     *
+     * @param statusValue 订单状态数值
+     * @return true 该订单已结束, false 该订单未结束
      */
-    public static boolean isEnd( int statusValue ){
+    public static boolean isEnd( Integer statusValue ){
         return COMPLETED.value == statusValue || CANCELLED.value == statusValue;
     }
 
     /**
      * 拿到该订单状态对应的中文名称
      *
-     * @param statusValue 订单状态数值, 非空
+     * @param statusValue 订单状态数值
      * @return 订单状态中文名
      * @throws IllegalArgumentException 订单状态无效时
      */
-    public static String toChineseName( int statusValue ){
+    public static String toChineseName( Integer statusValue ){
         return toInstance( statusValue ).chineseName;
     }
 
@@ -107,10 +107,39 @@ public enum OrderStatus {
      *     实际只允许取消{@link #CONFIRMED}{@link #DELIVERY_IN_PROGRESS}状态的订单
      * </p>
      *
-     *
-     * @param statusValue 订单状态数值, 非空
+     * @param statusValue 订单状态数值
+     * @return true 该订单可以取消, false 该订单不可取消
      */
-    public static boolean allowCancel( int statusValue ){
+    public static boolean allowCancel( Integer statusValue ){
         return CONFIRMED.getValue() == statusValue || DELIVERY_IN_PROGRESS.getValue() == statusValue;
     }
+
+    /**
+     * 检验状态数值是否有效, 无效则抛出 JDK 原生异常
+     *
+     * @param status 状态数值
+     * @throws IllegalArgumentException 当状态数值无效时
+     */
+    private static void requireValid( Integer status ){
+        if ( ! isValid( status ) ){
+            throw new IllegalArgumentException(
+                    String.format( "无效的订单状态: status = %s", status )
+            );
+        }
+    }
+
+    /**
+     * 检验状态数值是否有效, 无效则抛出业务异常
+     *
+     * @param status 状态数值
+     * @throws OrderStatusInvalidException 当状态数值无效时
+     */
+    public static void throwIfInvalid( Integer status ){
+        if ( ! isValid( status ) ){
+            throw new OrderStatusInvalidException(
+                    MessageConstant.ORDER_STATUS_INVALID
+            );
+        }
+    }
+
 }

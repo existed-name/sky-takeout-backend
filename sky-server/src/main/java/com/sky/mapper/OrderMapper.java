@@ -8,7 +8,7 @@ import com.sky.dto.report.UnitPriceItem;
 import com.sky.entity.Orders;
 import com.sky.projection.order.PaymentTimeoutProjection;
 import com.sky.projection.order.StatusProjection;
-import com.sky.vo.order.OrderHistoryItemVO;
+import com.sky.vo.user.order.UserOrderHistoryItemVO;
 import com.sky.vo.report.OrderCountItemVO;
 import com.sky.vo.report.OrderValidCountItemVO;
 import com.sky.vo.report.TurnoverReportItemVO;
@@ -95,12 +95,16 @@ public interface OrderMapper {
 
     /**
      * 条件查询该用户的历史订单 VO, 分页操作由{@link com.sky.utils.PageUtil}完成
-     * <br>
-     * 排序规则: 按照时间降序排列、时间相同按照 id 倒序排列，确保用户看到最新订单
-     * <br>
+     * <p>
+     *     排序规则: 按照时间降序排列、时间相同按照 id 倒序排列，确保用户看到最新订单
+     * </p>
      * TODO: 修改查询参数后，SQL 也需要修改
+     *
+     * @param userId 用户 id, 用于确认该用户的订单数据, <b>不可为空</b>
+     * @param userOrderPageQueryDTO 查询参数
+     * @return 订单历史数据项列表
      */
-    List< OrderHistoryItemVO > selectByUserIdAndQuery( @Param( "userId" ) Long userId, @Param( "query" ) UserOrderPageQueryDTO userOrderPageQueryDTO );
+    List< UserOrderHistoryItemVO > selectByUserIdAndQuery( @Param( "userId" ) Long userId, @Param( "query" ) UserOrderPageQueryDTO userOrderPageQueryDTO );
 
     /**
      * 查询完整订单实体类

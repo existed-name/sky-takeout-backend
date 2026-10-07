@@ -202,7 +202,7 @@
     条件查询该用户的历史订单 VO, 分页操作由com.sky.utils.PageUtil完成
     排序规则: 按照时间降序排列、时间相同按照 id 倒序排列，确保用户看到最新订单
     -->
-    <select id="selectByUserIdAndQuery" resultType="com.sky.vo.order.OrderHistoryItemVO">
+    <select id="selectByUserIdAndQuery" resultType="com.sky.vo.user.order.UserOrderHistoryItemVO">
         SELECT id, status, order_time, amount
         FROM orders
         <where>

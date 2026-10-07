@@ -124,9 +124,10 @@ public class OrderController {
      * 分页查询指定状态的历史订单
      */
     @ApiOperation( "分页查询指定状态的历史订单" )
-    @GetMapping( "/historyOrders" )
+    @GetMapping( "/history" )
     public Result< PageResult > pageQuery( // ?page=x&pageSize=y&status=
-               @Validated UserOrderPageQueryDTO userOrderPageQueryDTO ){
+               @Validated UserOrderPageQueryDTO userOrderPageQueryDTO
+    ){
         Long userId = BaseContext.getCurrentId();
         log.info( "userId = {} 的用户查询历史订单，查询参数: {}", userId, userOrderPageQueryDTO );
         PageResult pageResult = orderService.pageByUserIdAndQuery( userId, userOrderPageQueryDTO );

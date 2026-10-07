@@ -1,4 +1,4 @@
-package com.sky.vo.order;
+package com.sky.vo.user.order;
 
 import com.sky.entity.OrderDetail;
 import io.swagger.annotations.ApiModel;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 查询历史订单，展示的<b>单个订单</b>信息(根据原型选择性展示字段)
+ * 用户历史订单数据项, 用于用户端展示历史订单界面列表数据
  *
  * @CreateTime 2026/6/24 16:01
  */
@@ -21,8 +21,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ApiModel(description = "查询历史订单，展示的单个订单信息 VO")
-public class OrderHistoryItemVO {
+@ApiModel(description = "用户历史订单数据项, 用于用户端展示历史订单界面列表数据")
+public class UserOrderHistoryItemVO {
     // ==================== 常量 ====================
 
 
@@ -65,15 +65,17 @@ public class OrderHistoryItemVO {
 
 //    /** 单个订单包含的商品总数量 */
 //    private Integer totalNumber;
-// AI 建议保留这个方便前端拿数据，但是把字段改成方法、拿取实时数据
 
     /**
      * 获取该订单的商品总数量 = 遍历订单明细列表，<b>每种商品的数量之和</b>
-     *
+     * <p>
+     *     TODO: 目前应该是前端自己计算展示商品数量, 后续可以修改接口、把商品总数量传给前端展示
+     * </p>
+     * 该对象传给前端时会转成 json 字符串, 该方法应该会失效
      *
      * @return 单个订单包含的商品总数量
      */
-    public Integer getTotalNumber() {
+    public Integer calcTotalNumber() {
         // 理论上 orderDetailList 不会为空
         if ( orderDetailList == null || orderDetailList.isEmpty() ){
             return 0;

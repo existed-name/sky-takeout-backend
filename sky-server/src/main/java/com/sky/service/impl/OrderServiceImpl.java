@@ -66,7 +66,7 @@ import com.sky.utils.OrderCacheManager;
 import com.sky.utils.PageUtil;
 import com.sky.vo.order.AdminOrderInfoVO;
 import com.sky.vo.order.OrderPageQueryVO;
-import com.sky.vo.order.OrderHistoryItemVO;
+import com.sky.vo.user.order.UserOrderHistoryItemVO;
 import com.sky.vo.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
@@ -299,56 +299,71 @@ public class OrderServiceImpl implements OrderService {
     @Transactional( readOnly = true )
     @Override
     public PageResult pageByUserIdAndQuery( Long userId, UserOrderPageQueryDTO userOrderPageQueryDTO ){
+        /*
+            补充思路整理
+            核心是查订单主体 + 关联信息
+            开头做一些查询字段的有效判断
+            然后查用户的订单, 拿到逻辑外键去查关联信息, 最后组装
+            需要注意的是
+              - 空订单列表则提前结束
+              - 由于关联信息是直接设置到订单对象里面、并没有改变最后包装的对象列表,
+                查询的订单对象仍然可以正常转为 Page,
+         */
         // TODO: 如果用户端查询条件拓展，这里可能还要补充参数检验、提取检验方法
-        if ( userOrderPageQueryDTO.hasStatus() && ! OrderConstant.Status.isValid( userOrderPageQueryDTO.getStatus() ) ){
-            throw new OrderStatusInvalidException( MessageConstant.INVALID_ORDER_STATUS );
+        if ( userOrderPageQueryDTO.hasStatus() ){
+            OrderStatus.throwIfInvalid( userOrderPageQueryDTO.getStatus() );
         }
 
+        /*
+            查订单本体信息
+         */
         // 只对 1 次 SQL 查询有效
         PageUtil.validateParamsAndStartPage(
                 userOrderPageQueryDTO.getPage(), userOrderPageQueryDTO.getPageSize()
         );
-        // TODO: MyBatis 返回列表理论上不会 null, 但可以补充判空，难点在处理 Page.total
-        List< OrderHistoryItemVO > orderHistoryItemVOList = orderMapper.selectByUserIdAndQuery( userId, userOrderPageQueryDTO );
-
-        // 转 Page 是为了拿到 total 数据库里面总共的数据条数
-        Page< OrderHistoryItemVO > orderHistoryItemVOPage = ( Page< OrderHistoryItemVO > ) orderHistoryItemVOList;
-        long total = orderHistoryItemVOPage.getTotal();
-
-        // 目标订单不存在
-        if ( orderHistoryItemVOList.isEmpty() ){
-            // 不可能是 user 不存在的情况, 因为用户成功登录 + ThreadLocal 拿到 userId
-            return PageUtil.buildPageResult( total, orderHistoryItemVOList );
+        List< UserOrderHistoryItemVO > orderHistoryItemVOList = orderMapper.selectByUserIdAndQuery( userId, userOrderPageQueryDTO );
+        // 空列表 => 用户不存在、用户没有订单
+        if ( ListUtils.isEmpty( orderHistoryItemVOList ) ){
+            return PageUtil.buildPageResult( orderHistoryItemVOList );
         }
 
-        List< Long > ids = orderHistoryItemVOList.stream().map( OrderHistoryItemVO::getId ).toList();
+        /*
+            查关联订单明细
+            先拿到订单列表的 id, 然后查订单明细, 根据订单 id 分组、组装
+         */
+        List< Long > ids = orderHistoryItemVOList.stream()
+                .map( UserOrderHistoryItemVO::getId )
+                .toList();
         List< OrderDetail > allOrderDetails = orderDetailMapper.selectByOrderIds( ids );
-        if ( allOrderDetails == null || allOrderDetails.isEmpty() ){
-            // 理论上说，订单必须有东西才可以下单放到数据库，所以 orderDetail 为空
-            // 说明 orderDetail 的逻辑外键设置错 | 之前下了空订单 | 由于 id 是从查出的对象拿到的，id 一定是有效的
-            // 但是为了不影响用户体验，不该抛异常，只再后台记录日志
-            log.error( "ids = {} 的订单列表，对应的 orderDetail 为空, 可能是之前下了空订单，或者 orderDetail 的逻辑外键设置错",
-                    ids ); // lombok 重写 toString
-            return PageUtil.buildPageResult( total, orderHistoryItemVOList );
+        if ( ListUtils.isEmpty( allOrderDetails ) ){
+            /*
+                理论上说，订单必须有东西才可以下单放到数据库，
+                所以 orderDetail 为空, 说明 orderDetail 的逻辑外键设置错 | 之前下了空订单
+                由于 id 是从查出的对象拿到的，id 一定是有效的
+                但是为了不影响用户体验，不该抛异常，只再后台记录日志
+             */
+            log.error( "用户 id = {}, ids = {} 的订单列表，对应的订单明细为空, 可能是之前下了空订单，或者 orderDetail 的逻辑外键设置错误", userId, ids );
+            return PageUtil.buildPageResult( orderHistoryItemVOList );
         }
 
         // 分组、组装
-        Map< Long, List< OrderDetail > > orderIdToDetailsMap = allOrderDetails.stream().collect( Collectors.groupingBy( OrderDetail::getOrderId ) );
-        for ( OrderHistoryItemVO vo : orderHistoryItemVOList ){
+        Map< Long, List< OrderDetail > > orderIdToDetailsMap = allOrderDetails.stream()
+                .collect( Collectors.groupingBy( OrderDetail::getOrderId ) );
+        for ( UserOrderHistoryItemVO vo : orderHistoryItemVOList ){
             Long id = vo.getId();
             // 每个订单的 orderDetailList 不应该为空, 为空则手动 new 链表、记录日志
-            List< OrderDetail > orderDetailList = orderIdToDetailsMap.getOrDefault( id,
+            List< OrderDetail > orderDetailList = orderIdToDetailsMap.getOrDefault(
+                    id,
                     Collections.emptyList() // 更省内存（返回不可变单例，不需要创建新对象）
             );
-            if ( orderDetailList.isEmpty() ){
-                log.error( "id = {} 的订单，对应的 orderDetail 为空, 可能是之前下了空订单，或者 orderDetail 的逻辑外键设置错", id );
+            if ( ListUtils.isEmpty( orderDetailList ) ){
+                log.error( "用户 id = {}, id = {} 的订单，对应的 orderDetail 为空, 可能是之前下了空订单，或者 orderDetail 的逻辑外键设置错", userId, id );
             }
             vo.setOrderDetailList( orderDetailList );
         }
 
-        // 我自定义的 VO 之前想设置 totalNumber 每个订单的商品总数，但有点多余，就封装方法直接拿列表长度了
-        // TODO: 当前是前端调 VO 自带方法计算 totalNumber，后续看情况修改为字段 + 业务类设置字段
-        return PageUtil.buildPageResult( total, orderHistoryItemVOList );
+        // TODO: 目前应该是前端自己计算展示商品数量, 后续可以修改接口、把商品总数量传给前端展示
+        return PageUtil.buildPageResult( orderHistoryItemVOList );
     }
 
     @Transactional( readOnly = true )
@@ -546,7 +561,7 @@ public class OrderServiceImpl implements OrderService {
 
         Integer orderStatus = orderPageQueryDTO.getStatus();
         if ( orderStatus != null && ! OrderConstant.Status.isValid( orderStatus ) ){
-            throw new OrderStatusInvalidException( MessageConstant.INVALID_ORDER_STATUS );
+            throw new OrderStatusInvalidException( MessageConstant.ORDER_STATUS_INVALID );
         }
 
         // 自动分页, List 实际会被 PageHelper 转成 Page, 并且查出来的 List 不可能为 null
@@ -945,7 +960,7 @@ public class OrderServiceImpl implements OrderService {
             );
         }
         if ( ! OrderConstant.Status.isValid( status ) ){
-            throw new OrderStatusInvalidException( MessageConstant.INVALID_ORDER_STATUS );
+            throw new OrderStatusInvalidException( MessageConstant.ORDER_STATUS_INVALID );
         }
         if ( OrderConstant.Status.CANCELLED.equals( status ) ){
             throw new OrderHasCanceledException( MessageConstant.ORDER_HAS_CANCELED );
