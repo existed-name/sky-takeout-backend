@@ -6,7 +6,7 @@ import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
 import com.sky.vo.order.AdminOrderInfoVO;
-import com.sky.vo.order.OrderPageQueryVO;
+import com.sky.vo.order.OrderPageQueryItemVO;
 import com.sky.vo.user.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderSubmitVO;
 import org.mapstruct.BeanMapping;
@@ -106,17 +106,21 @@ public interface OrderConverter {
     UserOrderInfoVO toUserOrderInfoVO( Orders order );
 
     /**
-     * 完整订单实体类转管理端订单条件分页查询 VO 列表, converter 会循环调用{@link #toPageVO(Orders)}
+     * 完整订单实体列表转管理端订单条件分页查询 VO 列表, converter 编译后循环调用{@link #toPageVO(Orders)}
+     *
+     * @param entities 完整的订单实体对象列表
+     * @return 条件分页查询 vo 列表
      */
-    List< OrderPageQueryVO > toPageVOList( List< Orders > entities );
+    List< OrderPageQueryItemVO > toPageVOList( List< Orders > entities );
 
     /**
      * 完整订单实体类 → 管理端订单条件分页查询 VO
-     * <br>
-     * 由于 source 已经覆盖了 target 的所有字段, 所以这里直接 converter 自动转换、丢弃没用到的字段就行
+     *
+     * @param entity 完整的订单实体对象
+     * @return 订单条件分页查询 vo, <b>映射时忽略的字段</b>: orderDishes, 由调用方手动设置
      */
     @Mapping( target = "orderDishes", ignore = true )
-    OrderPageQueryVO toPageVO( Orders entity );
+    OrderPageQueryItemVO toPageVO( Orders entity );
 
     /**
      * 完整订单实体类 → 管理端订单详情 VO

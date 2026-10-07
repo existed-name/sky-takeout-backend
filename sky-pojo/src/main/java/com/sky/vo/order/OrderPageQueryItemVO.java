@@ -10,15 +10,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 管理端订单条件分页查询数据
+ * 管理端订单条件分页查询数据项
  *
  * @CreateTime 2026/8/15 16:06
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel( value = "管理端订单条件分页查询数据" )
-public class OrderPageQueryVO {
+@ApiModel( value = "管理端订单条件分页查询数据项" )
+public class OrderPageQueryItemVO {
     // ==================== 常量 ====================
 
 

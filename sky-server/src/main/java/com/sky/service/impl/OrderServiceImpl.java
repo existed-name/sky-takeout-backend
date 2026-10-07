@@ -36,7 +36,6 @@ import com.sky.exception.order.OrderDeliverFailedException;
 import com.sky.exception.order.OrderDetailIncompleteException;
 import com.sky.exception.order.OrderPaidException;
 import com.sky.exception.order.OrderRejectFailedException;
-import com.sky.exception.order.OrderStatusInvalidException;
 import com.sky.exception.order.OrderUserNotMatchException;
 import com.sky.exception.order.ReorderFailedException;
 import com.sky.exception.shoppingCart.ShoppingCartEmptyException;
@@ -62,7 +61,7 @@ import com.sky.utils.NotFoundUtil;
 import com.sky.utils.OrderCacheManager;
 import com.sky.utils.PageUtil;
 import com.sky.vo.order.AdminOrderInfoVO;
-import com.sky.vo.order.OrderPageQueryVO;
+import com.sky.vo.order.OrderPageQueryItemVO;
 import com.sky.vo.user.order.UserOrderHistoryItemVO;
 import com.sky.vo.user.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
@@ -561,24 +560,25 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageResult pageByQuery( AdminOrderPageQueryDTO orderPageQueryDTO ){
         /*
-            参数基本格式检验交给 Controller、参数检验注解
-            参数业务检验: 订单状态有效性, 由于是选填、只有非 null( 传了 status )才做判断
-            查询条件交给 Mapper, 细节是查询排序 + 如果查完整对象则 MapStruct 转换
+            补充思路整理
+            对查询参数进行业务检验
+              - 如果传了订单状态就检验一下, 其他的都不用检验,
+              - 也不需要检验结束时间在起始时间之前
+            然后查订单
+            观察原型看到, 对于已完成、已取消的订单, 还需要额外展示商品、数量
          */
-        PageUtil.validateParamsAndStartPage( orderPageQueryDTO.getPage(), orderPageQueryDTO.getPageSize() );
-
         Integer orderStatus = orderPageQueryDTO.getStatus();
-        if ( orderStatus != null && ! OrderConstant.Status.isValid( orderStatus ) ){
-            throw new OrderStatusInvalidException( MessageConstant.ORDER_STATUS_INVALID );
+        if ( orderStatus != null ){
+            OrderStatus.throwIfInvalid( orderStatus );
         }
 
+        PageUtil.validateParamsAndStartPage( orderPageQueryDTO.getPage(), orderPageQueryDTO.getPageSize() );
         // 自动分页, List 实际会被 PageHelper 转成 Page, 并且查出来的 List 不可能为 null
         Page< Orders > ordersPage = ( Page< Orders > ) orderMapper.selectByQuery( orderPageQueryDTO );
-        List< OrderPageQueryVO > orderPageVOList = orderConverter.toPageVOList( ordersPage.getResult() );
+        List< OrderPageQueryItemVO > orderPageVOList = orderConverter.toPageVOList( ordersPage.getResult() );
 
         // 对于未完成的订单需要展示菜品数据
-        // 本来 orderStatus 为 null 是不算 Finished 的, 但是内部 Set.of 的 Set 不允许 contains 传 null, 所以需要判空
-        if ( orderStatus != null && ! OrderConstant.Status.isFinished( orderStatus ) ){
+        if ( ! OrderStatus.isEnd( orderStatus ) ){
             /*
                 我再回看原型界面, 其实它要展示的不是 orderDetail 订单细节,
                 它只需要展示 "dishName * number; setmealName * number..." 字符串
@@ -587,7 +587,7 @@ public class OrderServiceImpl implements OrderService {
              */
 
             List< Long > orderIds = orderPageVOList.stream()
-                    .map( OrderPageQueryVO::getId )
+                    .map( OrderPageQueryItemVO::getId )
                     .toList();
             List< OrderDetail > allOrderDetails = orderDetailMapper.selectByOrderIds( orderIds );
 
@@ -599,12 +599,10 @@ public class OrderServiceImpl implements OrderService {
             Map< Long, List< OrderDetail > > orderIdToDetailsMap = allOrderDetails.stream()
                     .collect( Collectors.groupingBy( OrderDetail::getOrderId ) );
             // TODO: 这里暂时嵌套 for, 之后可以优化在 for 外面拼接每个 order 的 orderDishes
-            for ( OrderPageQueryVO pageQueryVO : orderPageVOList ){
+            for ( OrderPageQueryItemVO pageQueryVO : orderPageVOList ){
                 pageQueryVO.setOrderDishes(
                         concatOrderDishes(
-                                orderIdToDetailsMap.get(
-                                        pageQueryVO.getId()
-                                )
+                                orderIdToDetailsMap.get( pageQueryVO.getId() )
                         )
                 );
             }
@@ -896,12 +894,15 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 生成订单号
-     * <br>
-     * 格式：{业务码}{日期}{7位序列}
-     * <br>
-     * 示例：TB20250619000001, CQ202606201234567
-     * <br>
+     * <p>
+     *     格式：{@code {业务码}{日期}{7位序列}}, {@code {7位序列}} = 今天的订单数( 第 N 个订单 )
+     *      <br>
+     *      示例：TB20250619000001, CQ202606201234567
+     * </p>
      * 教程用的 System.currentTimeMillis 高并发可能重叠
+     *
+     * @param now 当前的时间
+     * @return 订单号字符串
      */
     private String generateOrderNumber( LocalDateTime now ){
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern( OrderConstant.OrderNumber.DATE_PATTERN );
@@ -975,8 +976,8 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 拼接该订单的菜品、套餐信息为 1 个字符串
      *
-     * @param orderDetails 同一个订单的各个菜品详情数据
-     * @return 菜品/套餐字符串, 模板为<code>dishName * number; setmealName * number...</code>
+     * @param orderDetails 某个订单的详情数据列表, 由调用方保证非 null
+     * @return 商品数量字符串, 模板为{@code dishName * number; setmealName * number...}
      */
     private String concatOrderDishes( List< OrderDetail > orderDetails ){
         return orderDetails.stream()

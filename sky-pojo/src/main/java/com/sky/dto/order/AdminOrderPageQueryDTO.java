@@ -1,13 +1,13 @@
 package com.sky.dto.order;
 
+import com.sky.dto.PageQueryDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 
 /**
@@ -15,11 +15,12 @@ import java.time.LocalDateTime;
  *
  * @CreateTime 2026/8/15 15:23
  */
+@EqualsAndHashCode( callSuper = true )
 @ApiModel( value = "管理端条件分页查询订单参数" )
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminOrderPageQueryDTO {
+public class AdminOrderPageQueryDTO extends PageQueryDTO {
     // ==================== 常量 ====================
 
 
@@ -27,17 +28,6 @@ public class AdminOrderPageQueryDTO {
 
 
     // ==================== 实例变量 ====================
-    /** 起始页码 */
-    @ApiModelProperty( name = "起始页码", required = true, example = "1" )
-    @NotNull( message = "起始页码不能为空" )
-    @Positive( message = "起始页码必须是正整数" )
-    Integer page = 1;
-
-    /** 查询数据条数 */
-    @ApiModelProperty( name = "查询数据条数", required = true, example = "6" )
-    @NotNull( message = "查询数据条数不能为空" )
-    @Positive( message = "查询数据条数必须是正整数" )
-    Integer pageSize = 6;
 
     /** 起始下单时间 */
     @ApiModelProperty( name = "起始下单时间", required = false, example = "2022-06-09 22:09:18" )
@@ -55,7 +45,7 @@ public class AdminOrderPageQueryDTO {
     @ApiModelProperty( name = "手机号", required = false, example = "13512345678" )
     String phone;
 
-    /** 订单状态, {@link com.sky.constant.OrderConstant.Status} */
+    /** 订单状态, {@link com.sky.enumeration.OrderStatus} */
     @ApiModelProperty( name = "订单状态", required = false, example = "2" )
     Integer status;
 

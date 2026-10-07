@@ -57,10 +57,10 @@ public class OrderController {
     @GetMapping
     @ApiOperation( value = "条件分页查询订单" )
     public Result< PageResult > page(
-            @NotNull( message = "订单条件分页查询参数不能为空" )
             @Valid AdminOrderPageQueryDTO orderPageQueryDTO
     ){
-        log.info( "管理端条件分页查询订单, 查询参数: {}", orderPageQueryDTO );
+        Long adminId = BaseContext.getCurrentId();
+        log.info( "id = {} 的管理员条件分页查询订单, 查询参数 = {}", adminId, orderPageQueryDTO );
         PageResult pageResult = orderService.pageByQuery( orderPageQueryDTO );
         return Result.success( pageResult );
     }
