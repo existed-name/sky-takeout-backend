@@ -154,15 +154,17 @@ public class OrderController {
      * 取消订单
      */
     @ApiOperation( "取消订单" )
-    @PutMapping( "/cancel" )
+    @PutMapping( "/{id}/cancellation" )
     public Result< Void > cancel(
+            @PathVariable( name = "id", required = true )
+            @Positive( message = "订单 id 必须是正整数" )
+            Long id,
             @RequestBody @Validated
-            @NotNull( message = "订单取消信息不能为空" )
             OrderCancelDTO orderCancelDTO
     ){
         Long userId = BaseContext.getCurrentId();
-        log.info( "userId = {} 的用户取消 id = {} 的订单", userId, orderCancelDTO.getId() );
-        orderService.cancelWithUserId( userId, orderCancelDTO );
+        log.info( "userId = {} 的用户取消 id = {} 的订单, 取消信息 = {}", userId, id, orderCancelDTO );
+        orderService.cancelByIdAndUserId( id, userId, orderCancelDTO );
         return Result.success(  );
     }
 

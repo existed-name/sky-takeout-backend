@@ -118,9 +118,11 @@ public interface OrderMapper {
     Orders selectByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
-     * 查询订单状态
+     * 查询用户某个订单的状态
      *
-     * @return <b>只含 status 字段</b>的 order<br>
+     * @param userId 用户 id, 用于确认该用户的订单数据, <b>不可为空</b>
+     * @param id 订单 id, <b>不可为空</b>
+     * @return 订单状态{@link com.sky.enumeration.OrderStatus}<br>
      *          如果返回 null => <b>id 对应的数据不存在 | 数据不属于该用户</b>(包含用户不存在的情况)
      */
     @Select( """
@@ -128,7 +130,7 @@ public interface OrderMapper {
             FROM orders
             WHERE id = #{id} AND user_id = #{userId}
             """ )
-    Orders selectStatusByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
+    Integer selectStatusByIdAndUserId( @Param( "id" ) Long id, @Param( "userId" ) Long userId );
 
     /**
      * 判断该数据的存在性、匹配性

@@ -2,7 +2,6 @@ package com.sky.enumeration;
 
 import com.sky.constant.MessageConstant;
 import com.sky.exception.order.OrderStatusInvalidException;
-import com.sky.exception.order.TablewareStatusInvalidException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -102,16 +101,37 @@ public enum OrderStatus {
     }
 
     /**
-     * 可不可以取消该状态的订单
+     * <b>管理端</b>可不可以直接取消该状态的订单
      * <p>
      *     实际只允许取消{@link #CONFIRMED}{@link #DELIVERY_IN_PROGRESS}状态的订单
+     * </p>
+     * <p>
+     *     管理端对于不同状态订单的行为
+     *     <ol>
+     *         <li>待接单 → 接单 / 拒单</li>
+     *         <li>待派送、派送中 的订单 → 取消</li>
+     *         <li>已完成 → 退单</li>
+     *     </ol>
      * </p>
      *
      * @param statusValue 订单状态数值
      * @return true 该订单可以取消, false 该订单不可取消
      */
-    public static boolean allowCancel( Integer statusValue ){
+    public static boolean canAdminCancel( Integer statusValue ){
         return CONFIRMED.getValue() == statusValue || DELIVERY_IN_PROGRESS.getValue() == statusValue;
+    }
+
+    /**
+     * <b>用户端</b>可不可以直接取消该状态的订单
+     * <p>
+     *     对于{@link #PENDING_PAYMENT}{@link #TO_BE_CONFIRMED}状态的订单, 用户可以直接取消
+     * </p>
+     *
+     * @param statusValue 订单状态数值
+     * @return true 该订单可以取消, false 该订单不可取消
+     */
+    public static boolean canUserCancel( Integer statusValue ){
+        return PENDING_PAYMENT.getValue() == statusValue || TO_BE_CONFIRMED.getValue() == statusValue;
     }
 
     /**

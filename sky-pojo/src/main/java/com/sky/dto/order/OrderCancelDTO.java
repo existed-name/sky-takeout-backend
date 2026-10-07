@@ -22,9 +22,6 @@ public class OrderCancelDTO {
 
 
     // ==================== 实例变量 ====================
-    @NotNull( message = "订单 id 不能为空" )
-    @Positive( message = "订单 id 必须是正整数" )
-    Long id;
 
     /** 订单取消原因 */
     @ApiModelProperty( value = "订单取消原因", example = "不想要了", required = false )

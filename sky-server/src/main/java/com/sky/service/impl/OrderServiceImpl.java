@@ -30,16 +30,13 @@ import com.sky.exception.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
 import com.sky.exception.baiduMap.DistanceLimitExceededException;
 import com.sky.exception.order.OrderAcceptFailedException;
-import com.sky.exception.order.OrderCancelFailedException;
+import com.sky.exception.order.cancel.OrderCancelFailedException;
 import com.sky.exception.order.OrderCompleteFailedException;
 import com.sky.exception.order.OrderDeliverFailedException;
-import com.sky.exception.order.OrderFinishedCannotCancelException;
 import com.sky.exception.order.OrderDetailIncompleteException;
 import com.sky.exception.order.OrderPaidException;
 import com.sky.exception.order.OrderRejectFailedException;
 import com.sky.exception.order.OrderStatusInvalidException;
-import com.sky.exception.order.OrderCannotCancelException;
-import com.sky.exception.order.OrderHasCanceledException;
 import com.sky.exception.order.OrderUserNotMatchException;
 import com.sky.exception.order.ReorderFailedException;
 import com.sky.exception.shoppingCart.ShoppingCartEmptyException;
@@ -387,23 +384,29 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void cancelWithUserId( Long userId, OrderCancelDTO orderCancelDTO ){
-        // 前置判断: 查看订单状态，未付款/待接单(已付款) => 可以直接取消，已接单/派送中 => 不可直接取消、需要联系商家
-        Long id = orderCancelDTO.getId();
-        Orders orderStatus = orderMapper.selectStatusByIdAndUserId( id, userId );
-        if ( orderStatus == null ){
+    public void cancelByIdAndUserId( Long id, Long userId, OrderCancelDTO orderCancelDTO ){
+        /*
+            补充思路整理
+            取消订单本质是修改订单状态
+            于是查询订单状态, 判断订单可不可以取消, 同时已付款的订单需要退款
+
+            待付款、待接单(已付款) => 可以直接取消
+            已接单(待派送)、派送中 => 不可直接取消、需要联系商家
+            已完成、已取消 => 不可取消
+         */
+        // 前置判断: 查看订单状态，TODO: 对查出来的订单状态作有效判断, 无效则说明之前写入了错误的订单状态
+        Integer status = orderMapper.selectStatusByIdAndUserId( id, userId );
+        if ( status == null ){
             throwIfNotExistsOrNotMatches( id );
         }
 
-        Integer status = orderStatus.getStatus();
         // 待付款/待接单: 可直接取消
-        if ( OrderConstant.Status.PENDING_PAYMENT.equals( status ) ||
-                OrderConstant.Status.TO_BE_CONFIRMED.equals( status ) ){
+        if ( OrderStatus.canUserCancel( status ) ){
             String cancelReason = orderCancelDTO.getCancelReason();
             // 取消 => 修改订单状态、支付状态(如果付款则退款)、取消原因(可选)、取消时间
             Orders build = Orders.builder()
                     .id( id )
-                    .status( OrderConstant.Status.CANCELLED )
+                    .status( OrderStatus.CANCELLED.getValue() )
                     .userId( userId )
 //                    .payStatus()
                     .cancelReason( cancelReason )
@@ -411,10 +414,12 @@ public class OrderServiceImpl implements OrderService {
                     .build();
 
             // 待接单 => 已付款 => 取消订单后退款
-            if ( OrderConstant.Status.TO_BE_CONFIRMED.equals( status ) ){
+            // 附: int Integer 可以直接 == 比较, Integer 自动拆箱变成 int( 除非 Integer 为空 )
+            if ( OrderStatus.TO_BE_CONFIRMED.getValue() == status ){
                 // 由于并没有写商户支付功能，让前端模拟一个退款
                 // TODO: 调微信支付接口退款
-                build.setPayStatus( OrderConstant.PayStatus.REFUND );
+                refund( id );
+                build.setPayStatus( OrderPayStatus.REFUND.getValue() );
             }
 
             // 由于最开始查询订单状态时已经判断了数据不存在/不匹配，所以这里不需要再判断
@@ -424,7 +429,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 其他订单状态无法直接取消, 抛异常
-        handleOrderStatusIfOrderNotCanceled( id, userId, status );
+        throwCancelFailedExceptionByStatus( status );
     }
 
     @Transactional( rollbackFor = Exception.class )
@@ -762,7 +767,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Integer orderStatus = statusProjection.getStatus();
-        if ( OrderStatus.allowCancel( orderStatus ) ){
+        if ( OrderStatus.canAdminCancel( orderStatus ) ){
             Orders build = Orders.builder()
                     .id( id )
                     .status( OrderStatus.CANCELLED.getValue() )
@@ -948,33 +953,23 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 用于{@link #cancelWithUserId}方法检验订单状态是否满足取消订单的要求，不满足要求则抛出异常
+     * <b>用户取消订单时</b>, 如果订单状态不支持取消订单, 则由业务方法调用该方法,
+     * 根据不同订单状态设置不同的异常信息、然后抛出业务异常
      *
-     * @param id 订单 id
-     * @param userId 用户 id
-     * @param status 订单状态
+     * @param status 订单状态, <b>由调用方确认非空、有效</b>, 用于映射对应的异常信息
+     * @throws IllegalArgumentException 当调用方传入的订单状态无效时抛出
+     * @throws OrderCancelFailedException 预期抛出的业务异常, 用于提醒用户当前订单状态不支持取消订单
      */
-    private void handleOrderStatusIfOrderNotCanceled( Long id, Long userId, Integer status ){
-        if ( status == null ){
-            throw new IllegalStateException(
-                    String.format( "id = %s, userId = %s 的订单状态为 null, 可能是下单时没有设置订单状态",
-                            id, userId
-                    )
-            );
-        }
-        if ( ! OrderConstant.Status.isValid( status ) ){
-            throw new OrderStatusInvalidException( MessageConstant.ORDER_STATUS_INVALID );
-        }
-        if ( OrderConstant.Status.CANCELLED.equals( status ) ){
-            throw new OrderHasCanceledException( MessageConstant.ORDER_HAS_CANCELED );
-        }
-        if ( OrderConstant.Status.COMPLETED.equals( status ) ){
-            throw new OrderFinishedCannotCancelException( MessageConstant.COMPLETED_ORDER_CANNOT_CANCEL );
-        }
-        if ( OrderConstant.Status.CONFIRMED.equals( status ) ||
-                OrderConstant.Status.DELIVERY_IN_PROGRESS.equals( status ) ){
-            throw new OrderCannotCancelException( MessageConstant.PLEASE_CONTACT_MERCHANT );
-        }
+    private void throwCancelFailedExceptionByStatus( Integer status ){
+        // 由于 switch 的 case 分支必须是常量, getValue 方法算变量, 所以这里先转枚举、再分支判断情况
+        OrderStatus orderStatus = OrderStatus.toInstance( status );
+        String message = switch ( orderStatus ){
+            case CANCELLED -> MessageConstant.ORDER_HAS_CANCELED;
+            case COMPLETED -> MessageConstant.ORDER_COMPLETED_NOT_CANCELABLE;
+            // 包括 CONFIRMED, DELIVERY_IN_PROGRESS
+            default -> MessageConstant.ORDER_CANCEL_FAILED_PLEASE_CONTACT_MERCHANT;
+        };
+        throw new OrderCancelFailedException( message );
     }
 
     /**
@@ -1011,7 +1006,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 订单退款
+     * 订单退款, TODO: 微信商户号 + 调用微信支付 API 实现退款
      *
      * @param id 订单 id, 由调用方保证合法
      */

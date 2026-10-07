@@ -14,6 +14,8 @@ import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
 import com.sky.vo.user.order.UserOrderHistoryItemVO;
 
+import javax.validation.constraints.Positive;
+
 public interface OrderService {
     /**
      * 用户端-用户下单、创建订单、返回订单必要数据
@@ -61,10 +63,11 @@ public interface OrderService {
     /**
      * 用户端-取消订单
      *
-     * @param userId 用户 id
-     * @param orderCancelDTO 用户取消订单的相关信息
+     * @param userId 用户 id, 用于确定数据属于该用户
+     * @param id     订单 id
+     * @param orderCancelDTO 订单取消信息
      */
-    void cancelWithUserId( Long userId, OrderCancelDTO orderCancelDTO );
+    void cancelByIdAndUserId( Long id, Long userId, OrderCancelDTO orderCancelDTO );
 
     /**
      * 用户端-再来一单
