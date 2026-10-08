@@ -3,7 +3,6 @@ package com.sky.controller.user;
 import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.DishService;
-import com.sky.vo.DishVO;
 import com.sky.vo.user.dish.UserDishListItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -51,7 +49,7 @@ public class DishController {
      * 根据分类 id 查询菜品( <b>只查询起售状态, 包含菜品口味</b> )
      */
     @ApiOperation( value = "根据分类 id 查询菜品" )
-    @GetMapping( "/list" )
+    @GetMapping
     public Result< List< UserDishListItemVO > > list(
             @RequestParam( name = "categoryId", required = true ) // 用户端要求必须分类
             @Positive( message = "菜品分类 id 必须是正整数" )

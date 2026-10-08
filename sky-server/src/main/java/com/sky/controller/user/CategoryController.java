@@ -47,7 +47,7 @@ public class CategoryController {
      * 查询所有分类(菜品/套餐分类), <b>只展示启用状态的分类</b>
      */
     @ApiOperation( value = "查询所有启用的商品分类(菜品/套餐分类)" )
-    @GetMapping( "/list" )
+    @GetMapping
     public Result< List< UserCategoryListItemVO > > list(
             @RequestParam( name = "type", required = false )
             Integer type

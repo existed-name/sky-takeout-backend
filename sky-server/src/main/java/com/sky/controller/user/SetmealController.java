@@ -51,7 +51,7 @@ public class SetmealController {
      * 根据套餐分类 id 查询起售的套餐
      */
     @ApiOperation( value = "根据套餐分类 id 查询起售的套餐" )
-    @GetMapping( "/list" )
+    @GetMapping
     public Result< List< UserSetmealListItemVO > > list(
             @RequestParam( name = "categoryId", required = true )
             @Positive( message = "套餐分类 id 必须是正整数" )
