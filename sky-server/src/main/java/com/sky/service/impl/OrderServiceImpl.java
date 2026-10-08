@@ -581,8 +581,14 @@ public class OrderServiceImpl implements OrderService {
         PageUtil.validateParamsAndStartPage( orderPageQueryDTO.getPage(), orderPageQueryDTO.getPageSize() );
         // 自动分页, List 实际会被 PageHelper 转成 Page, 并且查出来的 List 不可能为 null
         Page< Orders > ordersPage = ( Page< Orders > ) orderMapper.selectByQuery( orderPageQueryDTO );
+
         // 注意: 第 1 次查询的 Page 带有 total 字段, 留到最后用来包装 PageResult
         List< OrderPageQueryItemVO > orderPageItemVOs = orderConverter.toPageVOList( ordersPage.getResult() );
+
+        // 订单本体为空则直接结束, 同时避免查订单明细时传入空的订单 id 列表
+        if ( ListUtils.isEmpty( orderPageItemVOs ) ){
+            return PageUtil.buildPageResult( ordersPage.getTotal(), orderPageItemVOs );
+        }
 
         // 对于未完成的订单需要展示菜品数据
         if ( ! OrderStatus.isEnd( orderStatus ) ){

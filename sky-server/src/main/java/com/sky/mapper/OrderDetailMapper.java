@@ -23,7 +23,7 @@ public interface OrderDetailMapper {
     /**
      * 查询多个订单的关联数据
      *
-     * @param orderIds 订单 id 列表
+     * @param orderIds 订单 id 列表, <b>传入列表前请判断 null、空列表</b>
      * @return <b>字段完整的</b>订单明细列表, 由调用方根据订单 id 进行分组
      */
     List< OrderDetail > selectByOrderIds( @Param( "orderIds" ) List< Long > orderIds );

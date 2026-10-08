@@ -295,6 +295,7 @@ public class GlobalExceptionHandler {
 //        String sql = e.getSql(); mybatis 会返回空字符串
         String message = e.getMessage();
         log.error( "SQL 语法错误, 异常信息 = {}", message );
+//        log.error( "SQL 语法错误", e ); 由于这类异常的有用信息集中在 message 里面, 所以就不打印完整异常了
         return Result.error( MessageConstant.DATABASE_UNKNOWN_ERROR );
     }
 
