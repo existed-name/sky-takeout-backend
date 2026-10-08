@@ -806,6 +806,8 @@ public class OrderServiceImpl implements OrderService {
         if ( OrderStatus.CONFIRMED.getValue() == orderStatus ){
             deliver( id );
             orderMapper.updateStatusById( id, OrderStatus.DELIVERY_IN_PROGRESS.getValue() );
+            // 确认派送该订单即可结束, 剩下的订单状态不支持派送, 由后面抛出业务异常
+            return;
         }
 
         throw new OrderDeliverFailedException(
@@ -830,6 +832,8 @@ public class OrderServiceImpl implements OrderService {
         if ( OrderStatus.DELIVERY_IN_PROGRESS.getValue() == orderStatus ){
             complete( id );
             orderMapper.updateStatusById( id, OrderStatus.COMPLETED.getValue() );
+            // 确认完成该订单即可结束, 剩下的订单状态不支持完成, 由后面抛出业务异常
+            return;
         }
 
         throw new OrderCompleteFailedException(
