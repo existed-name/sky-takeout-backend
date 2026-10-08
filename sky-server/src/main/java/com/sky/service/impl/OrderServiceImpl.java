@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
-import com.sky.constant.StatusConstant;
 import com.sky.convertor.OrderConverter;
 import com.sky.convertor.ShoppingCartConverter;
 import com.sky.dto.order.AdminOrderCancelDTO;
@@ -21,6 +20,7 @@ import com.sky.entity.Orders;
 import com.sky.entity.Setmeal;
 import com.sky.entity.ShoppingCart;
 import com.sky.enumeration.DeliveryStatus;
+import com.sky.enumeration.EnableStatus;
 import com.sky.enumeration.OrderPayStatus;
 import com.sky.enumeration.OrderStatus;
 import com.sky.enumeration.PaymentMethod;
@@ -492,7 +492,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
         // 突然发现: 判断存在性、直接 count 看目标字段数量就行了、不需要查出来 + 遍历判断
         if ( dishMapper.countByIdsAndStatus(
-                dishIdList, StatusConstant.DISABLE ) > 0L ){
+                dishIdList, EnableStatus.DISABLED.getStatus() ) > 0L ){
             throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_OUT_OF_SALE );
         }
         // TODO: 注意 id IN( .. ) 是集合，会去重，idList 也需要去重, 防止统计对不上
@@ -506,7 +506,7 @@ public class OrderServiceImpl implements OrderService {
                 .distinct()
                 .toList();
         if ( setmealMapper.countByIdsAndStatus(
-                setmealIdList, StatusConstant.DISABLE ) > 0L ){
+                setmealIdList, EnableStatus.DISABLED.getStatus() ) > 0L ){
             throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_OUT_OF_SALE );
         }
         if ( ( long ) setmealIdList.size() > setmealMapper.countByIds( setmealIdList ) ){
@@ -837,7 +837,12 @@ public class OrderServiceImpl implements OrderService {
 
         if ( OrderStatus.DELIVERY_IN_PROGRESS.getValue() == orderStatus ){
             complete( id );
-            orderMapper.updateStatusById( id, OrderStatus.COMPLETED.getValue() );
+            Orders build = Orders.builder()
+                    .id( id )
+                    .status( OrderStatus.COMPLETED.getValue() )
+                    .deliveryTime( LocalDateTime.now() )
+                    .build();
+            orderMapper.updateById( build );
             // 确认完成该订单即可结束, 剩下的订单状态不支持完成, 由后面抛出业务异常
             return;
         }
@@ -1044,7 +1049,7 @@ public class OrderServiceImpl implements OrderService {
      * @param id 订单 id
      */
     private void complete( Long id ){
-        log.info( "确认完成派送中的订单, 订单 id = {}", id );
+        log.info( "管理员确认完成派送中的订单, 订单 id = {}", id );
     }
 
     /**
