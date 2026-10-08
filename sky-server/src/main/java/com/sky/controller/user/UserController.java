@@ -1,5 +1,6 @@
 package com.sky.controller.user;
 
+import com.sky.constant.InterceptorConstant;
 import com.sky.dto.user.user.UserLoginDTO;
 import com.sky.result.Result;
 import com.sky.service.UserService;
@@ -16,7 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * 用户模块接口
+ * 用户模块接口,
+ * <p>
+ *     TODO: 注意修改{@code /user/users/login}请求路径需要同步{@link InterceptorConstant.User#REGISTRY_EXCLUDE_PATHS}
+ * </p>
  *
  * @CreateTime 2026/6/4 14:14
  */
