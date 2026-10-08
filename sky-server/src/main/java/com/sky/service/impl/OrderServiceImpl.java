@@ -137,6 +137,7 @@ public class OrderServiceImpl implements OrderService {
             同时根据地址信息判断是否超过派送距离
             再组装订单关联的商品信息
          */
+        NotFoundUtil.throwIfCountZero( userMapper.countById( userId ), MessageConstant.USER_NOT_FOUND );
         PaymentMethod.throwIfInvalid( ordersSubmitDTO.getPayMethod() );
         DeliveryStatus.throwIfInvalid( ordersSubmitDTO.getDeliveryStatus() );
         TablewareStatus.throwIfInvalid( ordersSubmitDTO.getTablewareStatus() );
@@ -173,9 +174,14 @@ public class OrderServiceImpl implements OrderService {
             所以选择查询投影对象, 对投影对象进行判空
          */
         UserOrderInfoProjection user = userMapper.selectOrderInfoProjectionById( userId );
-        NotFoundUtil.throwIfNotFound( user, MessageConstant.USER_NOT_FOUND );
         entity.setUserId( userId );
-        entity.setUserName( user.getName() );
+        /*
+            备注: 用户信息投影对象只包含了 1 个字段, 并且只查 1 个字段,
+            如果该字段为空, mybatis 就会认为所有列为空, 默认返回空对象、不创建新对象
+            所以这里需要进行判空
+         */
+        String userName = user == null ? null : user.getName();
+        entity.setUserName( userName );
 
         /*
             设置地址簿信息
