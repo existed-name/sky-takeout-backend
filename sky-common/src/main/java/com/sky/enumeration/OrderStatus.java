@@ -83,9 +83,12 @@ public enum OrderStatus {
      * 该订单是否结束: {@link #COMPLETED}, {@link #CANCELLED}
      *
      * @param statusValue 订单状态数值
-     * @return true 该订单已结束, false 该订单未结束
+     * @return true 该订单已结束, false 该订单未结束, <b>订单状态为空时直接返回 false</b>
      */
     public static boolean isEnd( Integer statusValue ){
+        if ( statusValue == null ){
+            return false;
+        }
         return COMPLETED.value == statusValue || CANCELLED.value == statusValue;
     }
 
@@ -115,9 +118,12 @@ public enum OrderStatus {
      * </p>
      *
      * @param statusValue 订单状态数值
-     * @return true 该订单可以取消, false 该订单不可取消
+     * @return true 该订单可以取消, false 该订单不可取消, <b>订单状态为空时直接返回 false</b>
      */
     public static boolean canAdminCancel( Integer statusValue ){
+        if ( statusValue == null ){
+            return false;
+        }
         return CONFIRMED.getValue() == statusValue || DELIVERY_IN_PROGRESS.getValue() == statusValue;
     }
 
@@ -128,9 +134,12 @@ public enum OrderStatus {
      * </p>
      *
      * @param statusValue 订单状态数值
-     * @return true 该订单可以取消, false 该订单不可取消
+     * @return true 该订单可以取消, false 该订单不可取消, <b>订单状态为空时直接返回 false</b>
      */
     public static boolean canUserCancel( Integer statusValue ){
+        if ( statusValue == null ){
+            return false;
+        }
         return PENDING_PAYMENT.getValue() == statusValue || TO_BE_CONFIRMED.getValue() == statusValue;
     }
 
