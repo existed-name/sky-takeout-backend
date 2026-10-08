@@ -607,11 +607,13 @@ public class OrderServiceImpl implements OrderService {
                     .collect( Collectors.groupingBy( OrderDetail::getOrderId ) );
             // TODO: 这里暂时嵌套 for, 之后可以优化在 for 外面拼接每个 order 的 orderDishes
             for ( OrderPageQueryItemVO pageQueryVO : orderPageItemVOs ){
-                pageQueryVO.setOrderDishes(
-                        concatOrderDishes(
-                                orderIdToDetailsMap.get( pageQueryVO.getId() )
-                        )
-                );
+                Long orderId = pageQueryVO.getId();
+                List< OrderDetail > orderDetails = orderIdToDetailsMap.get( orderId );
+                if ( orderDetails == null ){
+                    log.error( "id = {} 的订单对应的订单明细为空, 可能是之前下了空订单，或者 orderDetail 的逻辑外键设置错误", orderId );
+                    continue;
+                }
+                pageQueryVO.setOrderDishes( concatOrderDishes( orderDetails ) );
             }
         }
 
@@ -974,9 +976,14 @@ public class OrderServiceImpl implements OrderService {
      * 拼接该订单的菜品、套餐信息为 1 个字符串
      *
      * @param orderDetails 某个订单的详情数据列表, 由调用方保证非 null
-     * @return 商品数量字符串, 模板为{@code dishName * number; setmealName * number...}
+     * @return 商品数量字符串, 模板为{@code dishName * number; setmealName * number...}<br>
+     *          <b>订单明细列表为 null 时返回空字符串并记录日志</b>
      */
     private String concatOrderDishes( List< OrderDetail > orderDetails ){
+        if ( orderDetails == null ){
+            log.error( "管理端条件分页查询订单, 在拼接订单明细字符串时, 传入了空的订单明细列表" );
+            return "";
+        }
         return orderDetails.stream()
                 .map( orderDetail -> String.format(
                         "%s * %d; ", orderDetail.getName(), orderDetail.getNumber()
