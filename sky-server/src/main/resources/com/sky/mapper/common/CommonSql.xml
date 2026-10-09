@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.mapper.common.CommonSql">
+
+    <!--
+    对 id IN( .. ) 进行集合判空
+    null、空集合直接返回 false
+    集合包含元素则正常拼接到 WHERE 后作为筛选条件
+    TODO 注意: 集合的名称必须是 ids, 后续可由调用方设置字段名;
+    TODO 并且修改该 sql id 需要同步修改调用方引用的 sql id
+    调用操作: WHERE <include refid="com.sky.mapper.common.CommonSql.whereIdIn"/>
+    -->
+    <sql id="safeWhereIdIn">
+        <!--
+        ids.isEmpty() 或者 size() 会报错无法访问该方法
+        nested exception is org.apache.ibatis.exceptions.PersistenceException:
+        ### Error querying database.  Cause: java.lang.reflect.InaccessibleObjectException: Unable to make public int java.util.ImmutableCollections$ListN.size() accessible: module java.base does not "opens java.util" to unnamed module @7113b13f
+        原因是 mybatis 通过反射访问集合的内部类, 但是被 Java9+ 禁止
+        可以通过升级 mybatis 版本解决、传入 ArrayList、或者去掉括号访问 size
+        -->
+        <if test="ids != null and ids.size > 0">
+            id IN
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <!--
+        mysql 支持返回 false 但是其他数据库可能没有布尔变量
+        所以这里写了 1 个恒为 false 的表达式
+        -->
+        <if test="ids == null or ids.size == 0">
+            1 = 2
+        </if>
+    </sql>
+
+
+
+</mapper>

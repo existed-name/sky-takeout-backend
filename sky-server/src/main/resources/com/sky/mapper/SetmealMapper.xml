@@ -102,10 +102,7 @@
     -->
     <delete id="deleteByIds">
         DELETE FROM setmeal
-        WHERE id IN
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        WHERE <include refid="com.sky.mapper.common.CommonSql.whereIdIn"/>
     </delete>
 
     <!--
@@ -114,10 +111,7 @@
     <select id="selectByIds" resultType="com.sky.entity.Setmeal">
         SELECT id, category_id, name, price, status, description, image, create_time, update_time, create_user, update_user
         FROM setmeal
-        WHERE id IN
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        WHERE <include refid="com.sky.mapper.common.CommonSql.whereIdIn"/>
     </select>
 
     <!--
@@ -211,10 +205,8 @@
         SELECT count( * )
         FROM setmeal
         WHERE status = #{status}
-            AND id IN
-                <foreach collection="ids" item="id" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
+            AND
+        <include refid="com.sky.mapper.common.CommonSql.whereIdIn"/>
     </select>
 
     <!--
@@ -223,10 +215,7 @@
     <select id="countByIds" resultType="java.lang.Long">
         SELECT count( * )
         FROM setmeal
-        WHERE id IN
-            <foreach collection="ids" item="id" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
+        WHERE <include refid="com.sky.mapper.common.CommonSql.whereIdIn"/>
     </select>
 
     <!--
@@ -235,10 +224,7 @@
     <select id="selectCategoryIdsByIds" resultType="java.lang.Long">
         SELECT category_id
         FROM setmeal
-        WHERE id IN
-            <foreach collection="ids" item="id" open="(" separator="," close=")">
-                id
-            </foreach>
+        WHERE <include refid="com.sky.mapper.common.CommonSql.whereIdIn"/>
     </select>
 
     <!--

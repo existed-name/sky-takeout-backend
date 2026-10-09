@@ -209,7 +209,7 @@ public interface SetmealMapper {
      * @param status 售卖状态, {@link com.sky.enumeration.GoodsStatus}
      * @return 指定售卖状态的套餐数量, <b>> 0 说明有, 否则无</b>
      */
-    long countByIdsAndStatus( @Param( "ids" ) List< Long> setmealIds, @Param( "status" ) Integer status );
+    long countByIdsAndStatus( @Param( "ids" ) List< Long > setmealIds, @Param( "status" ) Integer status );
 
     /**
      * 统计一批 id 对应存在的数据条数, 用于和 idList 长度比较判断<b>是否有数据被删除或不存在</b>

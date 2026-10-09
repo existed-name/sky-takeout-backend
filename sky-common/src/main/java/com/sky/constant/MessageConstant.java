@@ -70,7 +70,7 @@ public class MessageConstant {
     public static final String ORDER_COMPLETED_NOT_CANCELABLE = "已完成的订单不能取消";
     public static final String ORDER_CANCEL_FAILED_PLEASE_CONTACT_MERCHANT = "订单无法取消, 请联系商家取消订单";
     public static final String ORDER_DETAIL_NOT_FOUND = "订单关联商品数据不存在";
-    public static final String INCOMPLETE_ORDER_DETAIL = "订单关联商品数据不完整, 缺少菜品/套餐信息";
+    public static final String ORDER_DETAIL_INCOMPLETE = "订单关联商品数据不完整, 缺少菜品和套餐信息";
     public static final String REORDER_FAILED_BECAUSE_DISH_OUT_OF_SALE = "该订单的部分菜品已停售, 不能重新下单";
     public static final String REORDER_FAILED_BECAUSE_SETMEAL_OUT_OF_SALE = "该订单的部分套餐已停售, 不能重新下单";
     public static final String REORDER_FAILED_BECAUSE_DISH_REMOVED = "该订单的部分菜品已下架, 不能重新下单";

@@ -440,64 +440,67 @@ public class OrderServiceImpl implements OrderService {
     @Transactional( rollbackFor = Exception.class )
     @Override
     public void reorderByIdAndUserId( Long id, Long userId ){
-        // 先排除订单不存在、数据不匹配的情况
+        /*
+            补充思路整理
+            我的设计: 再来一单, 只需要复制购物车数据 → 交给银行选择地址 → 备注、餐具、派送时间 → 支付
+              - TODO: 业务需要的话把上一订单所有内容( 地址、备注、餐具等等 )都复制过来
+            所以查到上一单的订单明细、转成购物车数据、更新购物车审计字段、插入数据库
+            途中进行各种业务检验
+              - 订单存在性、归属性
+              - 订单明细存在性
+              - 停售的菜品、套餐肯定不能再买
+              - 考虑过套餐起售、但套餐包含的菜品停售的情况,
+                然后反应过来如果停售菜品、肯定会检查是否影响关联的套餐,
+                所以不存在套餐起售、但套餐包含的菜品停售的情况
+              - 被删除的商品不能再卖
+         */
+
         if ( orderMapper.countByIdAndUserId( id, userId ) == 0L ){
             throwIfNotExistsOrNotMatches( id );
         }
 
-        /*
-            * 创建订单，拿到订单 id 作为 orderDetail 逻辑外键
-            * 其实我想直接调 service 的 createWithUserId
-            * 不过创建订单用完整 builder 可以清晰晓得需要哪些字段
-              - 然而直到这里我才发觉，`再来一单`只有 id, userId, 没有用户自己填写的字段
-              - 于是推测教程是把旧订单完全复制到新订单、修改部分字段
-              - 如果我来设计: 再来一单 → 选择地址 → 备注、餐具、派送时间 → 支付
-              - 那不就是 再来一单 → 新建订单 + 用复制的购物车数据?
-            * TODO: 那我再整理思路: 找旧的订单明细 → 复制到新的购物车数据 → 交给前端调用 createWithUserId + 加载购物车
-            * TODO: 改前端/根据需求修改逻辑
-         */
         List< OrderDetail > oldOrderDetailList = orderDetailMapper.selectByOrderId( id );
-        if ( oldOrderDetailList == null || oldOrderDetailList.isEmpty() ){
-            log.error( "orderId = {} 的订单的关联菜品/套餐数据不存在, 可能是误删或创建订单时没有设置逻辑外键", id );
+        if ( ListUtils.isEmpty( oldOrderDetailList ) ){
+            log.error( "userId = {}, orderId = {} 的订单的明细数据不存在, 可能是误删或创建订单时没有设置逻辑外键", userId, id );
             throw new ReorderFailedException( MessageConstant.ORDER_DETAIL_NOT_FOUND );
         }
 
         /*
+            保守检查订单明细是否缺失逻辑外键, TODO: 假如确定不可能有这种情况, 可以省略该步检查
             orderDetail => dishId + dishFlavor + setmealId
                 - 哪个 id 存在就说明买的哪种商品
                 - dish 由 dishId, dishFlavor 定位
-                - 防御逻辑外键都不存在的情况, TODO: 假如确定不可能有这种情况, 可以省略该步检查
          */
         for ( OrderDetail orderDetail : oldOrderDetailList ){
             if ( ! orderDetail.isDish() && ! orderDetail.isSetmeal() ){
-                log.error( "id = {}, orderId = {} 的 orderDetail 没有包含 dishId, setmealId, 可能是字段映射失败"
-                        , orderDetail.getId(), id );
-                throw new OrderDetailIncompleteException( MessageConstant.INCOMPLETE_ORDER_DETAIL );
+                log.error( "id = {}, orderId = {} 的 orderDetail 没有包含 dishId, setmealId, 可能是字段映射失败", orderDetail.getId(), id );
+                throw new OrderDetailIncompleteException( MessageConstant.ORDER_DETAIL_INCOMPLETE );
             }
         }
 
         /*
-            * 注意需要检查起售状态，停售菜品/套餐不能卖
+            * 检查起售状态，停售菜品/套餐不能卖
             * 思路: 批量查询
               - 先整合该单所有 dishId, setmealId
-              - 然后查出所有关联的 dish, setmeal
-              - 检查 status
-              - 都起售，那就可以复制 orderDetail 到新订单, 但是 amount 要改为查出来的菜品/套餐实时价格(现价)
+              - 检查对应的 status
+              - 有停售的商品就不能再来一单
+              - TODO: 根据需求修改为起售的可以复制、停售的跳过复制
             * 另外还有被删除(下架)的情况
+              - 可以比较 mapper 计数、链表长度
          */
         List< Long > dishIdList = oldOrderDetailList.stream()
                 .filter( OrderDetail::isDish )
                 .map( OrderDetail::getDishId )
-                .distinct() // 注意去重
+                .distinct() // 由于可能有同一个菜品( 不同口味 )所以需要去重
                 .toList();
-        // 突然发现: 判断存在性、直接 count 看目标字段数量就行了、不需要查出来 + 遍历判断
-        if ( dishMapper.countByIdsAndStatus(
-                dishIdList, EnableStatus.DISABLED.getStatus() ) > 0L ){
-            throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_OUT_OF_SALE );
-        }
-        // TODO: 注意 id IN( .. ) 是集合，会去重，idList 也需要去重, 防止统计对不上
-        if ( ( long ) dishIdList.size() > dishMapper.countByIds( dishIdList ) ){
-            throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_REMOVED );
+        if ( ! ListUtils.isEmpty( dishIdList ) ){
+            if ( dishMapper.countByIdsAndStatus( dishIdList, EnableStatus.DISABLED.getStatus() ) > 0L ){
+                throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_OUT_OF_SALE );
+            }
+            // 链表去除空元素、重复元素后, 正常情况下长度 = mapper 计数, mapper 计数更少说明数据库删了东西
+            if ( ( long ) dishIdList.size() > dishMapper.countByIds( dishIdList ) ){
+                throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_DISH_REMOVED );
+            }
         }
 
         List< Long > setmealIdList = oldOrderDetailList.stream()
@@ -505,12 +508,13 @@ public class OrderServiceImpl implements OrderService {
                 .map( OrderDetail::getSetmealId )
                 .distinct()
                 .toList();
-        if ( setmealMapper.countByIdsAndStatus(
-                setmealIdList, EnableStatus.DISABLED.getStatus() ) > 0L ){
-            throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_OUT_OF_SALE );
-        }
-        if ( ( long ) setmealIdList.size() > setmealMapper.countByIds( setmealIdList ) ){
-            throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_REMOVED );
+        if ( ! ListUtils.isEmpty( setmealIdList ) ){
+            if ( setmealMapper.countByIdsAndStatus( setmealIdList, EnableStatus.DISABLED.getStatus() ) > 0L ){
+                throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_OUT_OF_SALE );
+            }
+            if ( ( long ) setmealIdList.size() > setmealMapper.countByIds( setmealIdList ) ){
+                throw new ReorderFailedException( MessageConstant.REORDER_FAILED_BECAUSE_SETMEAL_REMOVED );
+            }
         }
 
         /*
@@ -533,7 +537,8 @@ public class OrderServiceImpl implements OrderService {
 
         List< Dish > dishList = dishMapper.selectPartsByIds( dishIdList );
         Map< Long, Dish > idToDishMap = dishList.stream()
-                .collect( Collectors.toMap(
+                .collect(
+                        Collectors.toMap(
                                 Dish::getId, // 指定 key
                                 dish -> dish // 指定 value
                 )

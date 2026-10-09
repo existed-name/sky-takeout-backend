@@ -19,8 +19,9 @@ spring:
     database: ${sky.redis.database}
 
 mybatis:
-  #mapper配置文件
-  mapper-locations: classpath:mapper/*.xml
+  # 递归扫描编译后的 mapper 目录及其所有子文件夹
+  # sky-server/target/classes/com/sky/mapper
+  mapper-locations: classpath*:com/sky/mapper/**/*.xml
   type-aliases-package: com.sky.entity
   configuration:
     #开启驼峰命名
