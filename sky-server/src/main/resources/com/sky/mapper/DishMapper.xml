@@ -52,11 +52,8 @@
         SELECT count( * )
         FROM dish
         <where>
-            status = #{status}
-            AND id IN
-            <foreach collection="ids" item="id" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
+            AND status = #{status}
+            AND <include refid="com.sky.mapper.common.CommonSql.safeWhereIdIn"/>
         </where>
     </select>
 
@@ -66,10 +63,7 @@
     <delete id="deleteBatch">
         DELETE FROM dish
         <where>
-            id IN
-            <foreach collection="ids" item="id" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
+            <include refid="com.sky.mapper.common.CommonSql.safeWhereIdIn"/>
         </where>
     </delete>
 
@@ -168,10 +162,7 @@
     <select id="selectCategoryIdsByIds" resultType="java.lang.Long">
         SELECT category_id
         FROM dish
-        WHERE id IN
-        <foreach collection="ids" item="id" separator="," open="(" close=")">
-            id
-        </foreach>
+        WHERE <include refid="com.sky.mapper.common.CommonSql.safeWhereIdIn"/>
     </select>
 
     <!--
@@ -180,10 +171,7 @@
     <select id="selectPartsByIds" resultType="com.sky.entity.Dish">
         SELECT id, name, category_id, price, image, description, status
         FROM dish
-        WHERE id IN
-            <foreach collection="ids" item="id" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
+        WHERE <include refid="com.sky.mapper.common.CommonSql.safeWhereIdIn"/>
     </select>
 
     <!--
@@ -192,10 +180,7 @@
     <select id="countByIds" resultType="java.lang.Long">
         SELECT count( * )
         FROM dish
-        WHERE id IN
-            <foreach collection="ids" item="id" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
+        WHERE <include refid="com.sky.mapper.common.CommonSql.safeWhereIdIn"/>
     </select>
 
     <!--
