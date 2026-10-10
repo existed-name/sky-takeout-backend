@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
  *
  * @CreateTime 2026/10/6 13:19
  */
-@ApiModel( description = "地址簿列表展示数据项" )
+@ApiModel( description = "默认地址展示对象" )
 @Data
 @Builder
 @NoArgsConstructor
@@ -67,8 +67,8 @@ public class AddressBookDefaultVO {
     @ApiModelProperty( value = "详细地址（街道、门牌号等）", example = "XX街道XX号" )
     private String detail;
 
-    /** 标签（如：家、公司、学校） */
-    @ApiModelProperty( value = "标签", example = "家" )
+    /** 标签（1 公司 2 家 3 学校） */
+    @ApiModelProperty( value = "标签", example = "1" )
     private String label;
 
     /** 是否默认地址：0 否  1 是 */
