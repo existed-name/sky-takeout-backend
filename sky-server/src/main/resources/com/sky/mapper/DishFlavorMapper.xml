@@ -22,10 +22,10 @@
         SELECT id, dish_id, name, value
         FROM dish_flavor
         <where>
-            dish_id IN
-            <foreach collection="dishIdList" open="(" item="dishId" close=")" separator=",">
-                #{dishId}
-            </foreach>
+            <include refid="com.sky.mapper.common.CommonSql.safeWhereColumnIn">
+                <property name="column" value="dish_id"/>
+                <property name="list" value="dishIdList"/>
+            </include>
         </where>
     </select>
 
@@ -35,10 +35,10 @@
     <delete id="deleteBatchByDishIds">
         DELETE FROM dish_flavor
         <where>
-            dish_id IN
-            <foreach collection="dishIds" item="dishId" open="(" close=")" separator=",">
-                #{dishId}
-            </foreach>
+            <include refid="com.sky.mapper.common.CommonSql.safeWhereColumnIn">
+                <property name="column" value="dish_id"/>
+                <property name="list" value="dishIds"/>
+            </include>
         </where>
     </delete>
 

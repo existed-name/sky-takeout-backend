@@ -5,11 +5,14 @@
 <mapper namespace="com.sky.mapper.common.CommonSql">
 
     <!--
-    对 id IN( .. ) 进行集合判空
-    null、空集合直接返回 false
-    集合包含元素则正常拼接到 WHERE 后作为筛选条件
-    TODO 注意: 集合的名称必须是 ids, 后续可由调用方设置字段名;
-    TODO 并且修改该 sql id 需要同步修改调用方引用的 sql id
+    id 筛选器: 对 id IN( .. ) 进行集合判空
+
+    @return null、空集合直接返回 false
+            集合包含元素则正常拼接到 WHERE 后作为筛选条件
+
+    注意: 集合的名称必须是 ids;
+    TODO 修改该 sql id 需要同步修改调用方引用的 sql id
+
     调用操作: WHERE <include refid="com.sky.mapper.common.CommonSql.whereIdIn"/>
     -->
     <sql id="safeWhereIdIn">
@@ -32,6 +35,33 @@
                 mysql 支持返回 false 但是其他数据库可能没有布尔变量
                 所以这里写了 1 个恒为 false 的表达式
                 -->
+                1 = 2
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!--
+    通用的字段集合筛选器
+    适用于 WHERE id/xxx_id/yyy IN( ... ) 对链表判空的场景
+
+    @param column 字段名, 作为表格筛选条件
+    @param list 包含该字段的链表, 通常由 Mapper 接口方法指定命名, TODO 暂不支持传入实体对象列表
+
+    调用示例
+    <include refid="com.sky.mapper.common.CommonSql.safeWhereColumnIn">
+        <property name="column" value="xxx_id"/>
+        <property name="list" value="xxxIds"/>
+    </include>
+    -->
+    <sql id="safeWhereColumnIn">
+        <choose>
+            <when test="${list} != null and ${list}.size > 0">
+                ${column} IN
+                <foreach collection="${list}" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </when>
+            <otherwise>
                 1 = 2
             </otherwise>
         </choose>

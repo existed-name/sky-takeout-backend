@@ -29,10 +29,12 @@
     <select id="selectByOrderIds" resultType="com.sky.entity.OrderDetail">
         SELECT <include refid="BaseColumns"/>
         FROM order_detail
-        WHERE order_id IN
-                <foreach collection="orderIds" item="orderId" open="(" close=")" separator=",">
-                    #{orderId}
-                </foreach>
+        <where>
+            <include refid="com.sky.mapper.common.CommonSql.safeWhereColumnIn">
+                <property name="column" value="order_id"/>
+                <property name="list" value="orderIds"/>
+            </include>
+        </where>
     </select>
 
     <!--

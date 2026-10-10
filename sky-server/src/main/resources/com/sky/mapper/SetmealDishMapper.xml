@@ -30,10 +30,12 @@
     <select id="selectBySetmealIds" resultType="com.sky.entity.SetmealDish">
         SELECT id, setmeal_id, dish_id, name, price, copies
         FROM setmeal_dish
-        WHERE setmeal_id IN
-            <foreach collection="setmealIds" item="setmealId" open="(" close=")" separator=",">
-                #{setmealId}
-            </foreach>
+        <where>
+            <include refid="com.sky.mapper.common.CommonSql.safeWhereColumnIn">
+                <property name="column" value="setmeal_id"/>
+                <property name="list" value="setmealIds"/>
+            </include>
+        </where>
     </select>
 
     <!--
@@ -82,10 +84,12 @@
     -->
     <delete id="deleteBySetmealIds">
         DELETE FROM setmeal_dish
-        WHERE setmeal_id IN
-        <foreach collection="setmealIds" item="setmealId" open="(" close=")" separator=",">
-            #{setmealId}
-        </foreach>
+        <where>
+            <include refid="com.sky.mapper.common.CommonSql.safeWhereColumnIn">
+                <property name="column" value="setmeal_id"/>
+                <property name="list" value="setmealIds"/>
+            </include>
+        </where>
     </delete>
 
     <!--

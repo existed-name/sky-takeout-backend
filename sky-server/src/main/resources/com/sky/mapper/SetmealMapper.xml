@@ -22,10 +22,10 @@
         SELECT count( * )
         FROM setmeal_dish
         <where>
-            dish_id IN
-            <foreach collection="dishIds" item="dishId" open="(" close=")" separator=",">
-                #{dishId}
-            </foreach>
+            <include refid="com.sky.mapper.common.CommonSql.safeWhereColumnIn">
+                <property name="column" value="dish_id"/>
+                <property name="list" value="dishIds"/>
+            </include>
         </where>
     </select>
 
