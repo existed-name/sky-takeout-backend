@@ -265,7 +265,7 @@ public class OrderServiceImplTest {
         // When + Then: 执行创建订单 → 抛 DistanceLimitExceededException
         assertThatThrownBy( () -> orderService.createWithUserId( USER_ID, dto ) )
                 .isInstanceOf( DistanceLimitExceededException.class )
-                .hasMessage( MessageConstant.formDistanceLimitExceededMessage( LIMIT_DISTANCE ) );
+                .hasMessage( MessageConstant.formDistanceLimitExceededMessage( SHOP_ADDRESS, LIMIT_DISTANCE.intValue() ) );
 
         // Verify: 确实调用了百度地图服务
         verify( baiduMapService ).listDistances( anyString(), anyString() );

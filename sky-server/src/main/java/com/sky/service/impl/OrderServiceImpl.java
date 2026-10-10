@@ -906,7 +906,12 @@ public class OrderServiceImpl implements OrderService {
                 .get();
 
         if ( Double.compare( minDistance, shopInfoProperties.getLimitDistance() ) > 0 ){
-            throw new DistanceLimitExceededException( MessageConstant.formDistanceLimitExceededMessage( shopInfoProperties.getLimitDistance() ) );
+            throw new DistanceLimitExceededException(
+                    MessageConstant.formDistanceLimitExceededMessage(
+                            shopAddress,
+                            shopInfoProperties.getLimitDistance().intValue()
+                    )
+            );
         }
         return userCompleteAddress;
     }

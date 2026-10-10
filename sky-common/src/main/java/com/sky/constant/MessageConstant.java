@@ -142,10 +142,11 @@ public class MessageConstant {
     /**
      * 用户收货地址距离商家门店太远时, 拼接异常信息
      *
+     * @param shopAddress 商家店铺完整地址
      * @param limitDistance 配送距离限制, 单位 m 米
-     * @return {@code 配送距离限制 xxx 米, 您的收货地址太远啦}
+     * @return {@code 您的收货地址太远啦, 超出了距离限制 %f 米~~~ 商家地址: %s}
      */
-    public static String formDistanceLimitExceededMessage( Double limitDistance ){
-        return String.format( "配送距离限制 %f 米, 您的收货地址太远啦~~~", limitDistance );
+    public static String formDistanceLimitExceededMessage( String shopAddress, int limitDistance ){
+        return String.format( "您的收货地址太远啦, 超出了距离限制 %d 米~~~ 商家地址: %s", limitDistance, shopAddress );
     }
 }
