@@ -71,7 +71,10 @@ public interface SetmealService {
     void updateStatusById( Long operatorId, Long id, Integer newStatus );
 
     /**
-     * <b>管理端</b>: 根据套餐分类 id 查询对应的套餐
+     * 管理端查询某个分类的套餐
+     *
+     * @param categoryId 分类 id
+     * @return 套餐完整实体列表, 包含关联菜品信息
      */
     List< SetmealVO > listByCategoryId( Long categoryId );
 

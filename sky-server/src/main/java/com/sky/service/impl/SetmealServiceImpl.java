@@ -347,7 +347,7 @@ public class SetmealServiceImpl implements SetmealService {
      */
     private List< SetmealVO> setRelationListToSetmealVOList( List< SetmealVO > setmealVOList ){
         // 由于之后要查关联关系, 所以先判空看需不需要后续查询
-        if ( setmealVOList == null || setmealVOList.isEmpty() ){
+        if ( ListUtils.isEmpty( setmealVOList ) ){
             return setmealVOList;
         }
 

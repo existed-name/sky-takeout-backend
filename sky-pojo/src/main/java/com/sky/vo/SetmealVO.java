@@ -17,6 +17,8 @@ import java.util.List;
 /**
  * 套餐视图对象
  * 用于套餐信息的查询回显
+ *
+ * @deprecated 新代码请使用特定场景下的 vo, 区分不同场景及其需要的字段
  */
 @Data
 @Builder

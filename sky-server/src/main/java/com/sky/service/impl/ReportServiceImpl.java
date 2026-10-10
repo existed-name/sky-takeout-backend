@@ -35,8 +35,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -78,7 +76,8 @@ public class ReportServiceImpl implements ReportService {
         // sql 筛选时排除 end 截止日期, 所以为了能够查到 end 这一天, 就把截止时间设为 end + 1
         LocalDate endDateExclusive = Time.getTomorrow( end );
         List< TurnoverReportItemVO > itemVOList = orderMapper.sumAmountByStatusAndGroupByDate(
-                OrderStatus.COMPLETED.getValue(), begin, endDateExclusive );
+                OrderStatus.COMPLETED.getValue(), begin, endDateExclusive
+        );
         TurnoverReportVO turnoverReportVO = TurnoverReportVO.builder()
                 .items( itemVOList )
                 .build();

@@ -168,6 +168,9 @@ public class SetmealController {
 
     /**
      * 根据套餐分类 id 查询对应的套餐
+     * <p>
+     *     好像前端没有用到这个端点, TODO 可以去掉
+     * </p>
      */
     public Result< List< SetmealVO > > list(
             @RequestParam( name = "categoryId", required = false )
