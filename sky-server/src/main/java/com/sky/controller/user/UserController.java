@@ -2,6 +2,7 @@ package com.sky.controller.user;
 
 import com.sky.constant.InterceptorConstant;
 import com.sky.dto.user.user.UserLoginDTO;
+import com.sky.dto.user.user.WebEndUserLoginDTO;
 import com.sky.result.Result;
 import com.sky.service.UserService;
 import com.sky.vo.UserLoginVO;
@@ -54,8 +55,25 @@ public class UserController {
     @ApiOperation( value = "微信用户登录" )
     @PostMapping( "/login" )
     public Result< UserLoginVO > wechatLogin( @Valid @RequestBody UserLoginDTO userLoginDTO ){
-        log.info( "用户登录，登录参数: {}", userLoginDTO );
+        log.info( "微信用户登录，登录参数: {}", userLoginDTO );
         UserLoginVO userLoginVO = userService.wechatLogin( userLoginDTO );
+        return Result.success( userLoginVO );
+    }
+
+    /**
+     * Web 用户端登录, 用于绕开微信 API 体验业务流程
+     * <p>
+     *     注意: <b>该端点仅用于本地端到端测试以及 Web 用户端登录使用, 真实场景请使用正规的{@link #wechatLogin}</b>
+     * </p>
+     * <p>
+     *     约定: Web 前端由用户输入用户名, 后端拼装格式为{@code tourist_{username}}的模拟 openid 返回前端
+     * </p>
+     */
+    @ApiOperation( "Web 用户端登录, 用于绕开微信 API 体验业务流程" )
+    @PostMapping( "/login/web" )
+    public Result< UserLoginVO > webLogin( @Valid @RequestBody WebEndUserLoginDTO userLoginDTO ){
+        log.info( "Web 用户端登录，登录参数: {}", userLoginDTO );
+        UserLoginVO userLoginVO = userService.webLogin( userLoginDTO );
         return Result.success( userLoginVO );
     }
 

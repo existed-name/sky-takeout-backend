@@ -1,8 +1,11 @@
 package com.sky.service;
 
 import com.sky.dto.user.user.UserLoginDTO;
+import com.sky.dto.user.user.WebEndUserLoginDTO;
 import com.sky.entity.User;
 import com.sky.vo.UserLoginVO;
+
+import javax.validation.Valid;
 
 public interface UserService {
 
@@ -23,4 +26,12 @@ public interface UserService {
      * @throws IllegalStateException 当 mybatis 回填的 id 为 null 时抛出
      */
     User registerWithOpenid( String openid );
+
+    /**
+     * Web 用户端登录, 用于绕开微信 API 体验业务流程
+     *
+     * @param userLoginDTO Web 用户端登录参数, 此处直接复用已有的 dto, TODO: 需要的话可以建专门的 DTO
+     * @return 登录凭证
+     */
+    UserLoginVO webLogin( WebEndUserLoginDTO userLoginDTO );
 }

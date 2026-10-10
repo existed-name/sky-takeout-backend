@@ -43,7 +43,7 @@ public class InterceptorConstant {
         };
         /** 注册管理端拦截器排除的 Controller 方法路径 */
         public static final String[] REGISTRY_EXCLUDE_PATHS = {
-                "/user/users/login", "/user/shop/status"
+                "/user/users/login", "/user/shop/status", "/user/users/login/web"
         };
 
         /**

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.dto.user.user.UserLoginDTO;
+import com.sky.dto.user.user.WebEndUserLoginDTO;
 import com.sky.enumeration.WeChatLoginAPI;
 import com.sky.enumeration.WeChatLoginParamName;
 import com.sky.enumeration.WeChatLoginStatus;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,6 +107,26 @@ public class UserServiceImpl implements UserService {
         AssertUtils.assertIdBackfilled( userId, message );
 
         return user;
+    }
+
+    @Transactional( rollbackFor = Exception.class )
+    @Override
+    public UserLoginVO webLogin( WebEndUserLoginDTO userLoginDTO ){
+        String username = userLoginDTO.getName();
+        String mockOpenid = String.format( "tourist_%s", username );
+
+        Long userId = userMapper.selectIdByOpenid( mockOpenid );
+        if ( userId == null ){
+            User user = registerWithOpenid( mockOpenid );
+            userId = user.getId();
+        }
+
+        String jwt = generateUserJwtToken( userId );
+        return UserLoginVO.builder()
+                .id( userId )
+                .openid( mockOpenid )
+                .token( jwt )
+                .build();
     }
 
 
