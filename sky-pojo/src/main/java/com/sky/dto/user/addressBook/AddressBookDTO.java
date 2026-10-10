@@ -56,13 +56,13 @@ public class AddressBookDTO implements Serializable {
 //    private Long id;
 
 //    /** 用户id */
-//    @ApiModelProperty( value = "用户id", example = "1", required = false )
+//    @ApiModelProperty( value = "用户id", example = "1", required = true )
 //    @NotNull( message = "用户 id 不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
 //    @Positive( message = "用户 id 必须是正整数", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
 //    private Long userId;
 
     /** 收货人姓名 */
-    @ApiModelProperty( value = "收货人姓名", example = "张三", required = false )
+    @ApiModelProperty( value = "收货人姓名", example = "张三", required = true )
     @NotBlank( message = "收货人姓名不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private String consignee;
 
@@ -92,7 +92,7 @@ public class AddressBookDTO implements Serializable {
     private String cityCode;
 
     /** 市级名称 */
-    @ApiModelProperty( value = "市级名称", example = "北京市", required = false )
+    @ApiModelProperty( value = "市级名称", example = "北京市", required = true )
     @NotBlank( message = "市级名称不能为空", groups = { ValidationGroups.Create.class, ValidationGroups.Update.class } )
     private String cityName;
 
