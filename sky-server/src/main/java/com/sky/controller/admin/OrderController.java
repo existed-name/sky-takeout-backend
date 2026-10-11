@@ -2,9 +2,9 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
-import com.sky.dto.order.AdminOrderCancelDTO;
-import com.sky.dto.order.AdminOrderPageQueryDTO;
-import com.sky.dto.order.OrdersRejectionDTO;
+import com.sky.dto.admin.order.AdminOrderCancelDTO;
+import com.sky.dto.admin.order.AdminOrderPageQueryDTO;
+import com.sky.dto.admin.order.OrderRejectionDTO;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
@@ -127,7 +127,7 @@ public class OrderController {
             @Positive( message = "订单 id 必须是正整数" )
             Long id,
             @RequestBody @Valid
-            OrdersRejectionDTO orderRejectionDTO
+            OrderRejectionDTO orderRejectionDTO
     ){
         Long adminId = BaseContext.getCurrentId();
         log.info( "id = {} 的管理员拒绝 id = {} 的订单, 拒单信息 = {}", adminId, id, orderRejectionDTO );

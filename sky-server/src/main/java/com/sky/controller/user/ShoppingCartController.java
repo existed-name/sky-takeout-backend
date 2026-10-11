@@ -1,7 +1,7 @@
 package com.sky.controller.user;
 
 import com.sky.context.BaseContext;
-import com.sky.dto.shoppingCart.ShoppingCartDTO;
+import com.sky.dto.user.shoppingCart.ShoppingCartDTO;
 import com.sky.result.Result;
 import com.sky.service.impl.ShoppingCartServiceImpl;
 import com.sky.vo.user.shoppingCart.ShoppingCartListVO;

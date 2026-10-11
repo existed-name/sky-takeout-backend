@@ -1,6 +1,6 @@
 package com.sky.dto.user.order;
 
-import com.sky.dto.PageQueryDTO;
+import com.sky.dto.common.PageQueryDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

@@ -329,7 +329,7 @@
     <!--
     计算时间范围内, 某种状态的订单占该时间段总订单的比率
     -->
-    <select id="calcRateByStatusAndGroupByDate" resultType="com.sky.dto.report.OrderCompletionRateItem">
+    <select id="calcRateByStatusAndGroupByDate" resultType="com.sky.dto.common.report.OrderCompletionRateItem">
         <!--
             * SQL 思路
             * 分别写出计算分子、分母的 SQL
@@ -362,7 +362,7 @@
     <!--
     计算指定时间范围内, 每天的平均客单价
     -->
-    <select id="calcUnitPriceByStatusAndGroupByDate" resultType="com.sky.dto.report.UnitPriceItem">
+    <select id="calcUnitPriceByStatusAndGroupByDate" resultType="com.sky.dto.common.report.UnitPriceItem">
         <!--
             * 拆分部分、再组合
             * 每天的营业额

@@ -1,6 +1,6 @@
 package com.sky.mapper;
 
-import com.sky.dto.shoppingCart.ShoppingCartQueryDTO;
+import com.sky.dto.user.shoppingCart.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
 import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
 import com.sky.vo.user.shoppingCart.ShoppingCartItemVO;

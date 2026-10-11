@@ -1,7 +1,7 @@
 package com.sky.service;
 
-import com.sky.dto.dish.DishDTO;
-import com.sky.dto.dish.DishPageQueryDTO;
+import com.sky.dto.admin.dish.DishDTO;
+import com.sky.dto.admin.dish.DishPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.admin.dish.DishInfoVO;
 import com.sky.vo.admin.dish.DishListItemVO;

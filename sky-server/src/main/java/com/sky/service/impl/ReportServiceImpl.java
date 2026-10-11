@@ -1,7 +1,7 @@
 package com.sky.service.impl;
 
-import com.sky.dto.report.OrderCompletionRateItem;
-import com.sky.dto.report.UnitPriceItem;
+import com.sky.dto.common.report.OrderCompletionRateItem;
+import com.sky.dto.common.report.UnitPriceItem;
 import com.sky.enumeration.BusinessTerminology;
 import com.sky.enumeration.Scale;
 import com.sky.enumeration.Time;

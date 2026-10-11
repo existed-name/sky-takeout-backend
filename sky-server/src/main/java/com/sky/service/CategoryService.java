@@ -1,7 +1,7 @@
 package com.sky.service;
 
-import com.sky.dto.category.CategoryDTO;
-import com.sky.dto.category.CategoryPageQueryDTO;
+import com.sky.dto.admin.category.CategoryDTO;
+import com.sky.dto.admin.category.CategoryPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.admin.category.CategoryListItemVO;
 import com.sky.vo.admin.category.CategoryPageQueryItemVO;

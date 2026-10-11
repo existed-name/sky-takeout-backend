@@ -2,10 +2,10 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
-import com.sky.dto.EmployeeDTO;
-import com.sky.dto.EmployeeLoginDTO;
-import com.sky.dto.employee.EmployeePageQueryDTO;
-import com.sky.dto.employee.EmployeeStatusDTO;
+import com.sky.dto.admin.employee.EmployeeDTO;
+import com.sky.dto.admin.employee.EmployeeLoginDTO;
+import com.sky.dto.admin.employee.EmployeePageQueryDTO;
+import com.sky.dto.admin.employee.EmployeeStatusDTO;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;

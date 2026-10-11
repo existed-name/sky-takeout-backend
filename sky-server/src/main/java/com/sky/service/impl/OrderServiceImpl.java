@@ -7,12 +7,12 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.OrderConstant;
 import com.sky.convertor.OrderConverter;
 import com.sky.convertor.ShoppingCartConverter;
-import com.sky.dto.order.AdminOrderCancelDTO;
-import com.sky.dto.order.AdminOrderPageQueryDTO;
-import com.sky.dto.order.OrderCancelDTO;
-import com.sky.dto.order.OrderStatusCount;
-import com.sky.dto.order.OrdersRejectionDTO;
-import com.sky.dto.order.OrdersSubmitDTO;
+import com.sky.dto.admin.order.AdminOrderCancelDTO;
+import com.sky.dto.admin.order.AdminOrderPageQueryDTO;
+import com.sky.dto.admin.order.OrderCancelDTO;
+import com.sky.dto.admin.order.OrderRejectionDTO;
+import com.sky.dto.common.order.OrderStatusCount;
+import com.sky.dto.user.order.OrderSubmitDTO;
 import com.sky.dto.user.order.UserOrderPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.OrderDetail;
@@ -128,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
     // ==================== 公有方法 ====================
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public OrderSubmitVO createWithUserId( Long userId, OrdersSubmitDTO ordersSubmitDTO ){
+    public OrderSubmitVO createWithUserId( Long userId, OrderSubmitDTO orderSubmitDTO ){
         /*
             补充精简的思路
             字段业务检验
@@ -138,9 +138,9 @@ public class OrderServiceImpl implements OrderService {
             再组装订单关联的商品信息
          */
         NotFoundUtil.throwIfCountZero( userMapper.countById( userId ), MessageConstant.USER_NOT_FOUND );
-        PaymentMethod.throwIfInvalid( ordersSubmitDTO.getPayMethod() );
-        DeliveryStatus.throwIfInvalid( ordersSubmitDTO.getDeliveryStatus() );
-        TablewareStatus.throwIfInvalid( ordersSubmitDTO.getTablewareStatus() );
+        PaymentMethod.throwIfInvalid( orderSubmitDTO.getPayMethod() );
+        DeliveryStatus.throwIfInvalid( orderSubmitDTO.getDeliveryStatus() );
+        TablewareStatus.throwIfInvalid( orderSubmitDTO.getTablewareStatus() );
 
         /*
          * 看看组装完整的 Orders 需要哪些东西
@@ -165,7 +165,7 @@ public class OrderServiceImpl implements OrderService {
             所以就只复制 dto，其他手动 set
             * 另外比较奇怪: Orders.amount 实收金额是总金额??为什么还有 packAmount 但是没有 deliveryAmount ?
          */
-        Orders entity = orderConverter.toEntity( ordersSubmitDTO );
+        Orders entity = orderConverter.toEntity( orderSubmitDTO );
 
         /*
             设置用户信息
@@ -187,7 +187,7 @@ public class OrderServiceImpl implements OrderService {
             设置地址簿信息
             id, userId 双重定位 => 数据不存在 | 数据不匹配该用户
          */
-        Long addressBookId = ordersSubmitDTO.getAddressBookId();
+        Long addressBookId = orderSubmitDTO.getAddressBookId();
         AddressBookOrderInfoProjection addressBook = addressBookMapper.selectOrderInfoProjectionByIdAndUserId( addressBookId, userId );
         if ( addressBook == null ){
             NotFoundUtil.throwIfCountZero( addressBookMapper.countById( addressBookId ), MessageConstant.ADDRESS_BOOK_NOT_FOUND );
@@ -700,7 +700,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional( rollbackFor = Exception.class )
     @Override
-    public void rejectById( Long id, OrdersRejectionDTO orderRejectionDTO ){
+    public void rejectById( Long id, OrderRejectionDTO orderRejectionDTO ){
         /*
             补充思路整理
             查出订单状态, 判断是否可以拒单, 不可以则抛异常, 可以则修改订单信息

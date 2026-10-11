@@ -2,8 +2,8 @@ package com.sky.service.impl;
 
 import com.sky.constant.FoodCopiesConstant;
 import com.sky.constant.MessageConstant;
-import com.sky.dto.shoppingCart.ShoppingCartDTO;
-import com.sky.dto.shoppingCart.ShoppingCartQueryDTO;
+import com.sky.dto.user.shoppingCart.ShoppingCartDTO;
+import com.sky.dto.user.shoppingCart.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
 import com.sky.exception.shoppingCart.ShoppingCartIncompleteException;
 import com.sky.exception.shoppingCart.ShoppingCartInvalidException;

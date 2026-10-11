@@ -2,8 +2,8 @@ package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
 import com.sky.convertor.OrderConverter;
-import com.sky.dto.order.OrdersRejectionDTO;
-import com.sky.dto.order.OrdersSubmitDTO;
+import com.sky.dto.admin.order.OrderRejectionDTO;
+import com.sky.dto.user.order.OrderSubmitDTO;
 import com.sky.entity.Orders;
 import com.sky.entity.User;
 import com.sky.enumeration.OrderPayStatus;
@@ -222,7 +222,7 @@ public class OrderServiceImplTest {
             单参数直接用常量
             dto/对象手动 new
          */
-        OrdersRejectionDTO orderRejectionDTO = new OrdersRejectionDTO();
+        OrderRejectionDTO orderRejectionDTO = new OrderRejectionDTO();
         orderRejectionDTO.setRejectionReason( ORDER_REJECTION_REASON );
 
         /*
@@ -259,7 +259,7 @@ public class OrderServiceImplTest {
         when( baiduMapService.listDistances( anyString(), anyString() ) )
                 .thenReturn( directionDTO );
 
-        OrdersSubmitDTO dto = new OrdersSubmitDTO();
+        OrderSubmitDTO dto = new OrderSubmitDTO();
         dto.setAddressBookId( ADDRESS_BOOK_ID );
 
         // When + Then: 执行创建订单 → 抛 DistanceLimitExceededException
@@ -289,7 +289,7 @@ public class OrderServiceImplTest {
         when( baiduMapService.listDistances( anyString(), anyString() ) )
                 .thenReturn( directionDTO );
 
-        OrdersSubmitDTO dto = new OrdersSubmitDTO();
+        OrderSubmitDTO dto = new OrderSubmitDTO();
         dto.setAddressBookId( ADDRESS_BOOK_ID );
 
         // When + Then: 执行创建订单 → 不应该抛 DistanceLimitExceededException
@@ -323,7 +323,7 @@ public class OrderServiceImplTest {
         when( baiduMapService.listDistances( anyString(), anyString() ) )
                 .thenReturn( directionDTO );
 
-        OrdersSubmitDTO dto = new OrdersSubmitDTO();
+        OrderSubmitDTO dto = new OrderSubmitDTO();
         dto.setAddressBookId( ADDRESS_BOOK_ID );
 
         // When + Then: 距离等于限制 → 不抛 DistanceLimitExceededException
@@ -354,7 +354,7 @@ public class OrderServiceImplTest {
         when( baiduMapService.listDistances( anyString(), anyString() ) )
                 .thenReturn( directionDTO );
 
-        OrdersSubmitDTO dto = new OrdersSubmitDTO();
+        OrderSubmitDTO dto = new OrderSubmitDTO();
         dto.setAddressBookId( ADDRESS_BOOK_ID );
 
         // When + Then: 空距离列表 → 抛 NoSuchElementException
@@ -376,7 +376,7 @@ public class OrderServiceImplTest {
     private void mockPreconditionsForCreateWithUserId(){
         // Mock orderConverter.toEntity(dto)
         Orders orders = new Orders();
-        when( orderConverter.toEntity( any( OrdersSubmitDTO.class ) ) )
+        when( orderConverter.toEntity( any( OrderSubmitDTO.class ) ) )
                 .thenReturn( orders );
 
         // Mock userMapper.selectById(userId)

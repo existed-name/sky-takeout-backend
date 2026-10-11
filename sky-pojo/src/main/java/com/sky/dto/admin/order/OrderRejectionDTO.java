@@ -1,0 +1,24 @@
+package com.sky.dto.admin.order;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
+
+/**
+ * 管理端拒绝订单信息
+ *
+ * @UpdateTime 2026/8/29 13:50
+ */
+@ApiModel( description = "管理端拒绝订单信息" )
+@Data
+public class OrderRejectionDTO implements Serializable {
+
+    /** 订单拒绝原因 */
+    @ApiModelProperty( name = "订单拒绝原因", required = true, example = "该菜品已售完" )
+    @NotBlank( message = "订单拒绝原因不能为空" )
+    private String rejectionReason;
+
+}

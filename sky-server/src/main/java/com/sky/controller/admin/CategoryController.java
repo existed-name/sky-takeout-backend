@@ -2,9 +2,9 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
-import com.sky.dto.category.CategoryDTO;
-import com.sky.dto.category.CategoryPageQueryDTO;
-import com.sky.dto.category.CategoryStatusDTO;
+import com.sky.dto.admin.category.CategoryDTO;
+import com.sky.dto.admin.category.CategoryPageQueryDTO;
+import com.sky.dto.admin.category.CategoryStatusDTO;
 import com.sky.enumeration.OperationType;
 import com.sky.result.PageResult;
 import com.sky.result.Result;

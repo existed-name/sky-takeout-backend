@@ -1,8 +1,8 @@
 package com.sky.controller.user;
 
 import com.sky.context.BaseContext;
-import com.sky.dto.order.OrderCancelDTO;
-import com.sky.dto.order.OrdersSubmitDTO;
+import com.sky.dto.admin.order.OrderCancelDTO;
+import com.sky.dto.user.order.OrderSubmitDTO;
 import com.sky.dto.user.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
@@ -61,11 +61,11 @@ public class OrderController {
     @PostMapping
     public Result< OrderSubmitVO > submit(
             @RequestBody @Validated
-            OrdersSubmitDTO ordersSubmitDTO
+            OrderSubmitDTO orderSubmitDTO
     ){
         Long userId = BaseContext.getCurrentId();
-        log.info( "userId = {} 的用户创建订单: {}", userId, ordersSubmitDTO );
-        OrderSubmitVO orderSubmitVO = orderService.createWithUserId( userId, ordersSubmitDTO );
+        log.info( "userId = {} 的用户创建订单: {}", userId, orderSubmitDTO );
+        OrderSubmitVO orderSubmitVO = orderService.createWithUserId( userId, orderSubmitDTO );
         return Result.success( orderSubmitVO );
     }
 

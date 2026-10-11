@@ -1,7 +1,7 @@
 package com.sky.convertor;
 
 import com.sky.config.GlobalMappingConfiguration;
-import com.sky.dto.order.OrdersSubmitDTO;
+import com.sky.dto.user.order.OrderSubmitDTO;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
@@ -58,7 +58,7 @@ public interface OrderConverter {
     @Mapping( source = "submitDTO.tablewareStatus", target = "tablewareStatus" )
     @Mapping( source = "submitDTO.packAmount", target = "packAmount" )
     @Mapping( source = "submitDTO.amount", target = "amount" )
-    Orders toEntity( OrdersSubmitDTO submitDTO );
+    Orders toEntity( OrderSubmitDTO submitDTO );
 
 
     /**

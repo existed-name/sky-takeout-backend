@@ -1,7 +1,7 @@
 package com.sky.mapper;
 
 import com.sky.annotation.AutoFill;
-import com.sky.dto.employee.EmployeePageQueryDTO;
+import com.sky.dto.admin.employee.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
 import com.sky.projection.employee.EmployeeLoginProjection;

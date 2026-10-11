@@ -2,7 +2,7 @@ package com.sky.controller.admin;
 
 import com.sky.annotation.LogOperation;
 import com.sky.context.BaseContext;
-import com.sky.dto.shop.ShopStatusDTO;
+import com.sky.dto.admin.shop.ShopStatusDTO;
 import com.sky.enumeration.OperationType;
 import com.sky.result.Result;
 import com.sky.service.ShopService;

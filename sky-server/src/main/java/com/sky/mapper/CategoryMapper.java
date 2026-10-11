@@ -1,7 +1,7 @@
 package com.sky.mapper;
 
 import com.sky.annotation.AutoFill;
-import com.sky.dto.category.CategoryPageQueryDTO;
+import com.sky.dto.admin.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.admin.category.CategoryListItemVO;

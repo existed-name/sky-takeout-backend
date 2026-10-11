@@ -1,7 +1,7 @@
 package com.sky.service.impl;
 
-import com.sky.dto.GoodsStatusCount;
-import com.sky.dto.order.OrderStatusCount;
+import com.sky.dto.common.GoodsStatusCount;
+import com.sky.dto.common.order.OrderStatusCount;
 import com.sky.enumeration.GoodsStatus;
 import com.sky.enumeration.OrderStatus;
 import com.sky.enumeration.Scale;

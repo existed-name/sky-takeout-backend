@@ -1,7 +1,7 @@
 package com.sky.convertor;
 
 import com.sky.config.GlobalMappingConfiguration;
-import com.sky.dto.EmployeeDTO;
+import com.sky.dto.admin.employee.EmployeeDTO;
 import com.sky.entity.Employee;
 import com.sky.vo.admin.employee.EmployeePageQueryItemVO;
 import com.sky.vo.admin.employee.EmployeeInfoVO;
