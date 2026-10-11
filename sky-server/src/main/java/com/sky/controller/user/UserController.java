@@ -5,7 +5,7 @@ import com.sky.dto.user.user.UserLoginDTO;
 import com.sky.dto.user.user.WebEndUserLoginDTO;
 import com.sky.result.Result;
 import com.sky.service.UserService;
-import com.sky.vo.UserLoginVO;
+import com.sky.vo.user.user.UserLoginVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

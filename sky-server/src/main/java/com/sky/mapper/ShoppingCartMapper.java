@@ -3,7 +3,7 @@ package com.sky.mapper;
 import com.sky.dto.shoppingCart.ShoppingCartQueryDTO;
 import com.sky.entity.ShoppingCart;
 import com.sky.projection.shoppingCart.ShoppingCartOrderDetailProjection;
-import com.sky.vo.ShoppingCartItemVO;
+import com.sky.vo.user.shoppingCart.ShoppingCartItemVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;

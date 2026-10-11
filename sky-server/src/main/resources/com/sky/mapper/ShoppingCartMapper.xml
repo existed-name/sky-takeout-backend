@@ -54,7 +54,7 @@
      * @param userId 用户 id
      * @return 购物车数据项列表
     -->
-    <select id="selectItemVOListByUserId" resultType="com.sky.vo.ShoppingCartItemVO">
+    <select id="selectItemVOListByUserId" resultType="com.sky.vo.user.shoppingCart.ShoppingCartItemVO">
         <!--
         由于 ShoppingCartItemVO 的字段只比完整实体对象少了 create_time
         所以这里直接查询全部字段, TODO: 根据实际需求修改查询的字段

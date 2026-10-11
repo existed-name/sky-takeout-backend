@@ -1,4 +1,4 @@
-package com.sky.vo;
+package com.sky.vo.user.shoppingCart;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  * 购物车数据项展示对象, 记录购物车中每种套餐/菜品的信息

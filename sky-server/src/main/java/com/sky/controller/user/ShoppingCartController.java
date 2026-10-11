@@ -4,7 +4,7 @@ import com.sky.context.BaseContext;
 import com.sky.dto.shoppingCart.ShoppingCartDTO;
 import com.sky.result.Result;
 import com.sky.service.impl.ShoppingCartServiceImpl;
-import com.sky.vo.ShoppingCartListVO;
+import com.sky.vo.user.shoppingCart.ShoppingCartListVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,7 @@
 package com.sky.service;
 
 import com.sky.dto.shoppingCart.ShoppingCartDTO;
-import com.sky.vo.ShoppingCartListVO;
+import com.sky.vo.user.shoppingCart.ShoppingCartListVO;
 
 public interface ShoppingCartService {
     /**

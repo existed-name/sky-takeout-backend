@@ -1,4 +1,4 @@
-package com.sky.vo;
+package com.sky.vo.user.shoppingCart;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

@@ -3,9 +3,7 @@ package com.sky.service;
 import com.sky.dto.user.user.UserLoginDTO;
 import com.sky.dto.user.user.WebEndUserLoginDTO;
 import com.sky.entity.User;
-import com.sky.vo.UserLoginVO;
-
-import javax.validation.Valid;
+import com.sky.vo.user.user.UserLoginVO;
 
 public interface UserService {
 

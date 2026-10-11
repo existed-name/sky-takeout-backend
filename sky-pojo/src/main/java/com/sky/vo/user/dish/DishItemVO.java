@@ -1,4 +1,4 @@
-package com.sky.vo;
+package com.sky.vo.user.dish;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -16,6 +16,7 @@ import java.io.Serializable;
  *     用于用户端展示套餐包含的菜品信息，
  *     从 {@link com.sky.entity.SetmealDish} 和 {@link com.sky.entity.Dish} 联查组装而来
  * </p>
+ * @deprecated 迁移至{@link com.sky.vo.user.dish.UserDishListItemVO}, 从命名上和管理端区分、并说明使用场景
  */
 @Data
 @Builder

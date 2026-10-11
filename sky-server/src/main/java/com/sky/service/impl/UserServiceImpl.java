@@ -20,12 +20,11 @@ import com.sky.utils.AssertUtils;
 import com.sky.utils.HttpClientUtil;
 import com.sky.utils.JwtUtil;
 import com.sky.utils.StringUtils;
-import com.sky.vo.UserLoginVO;
+import com.sky.vo.user.user.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
