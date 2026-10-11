@@ -67,7 +67,7 @@ import com.sky.vo.user.order.UserOrderInfoVO;
 import com.sky.vo.order.OrderPaymentVO;
 import com.sky.vo.order.OrderStatisticsVO;
 import com.sky.vo.order.OrderSubmitVO;
-import com.sky.vo.websocket.WebSocketMessageVO;
+import com.sky.vo.user.websocket.WebSocketMessageVO;
 import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.sky.vo.websocket;
+package com.sky.vo.user.websocket;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
