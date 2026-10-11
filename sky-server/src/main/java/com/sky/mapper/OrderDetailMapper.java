@@ -1,10 +1,9 @@
 package com.sky.mapper;
 
 import com.sky.entity.OrderDetail;
-import com.sky.vo.report.SalesItemVO;
+import com.sky.vo.admin.report.SalesItemVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDate;
 import java.util.List;

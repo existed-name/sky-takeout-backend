@@ -40,7 +40,7 @@
     <!--
     统计某种状态的订单, 销售量排在前 N 位的商品
     -->
-    <select id="sumNumberTopNByStatusAndDateAndGroupByName" resultType="com.sky.vo.report.SalesItemVO">
+    <select id="sumNumberTopNByStatusAndDateAndGroupByName" resultType="com.sky.vo.admin.report.SalesItemVO">
         <!--
         * SQL 核心思路:
           按照 name 分组拿到单个商品, 再对单个订单详情的数据量求和

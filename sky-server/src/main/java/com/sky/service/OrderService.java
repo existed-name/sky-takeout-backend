@@ -7,15 +7,13 @@ import com.sky.dto.order.OrdersRejectionDTO;
 import com.sky.dto.order.OrdersSubmitDTO;
 import com.sky.dto.user.order.UserOrderPageQueryDTO;
 import com.sky.result.PageResult;
-import com.sky.vo.order.AdminOrderInfoVO;
-import com.sky.vo.order.OrderPageQueryItemVO;
+import com.sky.vo.admin.order.AdminOrderInfoVO;
+import com.sky.vo.admin.order.OrderPageQueryItemVO;
 import com.sky.vo.user.order.UserOrderInfoVO;
-import com.sky.vo.order.OrderPaymentVO;
-import com.sky.vo.order.OrderStatisticsVO;
-import com.sky.vo.order.OrderSubmitVO;
+import com.sky.vo.admin.order.OrderPaymentVO;
+import com.sky.vo.admin.order.OrderStatisticsVO;
+import com.sky.vo.admin.order.OrderSubmitVO;
 import com.sky.vo.user.order.UserOrderHistoryItemVO;
-
-import javax.validation.constraints.Positive;
 
 public interface OrderService {
     /**

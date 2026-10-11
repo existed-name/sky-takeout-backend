@@ -4,9 +4,9 @@ import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.employee.EmployeePageQueryDTO;
 import com.sky.result.PageResult;
-import com.sky.vo.EmployeeLoginVO;
-import com.sky.vo.employee.EmployeeInfoVO;
-import com.sky.vo.employee.EmployeePageQueryItemVO;
+import com.sky.vo.admin.employee.EmployeeLoginVO;
+import com.sky.vo.admin.employee.EmployeeInfoVO;
+import com.sky.vo.admin.employee.EmployeePageQueryItemVO;
 
 public interface EmployeeService {
 

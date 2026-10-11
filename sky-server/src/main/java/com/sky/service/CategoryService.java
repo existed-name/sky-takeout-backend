@@ -3,8 +3,8 @@ package com.sky.service;
 import com.sky.dto.category.CategoryDTO;
 import com.sky.dto.category.CategoryPageQueryDTO;
 import com.sky.result.PageResult;
-import com.sky.vo.category.CategoryListItemVO;
-import com.sky.vo.category.CategoryPageQueryItemVO;
+import com.sky.vo.admin.category.CategoryListItemVO;
+import com.sky.vo.admin.category.CategoryPageQueryItemVO;
 import com.sky.vo.user.category.UserCategoryListItemVO;
 
 import java.util.List;

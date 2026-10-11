@@ -3,8 +3,8 @@ package com.sky.convertor;
 import com.sky.config.GlobalMappingConfiguration;
 import com.sky.dto.EmployeeDTO;
 import com.sky.entity.Employee;
-import com.sky.vo.employee.EmployeePageQueryItemVO;
-import com.sky.vo.employee.EmployeeInfoVO;
+import com.sky.vo.admin.employee.EmployeePageQueryItemVO;
+import com.sky.vo.admin.employee.EmployeeInfoVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

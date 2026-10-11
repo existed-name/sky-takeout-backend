@@ -3,9 +3,9 @@ package com.sky.service;
 import com.sky.dto.dish.DishDTO;
 import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.result.PageResult;
-import com.sky.vo.DishInfoVO;
-import com.sky.vo.dish.DishListItemVO;
-import com.sky.vo.dish.DishPageQueryItemVO;
+import com.sky.vo.admin.dish.DishInfoVO;
+import com.sky.vo.admin.dish.DishListItemVO;
+import com.sky.vo.admin.dish.DishPageQueryItemVO;
 import com.sky.vo.user.dish.UserDishListItemVO;
 
 import java.util.List;

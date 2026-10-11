@@ -15,7 +15,7 @@
     <!--
     统计截止到某一天的总用户量
     -->
-    <select id="countAllBeforeDate" resultType="com.sky.vo.report.UserCountItemVO">
+    <select id="countAllBeforeDate" resultType="com.sky.vo.admin.report.UserCountItemVO">
         SELECT count( * ) AS total
         FROM user
         WHERE create_time &lt; #{dateExclusive}
@@ -24,7 +24,7 @@
     <!--
     查询指定时间范围内, 每天的新增用户量
     -->
-    <select id="countGroupByDate" resultType="com.sky.vo.report.UserGrowthItemVO">
+    <select id="countGroupByDate" resultType="com.sky.vo.admin.report.UserGrowthItemVO">
 
         SELECT date( create_time ) AS date, count( * ) AS growth
         FROM user

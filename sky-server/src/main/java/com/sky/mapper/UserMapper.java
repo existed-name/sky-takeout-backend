@@ -2,8 +2,8 @@ package com.sky.mapper;
 
 import com.sky.entity.User;
 import com.sky.projection.user.UserOrderInfoProjection;
-import com.sky.vo.report.UserCountItemVO;
-import com.sky.vo.report.UserGrowthItemVO;
+import com.sky.vo.admin.report.UserCountItemVO;
+import com.sky.vo.admin.report.UserGrowthItemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;

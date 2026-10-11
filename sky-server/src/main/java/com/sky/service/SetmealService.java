@@ -3,9 +3,9 @@ package com.sky.service;
 import com.sky.dto.setmeal.SetmealDTO;
 import com.sky.dto.setmeal.SetmealPageQueryDTO;
 import com.sky.result.PageResult;
-import com.sky.vo.SetmealVO;
-import com.sky.vo.setmeal.SetmealInfoVO;
-import com.sky.vo.setmeal.SetmealPageQueryItemVO;
+import com.sky.vo.admin.setmeal.SetmealVO;
+import com.sky.vo.admin.setmeal.SetmealInfoVO;
+import com.sky.vo.admin.setmeal.SetmealPageQueryItemVO;
 import com.sky.vo.user.setmeal.UserSetmealDishItemVO;
 import com.sky.vo.user.setmeal.UserSetmealListItemVO;
 

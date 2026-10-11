@@ -81,7 +81,7 @@
      *
      * @return 套餐本体的部分字段 + 分类名称, <B>不包含关联对象{@link com.sky.entity.SetmealDish}(由调用方选择性拼装)</B>
     -->
-    <select id="selectItemVOByQueryWithoutSetmealDishRelation" resultType="com.sky.vo.setmeal.SetmealPageQueryItemVO">
+    <select id="selectItemVOByQueryWithoutSetmealDishRelation" resultType="com.sky.vo.admin.setmeal.SetmealPageQueryItemVO">
         SELECT s.id, s.category_id, s.name, s.price, s.status, s.image, s.update_time
             , c.name AS categoryName
         FROM (
@@ -119,7 +119,7 @@
     包含 Setmeal + CategoryName,
     关联关系 com.sky.entity.SetmealDish 由业务层单独查询再组装 VO
     -->
-    <select id="selectInfoVOByIdWithoutSetmealDishRelation" resultType="com.sky.vo.setmeal.SetmealInfoVO">
+    <select id="selectInfoVOByIdWithoutSetmealDishRelation" resultType="com.sky.vo.admin.setmeal.SetmealInfoVO">
         SELECT s.id, s.category_id, s.name, s.price, s.status, s.description, s.image
             , c.name AS categoryName
         FROM (
@@ -156,7 +156,7 @@
      *     <b>不包含套餐-菜品关联关系</b>
      按修改时间降序，修改时间相同按照 id 降序
     -->
-    <select id="selectSetmealVOByCategoryIdWithoutSetmealDishRelation" resultType="com.sky.vo.SetmealVO">
+    <select id="selectSetmealVOByCategoryIdWithoutSetmealDishRelation" resultType="com.sky.vo.admin.setmeal.SetmealVO">
         SELECT s.id, s.category_id, s.name, s.price, s.status, s.description, s.image, s.create_time, s.update_time, s.create_user, s.update_user
                 , c.name AS categoryName
         FROM setmeal AS s

@@ -1,9 +1,9 @@
 package com.sky.service;
 
-import com.sky.vo.workspace.DataOverviewVO;
-import com.sky.vo.workspace.DishOverviewVO;
-import com.sky.vo.workspace.OrderOverviewVO;
-import com.sky.vo.workspace.SetmealOverviewVO;
+import com.sky.vo.admin.workspace.DataOverviewVO;
+import com.sky.vo.admin.workspace.DishOverviewVO;
+import com.sky.vo.admin.workspace.OrderOverviewVO;
+import com.sky.vo.admin.workspace.SetmealOverviewVO;
 
 import java.time.LocalDate;
 

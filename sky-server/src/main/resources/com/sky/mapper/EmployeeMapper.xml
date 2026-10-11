@@ -24,7 +24,7 @@
     <!--
     条件查询用户数据链表, 由 PageHelper 自动分页
     -->
-    <select id="selectItemVOListByQuery" resultType="com.sky.vo.employee.EmployeePageQueryItemVO">
+    <select id="selectItemVOListByQuery" resultType="com.sky.vo.admin.employee.EmployeePageQueryItemVO">
         SELECT id, name, username, phone, status, create_time, update_time
         FROM employee
         <where>
@@ -38,7 +38,7 @@
     <!--
     查询员工详情展示信息
     -->
-    <select id="selectVOById" resultType="com.sky.vo.employee.EmployeeInfoVO">
+    <select id="selectVOById" resultType="com.sky.vo.admin.employee.EmployeeInfoVO">
         SELECT id, name, username, phone, sex, id_number
         FROM employee
         WHERE id = #{id}

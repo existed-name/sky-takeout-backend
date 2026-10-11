@@ -1,11 +1,10 @@
 package com.sky.mapper;
 
 import com.sky.entity.SetmealDish;
+import com.sky.vo.admin.setmeal.SetmealVO;
 import com.sky.vo.user.setmeal.UserSetmealDishItemVO;
-import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public interface SetmealDishMapper {
     int insertBatch( @Param( "setmealDishes" ) List< SetmealDish > setmealDishes );
 
     /**
-     * 查询多个套餐对应的所有 {@link com.sky.entity.SetmealDish} 关联关系对象, 用于组装 {@link com.sky.vo.SetmealVO}
+     * 查询多个套餐对应的所有 {@link com.sky.entity.SetmealDish} 关联关系对象, 用于组装 {@link SetmealVO}
      */
     List< SetmealDish > selectBySetmealIds( @Param( "setmealIds" ) List< Long> setmealIds );
 

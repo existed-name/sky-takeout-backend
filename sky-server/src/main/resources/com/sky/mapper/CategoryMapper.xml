@@ -15,7 +15,7 @@
     <!--
     条件查询分类, 由 PageHelper 完成分页
     -->
-    <select id="selectItemVOListByQuery" resultType="com.sky.vo.category.CategoryPageQueryItemVO">
+    <select id="selectItemVOListByQuery" resultType="com.sky.vo.admin.category.CategoryPageQueryItemVO">
         SELECT id, type, name, sort, create_time
         FROM category
         <where>
@@ -58,7 +58,7 @@
     <!--
     查询某种分类类型、启用状态对应的所有分类数据
     -->
-    <select id="selectItemVOListByStatusAndType" resultType="com.sky.vo.category.CategoryListItemVO">
+    <select id="selectItemVOListByStatusAndType" resultType="com.sky.vo.admin.category.CategoryListItemVO">
         SELECT id, type, name
         FROM category
         <where>
