@@ -1,0 +1,46 @@
+:: ============
+:: 注: batch 文件避免用反引号(Windows 会当成命令替换符，可能出现报错)
+:: ============
+
+:: 取消命令回显(可选)
+:: @echo off
+
+:: UTF-8
+chcp 65001
+
+:: 切换到项目根目录
+cd D:\Users\Programming\Java-Development\Java-Beginner-Code\Sky-Takout\sky-takeout
+
+:: ============
+:: 注: rebase 时工作区不能有东西
+:: 需要手动提交或者临时保存 untracked 文件 git stash
+:: 然后 rebase 进去后 git stash pop 放出暂存文件，用来 git add
+:: 但是如果还没开始写代码，就先 rebase 写了后直接 add
+:: ============
+
+:: HEAD = 最近 1 次 commit
+:: HEAD~1 = HEAD 的前 1 个, 也就是正数第 2 个 commit
+:: rebase -i 必须指定范围, HEAD~2 就是最近 3 次 commit(而且也至少要 3 次 commit )
+git rebase -i HEAD~2
+
+:: 打开 Git 的交互界面, 界面出现
+:: pick abc1234 第一笔提交
+:: pick def5678 第二笔提交
+:: pick ghi9012 第三笔提交
+
+:: 把目标提交的 pick 修改为 edit
+:: 保存退出
+
+:: Git 位于目标 commit
+:: 如果想要去除部分文件，可以清空暂存区或者移除目标文件
+:: git restore --staged .
+
+:: 添加要上传的目标文件
+git add 文件路径
+
+:: 修改该次提交(带 -m 手动指定信息，不带就打开交互界面编写提交信息)
+git commit --amend
+
+:: 继续 rebase
+git rebase --continue
+

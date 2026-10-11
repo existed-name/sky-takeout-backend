@@ -1,0 +1,56 @@
+:: ============
+:: 注: batch 文件避免用反引号(Windows 会当成命令替换符，可能出现报错)
+:: ============
+
+:: 取消命令回显(可选)
+:: @echo off
+
+:: UTF-8
+chcp 65001
+
+:: 切换到项目根目录
+cd D:\Users\Programming\Java-Development\Java-Beginner-Code\Sky-Takout\sky-takeout
+
+:: ============
+:: 常用的查看 git 状态/内容命令
+:: ============
+
+:: 查看文件记录状态(暂存区、工作区、未追踪)
+git status
+
+:: 查看提交历史（详细 commit message）
+git log
+
+:: 查看提交历史（commit message 首行内容）
+git log --oneline
+
+:: 显示每次提交修改的文件路径
+git log --name-only
+
+:: 显示文件路径 + 修改类型（A=新增, M=修改, D=删除）
+git log --name-status
+
+:: 显示文件路径 + 修改行数统计
+git log --stat
+
+:: 查看提交历史（图形化分支）
+git log --oneline --graph
+
+:: 查看某文件的修改历史
+git log -p 文件名
+
+:: 查看工作区与暂存区的差异
+git diff
+
+:: 查看暂存区与最新提交的差异
+git diff --cached
+
+:: 查看指定文件当前内容
+git show HEAD:文件路径
+
+:: 查看所有分支
+git branch -a
+
+:: 查看远程仓库地址
+git remote -v
+

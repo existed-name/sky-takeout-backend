@@ -1,0 +1,25 @@
+:: ============
+:: 注: batch 文件避免用反引号(Windows 会当成命令替换符，可能出现报错)
+:: ============
+
+:: 取消命令回显(可选)
+:: @echo off
+
+:: UTF-8
+chcp 65001
+
+:: 切换到项目根目录
+cd D:\Users\Programming\Java-Development\Java-Beginner-Code\Sky-Takout\sky-takeout
+
+:: 回退到上次提交前的状态(保留修改的代码在暂存区、删除最近的 commit)
+:: 手动清除暂存区 git restore --staged .
+:: 1 = 重置到 HEAD 前 1 次 commit(删除 1 次 commit),
+:: 2 = 重置到 HEAD 前 2 次 commit(删除 2 次 commit)
+:: git reset --soft HEAD~1
+
+:: 修改代码移除暂存区(需要手动 add)
+git reset --mixed HEAD~1
+
+:: 已 push 撤销该次 commit(头部 HEAD)
+:: git revert HEAD
+
