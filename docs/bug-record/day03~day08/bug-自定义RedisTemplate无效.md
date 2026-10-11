@@ -1,6 +1,6 @@
 ## 描述
 
-* [Redis 配置类](/sky-server/src/main/java/com/sky/config/RedisConfiguration.java) 配置 `RedisTemplate` Bean
+* [Redis 配置类](/com/sky/config/RedisConfiguration.java) 配置 `RedisTemplate` Bean
 
     ```java
         @Bean
@@ -16,7 +16,7 @@
         }
     ```
 
-* 然而 [Test](/sky-server/src/test/java/com/sky/test/RedisTest.java) 时发现程序内部字符显示正常，而 Redis Insight 的 Key-Value 均出现乱码
+* 然而 [Test](/com/sky/test/RedisTest.java) 时发现程序内部字符显示正常，而 Redis Insight 的 Key-Value 均出现乱码
 * 并且日志也有 `正在创建自定义 RedisTemplate`, 说明创建了自定义 `RedisTemplate`
 
 
