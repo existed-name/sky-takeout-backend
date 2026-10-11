@@ -6,7 +6,7 @@ import com.sky.dto.GoodsStatusCount;
 import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
 import com.sky.projection.dish.DishShoppingCartProjection;
-import com.sky.vo.DishVO;
+import com.sky.vo.DishInfoVO;
 import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
 import com.sky.vo.user.dish.UserDishListItemVO;
@@ -83,7 +83,7 @@ public interface DishMapper {
      * @param id 菜品 id
      * @return 菜品信息展示对象, <b>不存在时返回 null</b>
      */
-    DishVO selectVOByIdWithoutFlavors( @Param( "id" ) Long id );
+    DishInfoVO selectVOByIdWithoutFlavors( @Param( "id" ) Long id );
 
     /**
      * 修改菜品信息

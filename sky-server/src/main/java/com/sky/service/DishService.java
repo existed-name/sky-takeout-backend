@@ -3,7 +3,7 @@ package com.sky.service;
 import com.sky.dto.dish.DishDTO;
 import com.sky.dto.dish.DishPageQueryDTO;
 import com.sky.result.PageResult;
-import com.sky.vo.DishVO;
+import com.sky.vo.DishInfoVO;
 import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
 import com.sky.vo.user.dish.UserDishListItemVO;
@@ -39,7 +39,7 @@ public interface DishService {
     /**
      * 管理端查询指定的菜品信息
      */
-    DishVO getInfoById( Long id );
+    DishInfoVO getInfoById( Long id );
 
     /**
      * 管理端修改菜品信息

@@ -9,20 +9,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 菜品视图对象
- * 用于菜品信息的查询返回展示
+ * 菜品详细信息展示对象,
+ * 用于管理端编辑菜品信息的回显展示
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ApiModel(description = "菜品对象 VO")
-public class DishVO implements Serializable {
+public class DishInfoVO implements Serializable {
 
     /** 菜品表id */
     @ApiModelProperty(value = "菜品表id", example = "1")

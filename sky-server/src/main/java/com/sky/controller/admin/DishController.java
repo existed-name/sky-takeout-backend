@@ -10,7 +10,7 @@ import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.DishService;
 import com.sky.validation.ValidationGroups;
-import com.sky.vo.DishVO;
+import com.sky.vo.DishInfoVO;
 import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
 import io.swagger.annotations.Api;
@@ -113,15 +113,15 @@ public class DishController {
      */
     @ApiOperation( value = "根据 id 查询菜品" )
     @GetMapping( "/{id}" )
-    public Result< DishVO > getInfo(
+    public Result< DishInfoVO > getInfo(
             @PathVariable( name = "id", required = true )
             @Positive( message = "菜品 id 必须是正整数" )
             Long id
     ){
         Long operatorId = BaseContext.getCurrentId();
         log.info( "id = {} 的管理员查询 id = {} 的菜品", operatorId, id );
-        DishVO dishVO = dishService.getInfoById( id );
-        return Result.success( dishVO );
+        DishInfoVO dishInfoVO = dishService.getInfoById( id );
+        return Result.success( dishInfoVO );
     }
 
     /**

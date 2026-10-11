@@ -2,7 +2,6 @@ package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
 import com.sky.constant.RedisConstant;
-import com.sky.constant.StatusConstant;
 import com.sky.convertor.DishConverter;
 import com.sky.dto.dish.DishDTO;
 import com.sky.dto.dish.DishPageQueryDTO;
@@ -25,7 +24,7 @@ import com.sky.utils.ListUtils;
 import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.utils.SetmealCacheManager;
-import com.sky.vo.DishVO;
+import com.sky.vo.DishInfoVO;
 import com.sky.vo.dish.DishListItemVO;
 import com.sky.vo.dish.DishPageQueryItemVO;
 import com.sky.vo.user.dish.UserDishListItemVO;
@@ -199,12 +198,12 @@ public class DishServiceImpl implements DishService {
 
     @Transactional( readOnly = true )
     @Override
-    public DishVO getInfoById( Long id ){
-        DishVO dishVO = dishMapper.selectVOByIdWithoutFlavors( id );
+    public DishInfoVO getInfoById( Long id ){
+        DishInfoVO dishInfoVO = dishMapper.selectVOByIdWithoutFlavors( id );
         // 注意 MyBatis 单条查询可能返回 null( 多条查询返回空链表 )
-        NotFoundUtil.throwIfNotFound( dishVO, MessageConstant.DISH_NOT_FOUND );
-        dishVO.setFlavors( dishFlavorMapper.selectByDishId( id ) );
-        return dishVO;
+        NotFoundUtil.throwIfNotFound( dishInfoVO, MessageConstant.DISH_NOT_FOUND );
+        dishInfoVO.setFlavors( dishFlavorMapper.selectByDishId( id ) );
+        return dishInfoVO;
     }
 
     @Transactional( rollbackFor = Exception.class )
