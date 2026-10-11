@@ -6,7 +6,7 @@ import com.sky.entity.Employee;
 import com.sky.enumeration.OperationType;
 import com.sky.projection.employee.EmployeeLoginProjection;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
-import com.sky.vo.employee.EmployeeVO;
+import com.sky.vo.employee.EmployeeInfoVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -68,5 +68,5 @@ public interface EmployeeMapper {
      * @param id 员工 id
      * @return 员工展示信息
      */
-    EmployeeVO selectVOById( @Param( "id" ) Long id );
+    EmployeeInfoVO selectVOById( @Param( "id" ) Long id );
 }

@@ -38,7 +38,7 @@
     <!--
     查询员工详情展示信息
     -->
-    <select id="selectVOById" resultType="com.sky.vo.employee.EmployeeVO">
+    <select id="selectVOById" resultType="com.sky.vo.employee.EmployeeInfoVO">
         SELECT id, name, username, phone, sex, id_number
         FROM employee
         WHERE id = #{id}

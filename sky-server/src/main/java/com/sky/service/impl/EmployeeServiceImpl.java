@@ -21,8 +21,8 @@ import com.sky.utils.JwtUtil;
 import com.sky.utils.NotFoundUtil;
 import com.sky.utils.PageUtil;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeeInfoVO;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
-import com.sky.vo.employee.EmployeeVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
@@ -154,10 +154,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Transactional( readOnly = true )
     @Override
-    public EmployeeVO getById( Long id ){
-        EmployeeVO employeeVO = employeeMapper.selectVOById( id );
-        NotFoundUtil.throwIfNotFound( employeeVO, MessageConstant.EMPLOYEE_NOT_FOUND );
-        return employeeVO;
+    public EmployeeInfoVO getById( Long id ){
+        EmployeeInfoVO employeeInfoVO = employeeMapper.selectVOById( id );
+        NotFoundUtil.throwIfNotFound( employeeInfoVO, MessageConstant.EMPLOYEE_NOT_FOUND );
+        return employeeInfoVO;
     }
 
     @Transactional( rollbackFor = Exception.class )

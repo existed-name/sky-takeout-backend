@@ -11,7 +11,7 @@ import lombok.Data;
  */
 @ApiModel( description = "员工详细信息展示对象" )
 @Data
-public class EmployeeVO {
+public class EmployeeInfoVO {
     // ==================== 常量 ====================
 
 

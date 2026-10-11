@@ -5,10 +5,8 @@ import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.employee.EmployeePageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeeInfoVO;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
-import com.sky.vo.employee.EmployeeVO;
-
-import javax.validation.constraints.Positive;
 
 public interface EmployeeService {
 
@@ -48,7 +46,7 @@ public interface EmployeeService {
      * @param id 目标员工 id
      * @return 员工详情展示对象
      */
-    EmployeeVO getById( Long id );
+    EmployeeInfoVO getById( Long id );
 
     /**
      * 修改员工信息

@@ -12,8 +12,8 @@ import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.validation.ValidationGroups;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.employee.EmployeeInfoVO;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
-import com.sky.vo.employee.EmployeeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -138,15 +138,15 @@ public class EmployeeController {
      */
     @GetMapping( "/{id}" )
     @ApiOperation( "根据 id 查询员工信息" )
-    public Result< EmployeeVO > getInfo(
+    public Result< EmployeeInfoVO > getInfo(
             @PathVariable( name = "id", required = true )
             @Positive( message = "员工 id 必须是正整数" )
             Long id
     ){
         Long operatorId = BaseContext.getCurrentId();
         log.info( "id = {} 的员工查询 id = {} 的员工信息", operatorId, id );
-        EmployeeVO employeeVO = employeeService.getById( id );
-        return Result.success( employeeVO );
+        EmployeeInfoVO employeeInfoVO = employeeService.getById( id );
+        return Result.success( employeeInfoVO );
     }
 
     /**

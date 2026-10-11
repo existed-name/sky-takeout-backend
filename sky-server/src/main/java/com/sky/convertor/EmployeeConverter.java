@@ -4,7 +4,7 @@ import com.sky.config.GlobalMappingConfiguration;
 import com.sky.dto.EmployeeDTO;
 import com.sky.entity.Employee;
 import com.sky.vo.employee.EmployeePageQueryItemVO;
-import com.sky.vo.employee.EmployeeVO;
+import com.sky.vo.employee.EmployeeInfoVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -27,7 +27,7 @@ public interface EmployeeConverter {
      * @param entity 实体对象
      * @return 员工详细信息展示对象
      */
-    EmployeeVO toVO( Employee entity );
+    EmployeeInfoVO toVO( Employee entity );
 
     /**
      * 循环调用{@link #toPageQueryItemVO(Employee)}把实体类链表转换为条件分页查询展示数据链表
