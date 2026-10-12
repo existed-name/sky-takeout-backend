@@ -31,7 +31,7 @@ logging:
   level:
     com:
       sky:
-        mapper: debug
+        mapper: info # debug
         service: info
         controller: info
         utils: info # debug
@@ -45,12 +45,12 @@ sky:
     # 设置jwt签名加密时使用的秘钥
     admin-secret-key: ${sky.jwt.admin-secret-key}
     # 设置jwt过期时间(ms)
-    admin-ttl: 72000000 # 之前 7200000 = 120 * 60 * 1000
+    admin-ttl: 72000000 # 1200 * 60 * 1000ms
     # 设置前端传递过来的令牌名称
     admin-token-name: token
     # 用户端 JWT
     user-secret-key: ${sky.jwt.user-secret-key}
-    user-ttl: 72000000
+    user-ttl: 720000000 # 12000min
     user-token-name: authentication
   # 自己的微信小程序开发者信息
   wechat:
