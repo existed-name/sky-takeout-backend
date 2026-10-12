@@ -1,0 +1,20 @@
+# 后端镜像构建上下文排除清单。
+# 这个文件必须放在仓库根目录（与 Dockerfile 同级），因为 docker build 的上下文就是仓库根。
+
+# 明文密钥文件：绝不能进入构建上下文（这是“密钥不进镜像”的第一道防线）。
+# 该文件不在 git 里，但存在于本机工作区，且会被 Maven 复制进 fat jar，必须挡掉。
+sky-server/src/main/resources/application-dev.yml
+
+# 版本控制与 IDE / 工具的本地目录。
+.git
+.idea
+docs/prompt/.lingma
+*.iml
+
+# 文档、草稿、数据库脚本：与镜像运行无关，不必进上下文。
+docs
+draft
+db
+
+# 构建产物：镜像内必须重新构建，避免把本机的陈旧产物打进镜像。
+**/target
