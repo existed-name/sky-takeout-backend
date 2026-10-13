@@ -4,7 +4,7 @@
 # 作用：把 Maven 多模块工程（sky-common / sky-pojo / sky-server）构建成
 #       可运行的 Spring Boot fat jar，并放进 JDK 17 运行环境。
 #
-# 构建上下文：本仓库根目录（在仓库根执行 `docker build -t sky-backend:1.0.0 .`）。
+# 构建上下文：本仓库根目录（在仓库根执行 `docker build -t sky-takeout-backend:1.0.0 .`）。
 # 运行端口：8080（容器内），无 context-path（沿用 application.yml 的 server.port）。
 #
 # 安全说明（很重要）：
