@@ -2,7 +2,7 @@ package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
 import com.sky.constant.RedisConstant;
-import com.sky.convertor.DishConverter;
+import com.sky.converter.DishConverter;
 import com.sky.dto.admin.dish.DishDTO;
 import com.sky.dto.admin.dish.DishPageQueryDTO;
 import com.sky.entity.Dish;

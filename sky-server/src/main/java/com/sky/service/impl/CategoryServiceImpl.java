@@ -1,7 +1,7 @@
 package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
-import com.sky.convertor.CategoryConverter;
+import com.sky.converter.CategoryConverter;
 import com.sky.dto.admin.category.CategoryDTO;
 import com.sky.dto.admin.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;

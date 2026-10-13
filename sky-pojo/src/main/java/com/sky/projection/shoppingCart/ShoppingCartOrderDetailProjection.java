@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 /**
  * 购物车订单明细投影对象, 用于查询组装订单明细{@link com.sky.entity.OrderDetail}需要的字段,
- * 并通过{@link com.sky.convertor.OrderConverter}映射为订单明细实体对象
+ * 并通过{@link com.sky.converter.OrderConverter}映射为订单明细实体对象
  *
  * @CreateTime 2026/10/6 20:13
  */

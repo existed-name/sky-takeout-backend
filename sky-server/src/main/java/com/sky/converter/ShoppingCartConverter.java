@@ -1,4 +1,4 @@
-package com.sky.convertor;
+package com.sky.converter;
 
 import com.sky.config.GlobalMappingConfiguration;
 import com.sky.entity.Dish;

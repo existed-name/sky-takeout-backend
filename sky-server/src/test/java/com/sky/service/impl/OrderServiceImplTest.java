@@ -1,7 +1,7 @@
 package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
-import com.sky.convertor.OrderConverter;
+import com.sky.converter.OrderConverter;
 import com.sky.dto.admin.order.OrderRejectionDTO;
 import com.sky.dto.user.order.OrderSubmitDTO;
 import com.sky.entity.Orders;

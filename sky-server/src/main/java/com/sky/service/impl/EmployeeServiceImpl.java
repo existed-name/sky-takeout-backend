@@ -3,7 +3,7 @@ package com.sky.service.impl;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
-import com.sky.convertor.EmployeeConverter;
+import com.sky.converter.EmployeeConverter;
 import com.sky.dto.admin.employee.EmployeeDTO;
 import com.sky.dto.admin.employee.EmployeeLoginDTO;
 import com.sky.dto.admin.employee.EmployeePageQueryDTO;

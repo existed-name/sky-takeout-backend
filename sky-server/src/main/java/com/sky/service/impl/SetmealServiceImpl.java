@@ -2,7 +2,7 @@ package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
 import com.sky.constant.RedisConstant;
-import com.sky.convertor.SetmealConverter;
+import com.sky.converter.SetmealConverter;
 import com.sky.dto.admin.setmeal.SetmealDTO;
 import com.sky.dto.admin.setmeal.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;

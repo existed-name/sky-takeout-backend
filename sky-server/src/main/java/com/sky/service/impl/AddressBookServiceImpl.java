@@ -2,7 +2,7 @@ package com.sky.service.impl;
 
 import com.sky.constant.AddressBookConstant;
 import com.sky.constant.MessageConstant;
-import com.sky.convertor.AddressBookConverter;
+import com.sky.converter.AddressBookConverter;
 import com.sky.dto.user.addressBook.AddressBookDTO;
 import com.sky.enumeration.AddressBookLabel;
 import com.sky.enumeration.Gender;

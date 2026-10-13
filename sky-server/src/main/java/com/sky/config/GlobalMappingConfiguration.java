@@ -4,7 +4,7 @@ import org.mapstruct.MapperConfig;
 import org.mapstruct.ReportingPolicy;
 
 /**
- * MapStruct 配置规则, 统一管理 {@link com.sky.convertor}的 Converter 类的 @Mapper 配置
+ * MapStruct 配置规则, 统一管理 {@link com.sky.converter}的 Converter 类的 @Mapper 配置
  *
  * @CreateTime 2026/7/2 13:34
  */
