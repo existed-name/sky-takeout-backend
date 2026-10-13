@@ -2,6 +2,50 @@
 
 本文件只记录项目约定、关键事实与容易踩的坑。项目介绍与快速开始请见 README（由作者另写）。
 
+## 项目结构
+
+```
+sky-takeout-backend/
+├── pom.xml                          # 父 POM：聚合三个模块，锁定 JDK 17 与依赖版本
+├── Dockerfile                       # 多阶段构建后端镜像（构建上下文为仓库根）
+├── db/                              # 建库脚本与表结构设计文档
+│   ├── sky.sql                      # 部署实际使用的表结构
+│   ├── sky_takeout.sql              # 全量 dump（含开发期数据）
+│   └── 数据库设计文档.md
+├── docs/                            # 接口文档（按 admin / user 分目录存放）
+├── sky-common/                      # 与 Spring 无关的公共设施
+│   └── src/main/java/com/sky/
+│       ├── annotation/ aspect/ constant/ context/ enumeration/
+│       ├── exception/               # 业务异常基类与分类子包
+│       ├── json/ properties/ result/  # 结果封装、配置属性类等
+│       └── utils/
+├── sky-pojo/                        # 数据载体（DTO/VO/entity 等）
+│   └── src/main/java/com/sky/
+│       ├── dto/                     # 入参，按 admin/ common/ user 分组
+│       ├── vo/                      # 出参，按 admin/ user 分组
+│       ├── entity/                  # 数据库实体
+│       ├── projection/              # 查询投影
+│       ├── external/                # 第三方交互模型
+│       └── validation/              # 校验注解/分组
+└── sky-server/                      # 唯一可运行的 Web 模块
+    ├── src/main/java/com/sky/
+    │   ├── SkyApplication.java      # 启动类
+    │   ├── controller/              # 控制器，按 admin/ user/ test 分组
+    │   ├── service/                 # 业务接口
+    │   │   └── impl/                # 业务实现
+    │   ├── mapper/                  # MyBatis Mapper 接口
+    │   ├── config/ interceptor/ handler/ aspect/ convertor/
+    │   ├── task/ websocket/ utils/
+    ├── src/main/resources/
+    │   ├── application.yml
+    │   ├── application-dev.yml.example
+    │   ├── com/sky/mapper/          # Mapper XML（含 common/）
+    │   └── static/websocket.html
+    └── src/test/java/com/sky/       # service/ task/ test
+```
+
+布局按 Maven 模块划分三块：`sky-pojo` 只放数据载体，`sky-common` 放与 Spring 无关的公共设施，`sky-server` 是唯一可运行的 Web 模块；依赖方向见下节「模块与构建」。
+
 ## 模块与构建
 
 - Maven 多模块，根 `pom.xml` 的 `<modules>`：`sky-common`（通用工具/常量/异常/`Result`/配置属性类/注解）、`sky-pojo`（DTO/VO/entity）、`sky-server`（Web 层、Service、Mapper、启动类 `com.sky.SkyApplication`）。
