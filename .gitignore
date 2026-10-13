@@ -11,3 +11,7 @@ draft/
 # 隐私配置
 sky-server/src/main/resources/application-dev.yml
 
+# 日志文件
+logs/
+*.log
+
