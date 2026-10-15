@@ -27,7 +27,7 @@ import com.sky.enumeration.PaymentMethod;
 import com.sky.enumeration.TablewareStatus;
 import com.sky.enumeration.WebSocketMessageType;
 import com.sky.exception.addressBook.AddressBookUserNotMatchException;
-import com.sky.exception.NotFoundException;
+import com.sky.exception.common.NotFoundException;
 import com.sky.exception.baiduMap.DistanceLimitExceededException;
 import com.sky.exception.order.OrderAcceptFailedException;
 import com.sky.exception.order.cancel.OrderCancelFailedException;

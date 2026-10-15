@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.common;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 资源未找到异常

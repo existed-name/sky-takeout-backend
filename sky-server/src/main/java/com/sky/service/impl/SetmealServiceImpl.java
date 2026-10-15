@@ -8,7 +8,7 @@ import com.sky.dto.admin.setmeal.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.enumeration.GoodsStatus;
-import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.common.DeletionNotAllowedException;
 import com.sky.exception.setmeal.SetmealEnableFailedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;

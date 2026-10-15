@@ -10,7 +10,7 @@ import com.sky.dto.admin.employee.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.enumeration.EnableStatus;
 import com.sky.exception.account.AccountLockedException;
-import com.sky.exception.NotFoundException;
+import com.sky.exception.common.NotFoundException;
 import com.sky.exception.account.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.projection.employee.EmployeeLoginProjection;

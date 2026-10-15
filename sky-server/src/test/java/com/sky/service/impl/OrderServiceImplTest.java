@@ -8,7 +8,7 @@ import com.sky.entity.Orders;
 import com.sky.entity.User;
 import com.sky.enumeration.OrderPayStatus;
 import com.sky.enumeration.OrderStatus;
-import com.sky.exception.NotFoundException;
+import com.sky.exception.common.NotFoundException;
 import com.sky.exception.baiduMap.DistanceLimitExceededException;
 import com.sky.exception.order.OrderAcceptFailedException;
 import com.sky.external.DirectionDTO;

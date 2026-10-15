@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.common;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 数据库数据无效，查出来的数据不符合业务要求、不应该有这种数据

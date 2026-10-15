@@ -1,6 +1,6 @@
 package com.sky.utils;
 
-import com.sky.exception.NotFoundException;
+import com.sky.exception.common.NotFoundException;
 
 /**
  * 数据不存在工具类, 提取数据不存在的通用处理逻辑

@@ -7,7 +7,7 @@ import com.sky.dto.admin.category.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.enumeration.CategoryType;
 import com.sky.enumeration.EnableStatus;
-import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.common.DeletionNotAllowedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;

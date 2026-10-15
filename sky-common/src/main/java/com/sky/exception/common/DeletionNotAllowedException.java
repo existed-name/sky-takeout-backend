@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.common;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 拒绝删除, 比如当前数据关联了其他数据
