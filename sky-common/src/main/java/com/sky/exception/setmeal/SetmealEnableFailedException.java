@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.setmeal;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 套餐启用失败异常

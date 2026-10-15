@@ -9,7 +9,7 @@ import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.enumeration.GoodsStatus;
 import com.sky.exception.DeletionNotAllowedException;
-import com.sky.exception.SetmealEnableFailedException;
+import com.sky.exception.setmeal.SetmealEnableFailedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
