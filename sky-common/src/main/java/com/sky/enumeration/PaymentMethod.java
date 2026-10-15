@@ -1,7 +1,7 @@
 package com.sky.enumeration;
 
 import com.sky.constant.MessageConstant;
-import com.sky.exception.order.PaymentMethodInvalidException;
+import com.sky.exception.order.pay.PaymentMethodInvalidException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.sky.exception.order;
+package com.sky.exception.order.accept;
 
 import com.sky.exception.BusinessException;
 

@@ -1,7 +1,7 @@
 package com.sky.enumeration;
 
 import com.sky.constant.MessageConstant;
-import com.sky.exception.order.TablewareStatusInvalidException;
+import com.sky.exception.order.submit.TablewareStatusInvalidException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
