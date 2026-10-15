@@ -1,4 +1,4 @@
-* **<u>[开通阿里云对象存储服务](https://zhuanlan.zhihu.com/p/2013536613716754986)</u>**
+* **<u>[开通阿里云对象存储服务](https://github.com/existed-name/Personal-Blogs/blob/main/%E6%8A%80%E6%9C%AF%E6%95%99%E7%A8%8B%E7%B1%BB/%E4%BA%91%E6%9C%8D%E5%8A%A1/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1/%E5%BC%80%E9%80%9A%E9%98%BF%E9%87%8C%E4%BA%91%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1.md)</u>**
 
 1. 新建 bucket 来放 sky-takeout 的上传文件，但是报错，推测是权限问题
 

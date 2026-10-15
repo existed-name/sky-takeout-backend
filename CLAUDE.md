@@ -9,39 +9,116 @@ sky-takeout-backend/
 ├── pom.xml                          # 父 POM：聚合三个模块，锁定 JDK 17 与依赖版本
 ├── Dockerfile                       # 多阶段构建后端镜像（构建上下文为仓库根）
 ├── db/                              # 建库脚本与表结构设计文档
-│   ├── sky.sql                      # 部署实际使用的表结构
-│   ├── sky_takeout.sql              # 全量 dump（含开发期数据）
+│   ├── sky.sql                      # 部署实际使用的表结构 + 教程附带的数据
 │   └── 数据库设计文档.md
-├── docs/                            # 接口文档（按 admin / user 分目录存放）
+├── docs/                            
+│   ├── api/                         # 接口文档（按 admin / user 分目录存放）
+│   ├── bug-record/                  # 记录开发过程中的问题排查过程
+│   ├── git/                         # 常用的 git 命令, 内有 readme 说明
+│   ├── my-work/                     # 记录个人开发思路: 原型、数据库表、接口分析
+│   ├── prompt/                      # 早期用过的提示词, 让 AI 检查我代码规不规范, 内有 readme 说明
+│   ├── questions.md                 # 对教程设计的疑问( 很久没更新了, 中后期都是直接按自己思路写的
+│   └── 阿里云OSS-权限策略设置.md       # 设置 OSS 文件对象的增删改查权限
 ├── sky-common/                      # 与 Spring 无关的公共设施
 │   └── src/main/java/com/sky/
-│       ├── annotation/ aspect/ constant/ context/ enumeration/
+│       ├── annotation/              # 自定义注解
+│       ├── aspect/                  # 公共切面（实体对象审计字段自动填充）
+│       ├── constant/                # 全局常量
+│       ├── context/                 # 线程上下文（ThreadLocal 存当前登录身份）
+│       ├── enumeration/             # 业务枚举
+│       │   └── template/            # 枚举展示模板
 │       ├── exception/               # 业务异常基类与分类子包
-│       ├── json/ properties/ result/  # 结果封装、配置属性类等
-│       └── utils/
+│       │   ├── account/             # 账号相关异常
+│       │   ├── addressBook/         # 地址簿相关异常
+│       │   ├── auth/                # 认证与令牌相关异常
+│       │   ├── baiduMap/            # 百度地图相关异常
+│       │   ├── category/            # 分类相关异常
+│       │   ├── common/              # 通用校验异常
+│       │   ├── file/                # 文件上传相关异常
+│       │   ├── order/               # 订单相关异常
+│       │   │   ├── cancel/          # 订单取消相关异常
+│       │   │   └── .../             # 前天订单相关异常, 按照动作行为分类
+│       │   ├── setmeal/             # 套餐相关异常
+│       │   ├── shoppingCart/        # 购物车相关异常
+│       │   └── status/              # 状态校验相关异常
+│       ├── json/                    # Jackson 序列化配置
+│       ├── properties/              # 配置属性类
+│       ├── result/                  # 统一响应封装（Result / PageResult）
+│       └── utils/                   # 通用工具类
 ├── sky-pojo/                        # 数据载体（DTO/VO/entity 等）
 │   └── src/main/java/com/sky/
-│       ├── dto/                     # 入参，按 admin/ common/ user 分组
-│       ├── vo/                      # 出参，按 admin/ user 分组
+│       ├── dto/                     # 入参
+│       │   ├── admin/               # 管理端入参
+│       │   │   ├── category/        # 分类管理入参
+│       │   │   ├── dish/            # 菜品管理入参
+│       │   │   ├── employee/        # 员工管理入参
+│       │   │   ├── order/           # 订单管理入参
+│       │   │   ├── setmeal/         # 套餐管理入参
+│       │   │   └── shop/            # 店铺管理入参
+│       │   ├── common/              # 两端共用入参、内部数据传输对象
+│       │   │   └── ...
+│       │   └── user/                # 用户端入参
+│       │       ├── addressBook/     # 地址簿入参
+│       │       ├── order/           # 用户订单入参
+│       │       ├── shoppingCart/    # 购物车入参
+│       │       └── user/            # 用户登录入参
 │       ├── entity/                  # 数据库实体
-│       ├── projection/              # 查询投影
-│       ├── external/                # 第三方交互模型
-│       └── validation/              # 校验注解/分组
+│       ├── external/                # 第三方服务交互数据
+│       ├── projection/              # mapper 查询投影
+│       │   ├── addressBook/         # 地址簿查询投影
+│       │   ├── dish/                # 菜品查询投影
+│       │   ├── employee/            # 员工查询投影
+│       │   ├── order/               # 订单查询投影
+│       │   ├── setmeal/             # 套餐查询投影
+│       │   ├── shoppingCart/        # 购物车查询投影
+│       │   └── user/                # 用户查询投影
+│       ├── validation/              # 校验注解/分组
+│       └── vo/                      # 出参
+│           ├── admin/               # 管理端出参
+│           │   ├── category/        # 分类管理出参
+│           │   ├── dish/            # 菜品管理出参
+│           │   ├── employee/        # 员工管理出参
+│           │   ├── order/           # 订单管理出参
+│           │   ├── report/          # 报表统计出参
+│           │   ├── setmeal/         # 套餐管理出参
+│           │   └── workspace/       # 工作台出参
+│           └── user/                # 用户端出参
+│               ├── addressBook/     # 地址簿出参
+│               ├── category/        # 分类出参
+│               ├── dish/            # 菜品出参
+│               ├── order/           # 用户订单出参
+│               ├── setmeal/         # 套餐出参
+│               ├── shoppingCart/    # 购物车出参
+│               ├── user/            # 用户登录出参
+│               └── websocket/       # WebSocket 消息出参
 └── sky-server/                      # 唯一可运行的 Web 模块
     ├── src/main/java/com/sky/
     │   ├── SkyApplication.java      # 启动类
-    │   ├── controller/              # 控制器，按 admin/ user/ test 分组
+    │   ├── aspect/                  # 管理员操作日志记录
+    │   ├── config/                  # Spring 配置类
+    │   ├── controller/              # 控制器
+    │   │   ├── admin/               # 管理端控制器
+    │   │   ├── user/                # 用户端控制器
+    │   │   └── test/                # 测试/调试用控制器
+    │   ├── converter/               # MapStruct 对象转换器
+    │   ├── handler/                 # 全局异常处理器
+    │   ├── interceptor/             # JWT 登录拦截器
+    │   ├── mapper/                  # MyBatis Mapper 接口
     │   ├── service/                 # 业务接口
     │   │   └── impl/                # 业务实现
-    │   ├── mapper/                  # MyBatis Mapper 接口
-    │   ├── config/ interceptor/ handler/ aspect/ convertor/
-    │   ├── task/ websocket/ utils/
+    │   ├── task/                    # 定时任务
+    │   ├── utils/                   # 缓存等业务工具类
+    │   └── websocket/               # WebSocket 服务端
     ├── src/main/resources/
     │   ├── application.yml
     │   ├── application-dev.yml.example
     │   ├── com/sky/mapper/          # Mapper XML（含 common/）
-    │   └── static/websocket.html
-    └── src/test/java/com/sky/       # service/ task/ test
+    │   │   └── common/              # 通用可复用 SQL 片段
+    │   └── static/                  # 静态页面（含 websocket.html 测试页）
+    └── src/test/java/com/sky/       # 单元与集成测试
+        ├── service/impl/            # Service 层测试
+        ├── task/                    # 定时任务测试
+        └── test/                    # 自测脚本（HttpClient / Redis / Task / POI 等）
 ```
 
 布局按 Maven 模块划分三块：`sky-pojo` 只放数据载体，`sky-common` 放与 Spring 无关的公共设施，`sky-server` 是唯一可运行的 Web 模块；依赖方向见下节「模块与构建」。
