@@ -98,6 +98,7 @@ public class MessageConstant {
     public static final String TABLEWARE_STATUS_INVALID = "餐具数量状态无效, 请指定具体数量或者根据餐量提供";
     public static final String DELIVERY_STATUS_INVALID = "配送状态无效, 请选择立即配送或者指定配送时间";
     public static final String ORDER_PAID = "该订单已支付, 请勿重复支付";
+    public static final String ENABLE_STATUS_INVALID = "启用状态无效";
 
     /**
      * 拼装因为订单状态不符合要求导致的拒单失败信息( 管理端 )

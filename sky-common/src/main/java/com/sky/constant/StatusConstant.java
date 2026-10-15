@@ -1,6 +1,6 @@
 package com.sky.constant;
 
-import com.sky.exception.StatusParamInvalidException;
+import com.sky.exception.status.StatusParamInvalidException;
 
 import java.util.Set;
 
