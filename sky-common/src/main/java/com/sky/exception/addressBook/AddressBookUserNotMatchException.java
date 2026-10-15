@@ -1,4 +1,6 @@
-package com.sky.exception;
+package com.sky.exception.addressBook;
+
+import com.sky.exception.BusinessException;
 
 /**
  * 某条地址簿数据不属于当前用户

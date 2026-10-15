@@ -6,7 +6,7 @@ import com.sky.converter.AddressBookConverter;
 import com.sky.dto.user.addressBook.AddressBookDTO;
 import com.sky.enumeration.AddressBookLabel;
 import com.sky.enumeration.Gender;
-import com.sky.exception.AddressBookUserNotMatchException;
+import com.sky.exception.addressBook.AddressBookUserNotMatchException;
 import com.sky.exception.NotFoundException;
 import com.sky.mapper.UserMapper;
 import com.sky.utils.NotFoundUtil;
